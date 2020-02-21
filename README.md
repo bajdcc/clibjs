@@ -1,6 +1,6 @@
 # CLIBJS
 
-JS-like script engine.
+JS-like script engine implemented by C++.
 
 ## Environment
 

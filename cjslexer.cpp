@@ -63,6 +63,17 @@ namespace clib {
         }
     }
 
+    // 二进制字符转十进制
+    static int bin2dec(char c) {
+        if (c == '0') {
+            return 0;
+        } else if (c == '1') {
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+
     // 单字符转义
     static int escape(char c) {
         if (c >= '0' && c <= '9') {
@@ -97,13 +108,15 @@ namespace clib {
         text = s;
         auto len = (int) text.length();
         text.push_back(0);
+        text.push_back(0);
         text.push_back(0); // 防止溢出
+        auto i = 0;
         auto line = 1;
         auto column = 1;
         auto ii = 0;
         auto iL = 0;
         auto iC = 0;
-        for (auto i = 0; i < len;) {
+        for (i = 0; i < len;) {
             auto c = text[i];
             if (ii > 0)
                 fprintf(stdout, "P [%04d-%04d] Line: %04d, Column: %03d '%s'\n", ii, i, iL, iC,
@@ -171,32 +184,60 @@ namespace clib {
                             column += j - i;
                             i = j;
                             continue;
-                        } else if (c1 >= '0' && c1 <= '7') { // 八进制
+                        } else if (c1 == 'b' || c1 == 'B') {
                             auto cc = 0;
-                            auto l = j;
-                            // 八进制
-                            for (j = i + 2; (cc = oct2dec(text[j])) != -1; j++) {
-                                d *= 8.0;
+                            // 二进制
+                            for (j = i + 2; (cc = bin2dec(text[j])) != -1; j++) {
+                                d *= 2;
                                 d += cc;
                             }
-                            if (!(oct2dec(text[j]) && isdigit(text[j]))) {
-                                if (j == i + 2) {
-                                    fprintf(stderr, "Line: %d, Column: %d, Error: invalid number '%.2s'\n", line,
-                                            column,
-                                            &text[i]);
-                                    break;
+                            if (j == i + 2) {
+                                fprintf(stderr, "Line: %d, Column: %d, Error: invalid number '%.2s'\n", line, column,
+                                        &text[i]);
+                                break;
+                            }
+                            auto u = alloc_unit(line, column, i, j);
+                            u.t = NUMBER;
+                            u.len = sizeof(d);
+                            u.idx = alloc(u.len);
+                            *((double *) &data[u.idx]) = d;
+                            units.push_back(u);
+                            column += j - i;
+                            i = j;
+                            continue;
+                        } else {
+                            j = i + 1;
+                            if (c1 == 'o' || c1 == 'O') { // 八进制
+                                c1 = text[j];
+                                j++;
+                            }
+                            if (c1 >= '0' && c1 <= '7') { // 八进制
+                                auto cc = 0;
+                                auto l = j;
+                                // 八进制
+                                for (; (cc = oct2dec(text[j])) != -1; j++) {
+                                    d *= 8.0;
+                                    d += cc;
                                 }
-                                auto u = alloc_unit(line, column, i, j);
-                                u.t = NUMBER;
-                                u.len = sizeof(d);
-                                u.idx = alloc(u.len);
-                                *((double *) &data[u.idx]) = d;
-                                units.push_back(u);
-                                column += j - i;
-                                i = j;
-                                continue;
-                            } else {
-                                d = 0.0; // 0778 失败
+                                if (!(oct2dec(text[j]) && isdigit(text[j]))) {
+                                    if (j == i + 2) {
+                                        fprintf(stderr, "Line: %d, Column: %d, Error: invalid number '%.2s'\n", line,
+                                                column,
+                                                &text[i]);
+                                        break;
+                                    }
+                                    auto u = alloc_unit(line, column, i, j);
+                                    u.t = NUMBER;
+                                    u.len = sizeof(d);
+                                    u.idx = alloc(u.len);
+                                    *((double *) &data[u.idx]) = d;
+                                    units.push_back(u);
+                                    column += j - i;
+                                    i = j;
+                                    continue;
+                                } else {
+                                    d = 0.0; // 0778 失败
+                                }
                             }
                         }
                     }
@@ -217,11 +258,11 @@ namespace clib {
                         }
                     }
                     if (text[j] == 'e' || text[j] == 'E') { // 科学计数法
-                        auto neg = false;
+                        auto ne = false;
                         auto e = 0.0;
                         if (!isdigit(text[++j])) {
                             if (text[j] == '-') { // 1e-1
-                                neg = true;
+                                ne = true;
                                 j++;
                             } else if (text[j] == '+') {
                                 j++;
@@ -241,7 +282,7 @@ namespace clib {
                                     text.substr((size_t) i, (size_t) (j - i)).c_str());
                             break;
                         }
-                        d *= pow(10.0, neg ? -e : e);
+                        d *= pow(10.0, ne ? -e : e);
                     }
                     auto u = alloc_unit(line, column, i, j);
                     u.t = NUMBER;
@@ -319,7 +360,7 @@ namespace clib {
                 std::stringstream ss;
                 auto status = 1; // 状态机
                 auto count = 0;
-                auto hex = true;
+                auto digit = 0;
                 uint32_t cc = 0;
                 auto err = false;
                 for (j = i + 1; j <= k;) {
@@ -338,19 +379,19 @@ namespace clib {
                                 status = 3;
                                 j++;
                                 count = 2;
-                                hex = true;
+                                digit = 16;
                             } else if (text[j] == 'u') {
                                 status = 3;
                                 j++;
                                 count = 4;
-                                hex = true;
+                                digit = 16;
                             } else {
                                 auto esc = escape(text[j]);
                                 if (esc != -1) {
                                     if (esc >= 0 && esc < 8) { //八进制
                                         status = 3;
                                         count = 3;
-                                        hex = false;
+                                        digit = 8;
                                     } else {
                                         ss << (char) esc;
                                         j++;
@@ -363,7 +404,7 @@ namespace clib {
                         }
                             break;
                         case 3: { // 处理 '\x??'，'\111' 或 '\u????' 前一位十六进制数字
-                            auto esc = hex2dec(text[j]);
+                            auto esc = digit == 16 ? hex2dec(text[j]) : oct2dec(text[j]);
                             if (esc != -1) {
                                 cc = (uint32_t) esc;
                                 status = 4;
@@ -375,10 +416,10 @@ namespace clib {
                         }
                             break;
                         case 4: { // 处理 '\x??'，'\111' 或 '\u????' 后面的十六进制数字
-                            auto esc = hex2dec(text[j]);
+                            auto esc = digit == 16 ? hex2dec(text[j]) : oct2dec(text[j]);
                             auto fin = false;
                             if (esc != -1) {
-                                if (hex) {
+                                if (digit == 16) {
                                     cc *= 16;
                                     cc += (uint32_t) esc;
                                     j++;
@@ -543,8 +584,14 @@ namespace clib {
                     case '>':
                         if (c1 == '>') {
                             if (c2 == '>') {
-                                T = T_URSHIFT;
-                                j += 3;
+                                auto c3 = text[i + 2];
+                                if (c3 == '=') {
+                                    T = T_ASSIGN_URSHIFT;
+                                    j += 4;
+                                } else {
+                                    T = T_URSHIFT;
+                                    j += 3;
+                                }
                             } else {
                                 T = T_RSHIFT;
                                 j += 2;
@@ -559,7 +606,10 @@ namespace clib {
                         break;
                     case '<':
                         if (c1 == '<') {
-                            {
+                            if (c2 == '=') {
+                                T = T_ASSIGN_LSHIFT;
+                                j += 3;
+                            } else {
                                 T = T_LSHIFT;
                                 j += 2;
                             }
@@ -599,6 +649,14 @@ namespace clib {
                         if (c1 == '=') {
                             T = T_ASSIGN_MUL;
                             j += 2;
+                        } else if (c1 == '*') {
+                            if (c2 == '=') {
+                                T = T_ASSIGN_POWER;
+                                j += 3;
+                            } else {
+                                T = T_POWER;
+                                j += 2;
+                            }
                         } else {
                             T = T_MUL;
                             j++;
@@ -623,8 +681,13 @@ namespace clib {
                         }
                         break;
                     case '^': {
-                        T = T_BIT_XOR;
-                        j++;
+                        if (c1 == '=') {
+                            T = T_ASSIGN_XOR;
+                            j += 2;
+                        } else {
+                            T = T_BIT_XOR;
+                            j++;
+                        }
                     }
                         break;
                     case '~': {
@@ -634,8 +697,13 @@ namespace clib {
                         break;
                     case '!':
                         if (c1 == '=') {
-                            T = T_NOT_EQUAL;
-                            j += 2;
+                            if (c2 == '=') {
+                                T = T_FNOT_EQUAL;
+                                j += 3;
+                            } else {
+                                T = T_NOT_EQUAL;
+                                j += 2;
+                            }
                         } else {
                             T = T_LOG_NOT;
                             j++;
@@ -645,6 +713,9 @@ namespace clib {
                         if (c1 == '&') {
                             T = T_LOG_AND;
                             j += 2;
+                        } else if (c1 == '=') {
+                            T = T_ASSIGN_AND;
+                            j += 2;
                         } else {
                             T = T_BIT_AND;
                             j++;
@@ -653,6 +724,9 @@ namespace clib {
                     case '|':
                         if (c1 == '|') {
                             T = T_LOG_OR;
+                            j += 2;
+                        } else if (c1 == '=') {
+                            T = T_ASSIGN_OR;
                             j += 2;
                         } else {
                             T = T_BIT_OR;
@@ -730,6 +804,9 @@ namespace clib {
                 }
             }
         }
+        auto u = alloc_unit(line, column, i, i);
+        u.t = END;
+        units.push_back(u);
     }
 
 #define js_mem_align(d, a) (((d) + (a - 1)) & ~(a - 1))
@@ -832,5 +909,19 @@ namespace clib {
             fprintf(stdout, "D [%04d-%04d] Line: %04d, Column: %03d |%-10s| %s\n", U.start, U.end, U.line, U.column,
                     type, isprint ? text.substr((size_t) U.start, (size_t) (U.end - U.start)).c_str() : "");
         }
+    }
+
+    const cjslexer::unit &cjslexer::get_unit(int idx) const {
+        if (idx < 0 || idx >= (int) units.size()) {
+            return units.back();
+        }
+        return units[idx];
+    }
+
+    const char *cjslexer::get_data(int idx) const {
+        if (idx < 0 || idx >= (int) units.size()) {
+            return nullptr;
+        }
+        return &data[idx];
     }
 }

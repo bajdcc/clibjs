@@ -25,6 +25,7 @@ namespace clib {
             SPACE,
             NEWLINE,
             COMMENT,
+            END,
             KEYWORD_START,
             K_NEW,
             K_VAR,
@@ -52,6 +53,7 @@ namespace clib {
             T_MUL,
             T_DIV,
             T_MOD,
+            T_POWER,
             T_INC,
             T_DEC,
             T_ASSIGN,
@@ -60,6 +62,13 @@ namespace clib {
             T_ASSIGN_MUL,
             T_ASSIGN_DIV,
             T_ASSIGN_MOD,
+            T_ASSIGN_LSHIFT,
+            T_ASSIGN_RSHIFT,
+            T_ASSIGN_URSHIFT,
+            T_ASSIGN_AND,
+            T_ASSIGN_OR,
+            T_ASSIGN_XOR,
+            T_ASSIGN_POWER,
             T_LESS,
             T_LESS_EQUAL,
             T_GREATER,
@@ -67,6 +76,7 @@ namespace clib {
             T_EQUAL,
             T_FEQUAL,
             T_NOT_EQUAL,
+            T_FNOT_EQUAL,
             T_LOG_NOT,
             T_LOG_AND,
             T_LOG_OR,
@@ -103,6 +113,9 @@ namespace clib {
 
         void input(const std::string &text);
         void dump() const;
+
+        const unit &get_unit(int idx) const;
+        const char *get_data(int idx) const;
 
     private:
         bool allow_expr() const;
