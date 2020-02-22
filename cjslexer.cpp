@@ -14,25 +14,25 @@ namespace clib {
 
     cjslexer::cjslexer() {
         std::tuple<lexer_t, std::string> keyword_string_list[] = {
-            std::make_tuple(K_NEW, "new"),
-            std::make_tuple(K_VAR, "var"),
-            std::make_tuple(K_LET, "let"),
-            std::make_tuple(K_FUNCTION, "function"),
-            std::make_tuple(K_IF, "if"),
-            std::make_tuple(K_ELSE, "else"),
-            std::make_tuple(K_FOR, "for"),
-            std::make_tuple(K_WHILE, "while"),
-            std::make_tuple(K_IN, "in"),
-            std::make_tuple(K_DO, "do"),
-            std::make_tuple(K_BREAK, "break"),
-            std::make_tuple(K_CONTINUE, "continue"),
-            std::make_tuple(K_RETURN, "return"),
-            std::make_tuple(K_SWITCH, "switch"),
-            std::make_tuple(K_DEFAULT, "default"),
-            std::make_tuple(K_CASE, "case"),
-            std::make_tuple(K_NULL, "null"),
-            std::make_tuple(K_TRUE, "true"),
-            std::make_tuple(K_FALSE, "false"),
+                std::make_tuple(K_NEW, "new"),
+                std::make_tuple(K_VAR, "var"),
+                std::make_tuple(K_LET, "let"),
+                std::make_tuple(K_FUNCTION, "function"),
+                std::make_tuple(K_IF, "if"),
+                std::make_tuple(K_ELSE, "else"),
+                std::make_tuple(K_FOR, "for"),
+                std::make_tuple(K_WHILE, "while"),
+                std::make_tuple(K_IN, "in"),
+                std::make_tuple(K_DO, "do"),
+                std::make_tuple(K_BREAK, "break"),
+                std::make_tuple(K_CONTINUE, "continue"),
+                std::make_tuple(K_RETURN, "return"),
+                std::make_tuple(K_SWITCH, "switch"),
+                std::make_tuple(K_DEFAULT, "default"),
+                std::make_tuple(K_CASE, "case"),
+                std::make_tuple(K_NULL, "null"),
+                std::make_tuple(K_TRUE, "true"),
+                std::make_tuple(K_FALSE, "false"),
         };
         auto key_N = KEYWORD_END - KEYWORD_START - 1;
         for (auto i = 0; i < key_N; i++) {
@@ -105,6 +105,7 @@ namespace clib {
     }
 
     void cjslexer::input(const std::string &s) {
+        decltype(units) us;
         text = s;
         auto len = (int) text.length();
         text.push_back(0);
@@ -118,12 +119,14 @@ namespace clib {
         auto iC = 0;
         for (i = 0; i < len;) {
             auto c = text[i];
+#if 0
             if (ii > 0)
                 fprintf(stdout, "P [%04d-%04d] Line: %04d, Column: %03d '%s'\n", ii, i, iL, iC,
                         text.substr((size_t) ii, (size_t) (i - ii)).c_str());
             ii = i;
             iL = line;
             iC = column;
+#endif
             if (isalpha(c) || c == '_' || c == '$') { // 变量名或关键字
                 auto j = 0;
                 for (j = i + 1; isalnum(text[j]) || text[j] == '_' || text[j] == '$'; j++);
@@ -139,14 +142,14 @@ namespace clib {
                     std::copy(text.begin() + i, text.begin() + j, data.begin() + u.idx);
                     data[u.idx + u.len] = 0;
                 }
-                units.push_back(u);
+                us.push_back(u);
                 column += j - i;
                 i = j;
                 continue;
             } else if (isdigit(c) || (c == '.' && isdigit(text[i + 1])) ||
                        (c == '-' && (isdigit(text[i + 1]) || text[i + 1] == '.'))) { // 数字
                 // 判断是否可以负数
-                if (c != '-' || allow_expr()) {
+                if (c != '-' || allow_expr(us)) {
                     // 假定这里的数字规则是以0-9开头
                     // 正则：^((?:\d+(\.)?\d*)(?:[eE][+-]?\d+)?)$
                     // 正则：^0[Xx][0-9A-Fa-f]+$
@@ -180,7 +183,7 @@ namespace clib {
                             u.len = sizeof(d);
                             u.idx = alloc(u.len);
                             *((double *) &data[u.idx]) = d;
-                            units.push_back(u);
+                            us.push_back(u);
                             column += j - i;
                             i = j;
                             continue;
@@ -201,7 +204,7 @@ namespace clib {
                             u.len = sizeof(d);
                             u.idx = alloc(u.len);
                             *((double *) &data[u.idx]) = d;
-                            units.push_back(u);
+                            us.push_back(u);
                             column += j - i;
                             i = j;
                             continue;
@@ -231,7 +234,7 @@ namespace clib {
                                     u.len = sizeof(d);
                                     u.idx = alloc(u.len);
                                     *((double *) &data[u.idx]) = d;
-                                    units.push_back(u);
+                                    us.push_back(u);
                                     column += j - i;
                                     i = j;
                                     continue;
@@ -289,7 +292,7 @@ namespace clib {
                     u.len = sizeof(d);
                     u.idx = alloc(u.len);
                     *((double *) &data[u.idx]) = neg ? -d : d;
-                    units.push_back(u);
+                    us.push_back(u);
                     column += j - i;
                     i = j;
                     continue;
@@ -301,7 +304,7 @@ namespace clib {
                     for (j = i + 1; text[j] == ' ' || text[j] == '\t'; j++);
                     auto u = alloc_unit(line, column, i, j);
                     u.t = SPACE;
-                    units.push_back(u);
+                    us.push_back(u);
                     column += j - i;
                     i = j;
                     continue;
@@ -326,7 +329,7 @@ namespace clib {
                     }
                     auto u = alloc_unit(line, column, i, j);
                     u.t = NEWLINE;
-                    units.push_back(u);
+                    us.push_back(u);
                     line += l;
                     column = 1;
                     i = j;
@@ -358,6 +361,7 @@ namespace clib {
                     break;
                 }
                 std::stringstream ss;
+                ss << c;
                 auto status = 1; // 状态机
                 auto count = 0;
                 auto digit = 0;
@@ -486,7 +490,7 @@ namespace clib {
                     u.idx = alloc(u.len + 1);
                     std::copy(st.begin(), st.end(), data.begin() + u.idx);
                     data[u.idx + u.len] = 0;
-                    units.push_back(u);
+                    us.push_back(u);
                     column += j - i;
                     i = j;
                     continue;
@@ -503,7 +507,7 @@ namespace clib {
                         for (++j; text[j] != '\n' && text[j] != '\r'; j++);
                         auto u = alloc_unit(line, column, i, j);
                         u.t = COMMENT;
-                        units.push_back(u);
+                        us.push_back(u);
                         column += j - i;
                         i = j;
                     } else { // '/*  */'
@@ -525,7 +529,7 @@ namespace clib {
                         j++;
                         auto u = alloc_unit(line, column, i, j);
                         u.t = COMMENT;
-                        units.push_back(u);
+                        us.push_back(u);
                         column += j - i;
                         line += newline;
                         i = j;
@@ -534,7 +538,7 @@ namespace clib {
                 } else {
                     // 判断正则表达式？
                     // 寻找满足的条件，如四则、return之后
-                    if (allow_expr()) {
+                    if (allow_expr(us)) {
                         auto j = i;
                         auto squ = false;
                         for (++j; j < len; j++) {
@@ -555,7 +559,7 @@ namespace clib {
                         u.idx = alloc(u.len + 1);
                         std::copy(re.begin(), re.end(), data.begin() + u.idx);
                         data[u.idx + u.len] = 0;
-                        units.push_back(u);
+                        us.push_back(u);
                         column += j - i;
                         i = j;
                         continue;
@@ -794,13 +798,26 @@ namespace clib {
                 if (T != NONE) {
                     auto u = alloc_unit(line, column, i, j);
                     u.t = T;
-                    units.push_back(u);
+                    us.push_back(u);
                     column += j - i;
                     i = j;
                     continue;
                 } else {
                     fprintf(stderr, "Line: %d, Column: %d, Error: invalid operator '%c'\n", line, column, c);
                     break;
+                }
+            }
+        }
+        {
+            for (const auto &U:us) {
+                switch (U.t) {
+                    case SPACE:
+                    case NEWLINE:
+                    case COMMENT:
+                        break;
+                    default:
+                        units.push_back(U);
+                        break;
                 }
             }
         }
@@ -819,9 +836,9 @@ namespace clib {
 
 #undef js_mem_align
 
-    bool cjslexer::allow_expr() const {
+    bool cjslexer::allow_expr(const std::vector<unit> &u) {
         bool can = false;
-        for (auto U = units.rbegin(); U != units.rend(); U++) {
+        for (auto U = u.rbegin(); U != u.rend(); U++) {
             if (U->t == NEWLINE || U->t == COMMENT || U->t == SPACE)
                 continue;
             switch (U->t) {
@@ -882,32 +899,8 @@ namespace clib {
     }
 
     void cjslexer::dump() const {
-        for (const auto &U:units) {
-            auto type = "";
-            auto isprint = true;
-            if (U.t == ID) {
-                type = "ID";
-            } else if (U.t == NUMBER) {
-                type = "NUMBER";
-            } else if (U.t > KEYWORD_START && U.t < KEYWORD_END) {
-                type = "KEYWORD";
-            } else if (U.t > OPERATOR_START && U.t < OPERATOR_END) {
-                type = "OPERATOR";
-            } else if (U.t == STRING) {
-                type = "STRING";
-            } else if (U.t == SPACE) {
-                type = "SPACE";
-                isprint = false;
-            } else if (U.t == NEWLINE) {
-                type = "NEWLINE";
-                isprint = false;
-            } else if (U.t == COMMENT) {
-                type = "COMMENT";
-            } else if (U.t == REGEX) {
-                type = "REGEX";
-            }
-            fprintf(stdout, "D [%04d-%04d] Line: %04d, Column: %03d |%-10s| %s\n", U.start, U.end, U.line, U.column,
-                    type, isprint ? text.substr((size_t) U.start, (size_t) (U.end - U.start)).c_str() : "");
+        for (size_t i = 0; i < units.size(); i++) {
+            fprintf(stdout, "%s\n", get_unit_desc((int) i).c_str());
         }
     }
 
@@ -919,9 +912,48 @@ namespace clib {
     }
 
     const char *cjslexer::get_data(int idx) const {
-        if (idx < 0 || idx >= (int) units.size()) {
+        if (idx < 0 || idx >= (int) data.size()) {
             return nullptr;
         }
         return &data[idx];
+    }
+
+    int cjslexer::get_unit_size() const {
+        return std::max((int) (units.size()) - 1, 0);
+    }
+
+    std::string cjslexer::get_unit_desc(int idx) const {
+        auto U = get_unit(idx);
+        auto type = "";
+        auto isprint = true;
+        if (U.t == ID) {
+            type = "ID";
+        } else if (U.t == NUMBER) {
+            type = "NUMBER";
+        } else if (U.t > KEYWORD_START && U.t < KEYWORD_END) {
+            type = "KEYWORD";
+        } else if (U.t > OPERATOR_START && U.t < OPERATOR_END) {
+            type = "OPERATOR";
+        } else if (U.t == STRING) {
+            type = "STRING";
+        } else if (U.t == SPACE) {
+            type = "SPACE";
+            isprint = false;
+        } else if (U.t == NEWLINE) {
+            type = "NEWLINE";
+            isprint = false;
+        } else if (U.t == COMMENT) {
+            type = "COMMENT";
+        } else if (U.t == REGEX) {
+            type = "REGEX";
+        } else if (U.t == END) {
+            type = "END";
+            isprint = false;
+        }
+        char buf[256];
+        snprintf(buf, sizeof(buf), "D [%04d-%04d] Line: %04d, Column: %03d |%-10s| %.20s",
+                 U.start, U.end, U.line, U.column,
+                 type, isprint ? text.substr((size_t) U.start, (size_t) (U.end - U.start)).c_str() : "");
+        return buf;
     }
 }

@@ -115,10 +115,12 @@ namespace clib {
         void dump() const;
 
         const unit &get_unit(int idx) const;
+        int get_unit_size() const;
+        std::string get_unit_desc(int idx) const;
         const char *get_data(int idx) const;
 
     private:
-        bool allow_expr() const;
+        static bool allow_expr(const std::vector<unit> &u);
         int alloc(int size);
         static unit alloc_unit(int line, int column, int start, int end);
 
