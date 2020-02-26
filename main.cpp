@@ -14,7 +14,11 @@ int main() {
         buffer << file.rdbuf();
         auto str = buffer.str();
         clib::cjs js;
-        js.exec(str);
+        try {
+            js.exec("output.txt", str);
+        } catch (const clib::cexception &e) {
+            std::cout << e.message() << std::endl;
+        }
     }
     return 0;
 }

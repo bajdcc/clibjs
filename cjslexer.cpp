@@ -12,27 +12,36 @@
 
 namespace clib {
 
+    using namespace types;
+
     cjslexer::cjslexer() {
-        std::tuple<lexer_t, std::string> keyword_string_list[] = {
-                std::make_tuple(K_NEW, "new"),
-                std::make_tuple(K_VAR, "var"),
-                std::make_tuple(K_LET, "let"),
-                std::make_tuple(K_FUNCTION, "function"),
-                std::make_tuple(K_IF, "if"),
-                std::make_tuple(K_ELSE, "else"),
-                std::make_tuple(K_FOR, "for"),
-                std::make_tuple(K_WHILE, "while"),
-                std::make_tuple(K_IN, "in"),
-                std::make_tuple(K_DO, "do"),
-                std::make_tuple(K_BREAK, "break"),
-                std::make_tuple(K_CONTINUE, "continue"),
-                std::make_tuple(K_RETURN, "return"),
-                std::make_tuple(K_SWITCH, "switch"),
-                std::make_tuple(K_DEFAULT, "default"),
-                std::make_tuple(K_CASE, "case"),
-                std::make_tuple(K_NULL, "null"),
-                std::make_tuple(K_TRUE, "true"),
-                std::make_tuple(K_FALSE, "false"),
+        std::array<std::tuple<lexer_t, std::string>, KEYWORD_END - KEYWORD_START + 1> keyword_string_list = {
+            std::make_tuple(K_NEW, "new"),
+            std::make_tuple(K_VAR, "var"),
+            std::make_tuple(K_LET, "let"),
+            std::make_tuple(K_FUNCTION, "function"),
+            std::make_tuple(K_IF, "if"),
+            std::make_tuple(K_ELSE, "else"),
+            std::make_tuple(K_FOR, "for"),
+            std::make_tuple(K_WHILE, "while"),
+            std::make_tuple(K_IN, "in"),
+            std::make_tuple(K_DO, "do"),
+            std::make_tuple(K_BREAK, "break"),
+            std::make_tuple(K_CONTINUE, "continue"),
+            std::make_tuple(K_RETURN, "return"),
+            std::make_tuple(K_SWITCH, "switch"),
+            std::make_tuple(K_DEFAULT, "default"),
+            std::make_tuple(K_CASE, "case"),
+            std::make_tuple(K_NULL, "null"),
+            std::make_tuple(K_TRUE, "true"),
+            std::make_tuple(K_FALSE, "false"),
+            std::make_tuple(K_INSTANCEOF, "instanceof"),
+            std::make_tuple(K_TYPEOF, "typeof"),
+            std::make_tuple(K_VOID, "void"),
+            std::make_tuple(K_DELETE, "delete"),
+            std::make_tuple(K_CLASS, "class"),
+            std::make_tuple(K_THIS, "this"),
+            std::make_tuple(K_SUPER, "super"),
         };
         auto key_N = KEYWORD_END - KEYWORD_START - 1;
         for (auto i = 0; i < key_N; i++) {
@@ -581,9 +590,13 @@ namespace clib {
                                 T = T_EQUAL;
                                 j += 2;
                             }
-                        } else
+                        } else if (c1 == '>') {
+                            T = T_ARROW;
+                            j += 2;
+                        } else {
                             T = T_ASSIGN;
-                        j++;
+                            j++;
+                        }
                         break;
                     case '>':
                         if (c1 == '>') {
@@ -738,8 +751,13 @@ namespace clib {
                         }
                         break;
                     case '.': {
-                        T = T_DOT;
-                        j++;
+                        if (c1 == '.' && c2 == '.') {
+                            T = T_ELLIPSIS;
+                            j += 3;
+                        } else {
+                            T = T_DOT;
+                            j++;
+                        }
                     }
                         break;
                     case ',': {
@@ -758,8 +776,13 @@ namespace clib {
                     }
                         break;
                     case '?': {
-                        T = T_QUERY;
-                        j++;
+                        if (c1 == '?') {
+                            T = T_COALESCE;
+                            j += 2;
+                        } else {
+                            T = T_QUERY;
+                            j++;
+                        }
                     }
                         break;
                     case '(': {
@@ -789,6 +812,11 @@ namespace clib {
                         break;
                     case '}': {
                         T = T_RBRACE;
+                        j++;
+                    }
+                        break;
+                    case '#': {
+                        T = T_SHARP;
                         j++;
                     }
                         break;
@@ -836,7 +864,7 @@ namespace clib {
 
 #undef js_mem_align
 
-    bool cjslexer::allow_expr(const std::vector<unit> &u) {
+    bool cjslexer::allow_expr(const std::vector<lexer_unit> &u) {
         bool can = false;
         for (auto U = u.rbegin(); U != u.rend(); U++) {
             if (U->t == NEWLINE || U->t == COMMENT || U->t == SPACE)
@@ -849,12 +877,22 @@ namespace clib {
                 case T_MUL:
                 case T_DIV:
                 case T_MOD:
+                case T_POWER:
+                case T_INC:
+                case T_DEC:
                 case T_ASSIGN:
                 case T_ASSIGN_ADD:
                 case T_ASSIGN_SUB:
                 case T_ASSIGN_MUL:
                 case T_ASSIGN_DIV:
                 case T_ASSIGN_MOD:
+                case T_ASSIGN_LSHIFT:
+                case T_ASSIGN_RSHIFT:
+                case T_ASSIGN_URSHIFT:
+                case T_ASSIGN_AND:
+                case T_ASSIGN_OR:
+                case T_ASSIGN_XOR:
+                case T_ASSIGN_POWER:
                 case T_LESS:
                 case T_LESS_EQUAL:
                 case T_GREATER:
@@ -862,6 +900,7 @@ namespace clib {
                 case T_EQUAL:
                 case T_FEQUAL:
                 case T_NOT_EQUAL:
+                case T_FNOT_EQUAL:
                 case T_LOG_NOT:
                 case T_LOG_AND:
                 case T_LOG_OR:
@@ -889,8 +928,8 @@ namespace clib {
         return can;
     }
 
-    cjslexer::unit cjslexer::alloc_unit(int line, int column, int start, int end) {
-        unit u;
+    lexer_unit cjslexer::alloc_unit(int line, int column, int start, int end) {
+        lexer_unit u;
         u.line = line;
         u.column = column;
         u.start = start;
@@ -904,7 +943,7 @@ namespace clib {
         }
     }
 
-    const cjslexer::unit &cjslexer::get_unit(int idx) const {
+    const lexer_unit &cjslexer::get_unit(int idx) const {
         if (idx < 0 || idx >= (int) units.size()) {
             return units.back();
         }
@@ -955,5 +994,17 @@ namespace clib {
                  U.start, U.end, U.line, U.column,
                  type, isprint ? text.substr((size_t) U.start, (size_t) (U.end - U.start)).c_str() : "");
         return buf;
+    }
+
+    int cjslexer::get_index() const {
+        return index;
+    }
+
+    void cjslexer::inc_index() {
+        index++;
+    }
+
+    const lexer_unit &cjslexer::get_current_unit() const {
+        return get_unit(index);
     }
 }

@@ -1,0 +1,75 @@
+Program
+ SourceElements
+  Statement
+   VariableStatement
+    keyword: K_VAR
+    VariableDeclarationList
+     VariableDeclaration
+      Assignable
+       id: a
+      operator: T_ASSIGN
+      SingleExpression
+       Literal
+        number: 0.01
+       AssignmentExpression
+        IdentifierExpression
+         id: b
+        operator: T_ASSIGN
+        IdentifierExpression
+         id: a
+       AssignmentExpression
+        IdentifierExpression
+         id: c
+        operator: T_ASSIGN
+        Literal
+         keyword: K_TRUE
+       AssignmentExpression
+        IdentifierExpression
+         id: d
+        operator: T_ASSIGN
+        Literal
+         string: \"ok\"
+       AssignmentExpression
+        IdentifierExpression
+         id: e
+        operator: T_ASSIGN
+        Literal
+         string: 'a'
+       AssignmentExpression
+        IdentifierExpression
+         id: f
+        operator: T_ASSIGN
+        Literal
+         regex: /regex/g
+    Eos
+     operator: T_SEMI
+  Statement
+   VariableStatement
+    keyword: K_VAR
+    VariableDeclarationList
+     VariableDeclaration
+      Assignable
+       id: g
+      operator: T_ASSIGN
+      AdditiveExpression
+       Literal
+        number: 1
+       operator: T_ADD
+       Literal
+        number: 1
+    Eos
+     operator: T_SEMI
+  Statement
+   ExpressionStatement
+    ExpressionSequence
+     MemberDotExpression
+      IdentifierExpression
+       id: console
+      operator: T_DOT
+      IdentifierName
+       id: log
+      ExpressionSequence
+       IdentifierExpression
+        id: a
+    Eos
+     operator: T_SEMI

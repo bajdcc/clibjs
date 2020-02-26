@@ -7,12 +7,22 @@
 #define CLIBJS_CJS_H
 
 #include <string>
+#include "cjsparser.h"
 
 namespace clib {
 
-    class cjs {
+    class cjs : public csemantic {
     public:
-        void exec(const std::string& input);
+        cjs() = default;
+        ~cjs() = default;
+
+        cjs(const cjs&) = delete;
+        cjs& operator=(const cjs&) = delete;
+
+        backtrace_direction check(pda_edge_t, ast_node*) override;
+        void error_handler(int, const std::vector<pda_trans>&, int&) override;
+
+        void exec(const std::string &filename, const std::string& input);
     };
 }
 

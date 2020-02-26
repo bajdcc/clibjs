@@ -8,167 +8,84 @@
 
 #include <string>
 #include <memory>
+#include <unordered_set>
 #include "cjslexer.h"
+#include "cjsast.h"
+#include "cjsunit.h"
 
 namespace clib {
 
-    class cjs_node : public std::enable_shared_from_this<cjs_node> {
-    public:
-        using ptr = std::shared_ptr<cjs_node>;
+    using namespace types;
 
-        int line{0};
-        int column{0};
-        int start{0};
-        int end{0};
-        int _start{0};
-        int _end{0};
-        int _next{0};
-
-        virtual const char *get_name() const;
-        virtual int print(std::ostream &os, int level) const = 0;
+    enum backtrace_direction {
+        b_success,
+        b_next,
+        b_error,
+        b_fail,
+        b_fallback,
     };
 
-    std::ostream &operator<<(std::ostream &os, std::tuple<const std::shared_ptr<cjs_node>, int> arg);
-
-    class cjs_expr : public cjs_node {
-    public:
-        using ptr = std::shared_ptr<cjs_expr>;
+    struct backtrace_t {
+        int lexer_index;
+        std::vector<int> state_stack;
+        std::vector<ast_node *> ast_stack;
+        int current_state;
+        uint32_t coll_index;
+        uint32_t reduce_index;
+        std::vector<int> trans_ids;
+        std::unordered_set<int> ast_ids;
+        backtrace_direction direction;
     };
 
-    class cjs_expr_sinop : public cjs_expr {
+    class csemantic {
     public:
-        using ptr = std::shared_ptr<cjs_expr_sinop>;
-
-        int print(std::ostream &os, int level) const override;
-
-        cjslexer::lexer_t op;
-        cjs_expr::ptr exp;
-    };
-
-    class cjs_expr_unary : public cjs_expr {
-    public:
-        using ptr = std::shared_ptr<cjs_expr_unary>;
-
-        int print(std::ostream &os, int level) const override;
-
-        cjslexer::lexer_t op;
-        cjs_expr::ptr exp;
-    };
-
-    class cjs_expr_binop : public cjs_expr {
-    public:
-        using ptr = std::shared_ptr<cjs_expr_binop>;
-
-        int print(std::ostream &os, int level) const override;
-
-        cjslexer::lexer_t op;
-        cjs_expr::ptr exp1, exp2;
-    };
-
-    class cjs_expr_triop : public cjs_expr {
-    public:
-        using ptr = std::shared_ptr<cjs_expr_triop>;
-
-        int print(std::ostream &os, int level) const override;
-
-        cjslexer::lexer_t op1, op2;
-        cjs_expr::ptr exp1, exp2, exp3;
-    };
-
-    class cjs_expr_id : public cjs_expr {
-    public:
-        using ptr = std::shared_ptr<cjs_expr_id>;
-
-        int print(std::ostream &os, int level) const override;
-
-        std::string id;
-    };
-
-    class cjs_expr_number : public cjs_expr {
-    public:
-        using ptr = std::shared_ptr<cjs_expr_number>;
-
-        int print(std::ostream &os, int level) const override;
-
-        double number{0};
-    };
-
-    class cjs_expr_string : public cjs_expr {
-    public:
-        using ptr = std::shared_ptr<cjs_expr_string>;
-
-        int print(std::ostream &os, int level) const override;
-
-        std::string str;
-    };
-
-    class cjs_expr_regex : public cjs_expr {
-    public:
-        using ptr = std::shared_ptr<cjs_expr_regex>;
-
-        int print(std::ostream &os, int level) const override;
-
-        std::string re;
-    };
-
-    class cjs_expr_bool : public cjs_expr {
-    public:
-        using ptr = std::shared_ptr<cjs_expr_bool>;
-
-        int print(std::ostream &os, int level) const override;
-
-        bool b{false};
-    };
-
-    class cjs_stmt : public cjs_node {
-    public:
-        using ptr = std::shared_ptr<cjs_stmt>;
-
-        cjs_expr::ptr exp;
-    };
-
-    class cjs_block : public cjs_node {
-    public:
-        using ptr = std::shared_ptr<cjs_block>;
-
-        int print(std::ostream &os, int level) const override;
-
-        std::vector<cjs_stmt::ptr> stmts;
-    };
-
-    class cjs_stmt_var_decl : public cjs_node {
-    public:
-        using ptr = std::shared_ptr<cjs_stmt_var_decl>;
-
-        int print(std::ostream &os, int level) const override;
-
-        std::string id;
-        cjs_expr::ptr expr;
-    };
-
-    class cjs_stmt_var_decls : public cjs_stmt {
-    public:
-        using ptr = std::shared_ptr<cjs_stmt_var_decls>;
-
-        const char *get_name() const override;
-        int print(std::ostream &os, int level) const override;
-
-        std::vector<cjs_stmt_var_decl::ptr> decls;
+        virtual backtrace_direction check(pda_edge_t, ast_node *) = 0;
+        virtual void error_handler(int, const std::vector<pda_trans> &, int &) = 0;
     };
 
     class cjsparser {
     public:
+        cjsparser() = default;
+        ~cjsparser() = default;
 
-        void compile(const std::string &input);
+        cjsparser(const cjsparser &) = delete;
+        cjsparser &operator=(const cjsparser &) = delete;
+
+        ast_node *parse(const std::string &str, csemantic *s = nullptr);
+        ast_node *root() const;
+        void clear_ast();
 
     private:
-        cjs_stmt::ptr parse_stmt(int start, int end) const;
-        cjs_stmt_var_decls::ptr parse_var_decls(int start, int end) const;
-        cjs_stmt_var_decl::ptr parse_var_decl(int start, int end) const;
-        cjs_expr::ptr parse_expr(int start, int end, int level) const;
+
+        void next();
+
+        void gen();
+        void program();
+        ast_node *terminal();
+
+        bool valid_trans(const pda_trans &trans) const;
+        void do_trans(int state, backtrace_t &bk, const pda_trans &trans);
+        bool LA(unit *u) const;
+
+        void expect(bool, const std::string &);
+        void match_type(lexer_t);
+
+        void error(const std::string &);
 
     private:
-        cjslexer L;
+        const lexer_unit *current{nullptr};
+        std::vector<int> state_stack;
+        std::vector<ast_node *> ast_stack;
+        std::vector<ast_node *> ast_cache;
+        size_t ast_cache_index{0};
+        std::vector<ast_node *> ast_coll_cache;
+        std::vector<ast_node *> ast_reduce_cache;
+
+    private:
+        cjsunit unit;
+        std::unique_ptr<cjslexer> lexer;
+        csemantic *semantic{nullptr};
+        std::unique_ptr<cjsast> ast;
     };
 }
 
