@@ -4,7 +4,7 @@
 #include "cjs.h"
 
 int main() {
-    //std::ifstream file("..\\test\\jquery.js");
+    //std::ifstream file("..\\test\\jquery2.js");
     //std::ifstream file("..\\test\\jquery.min.js");
     //std::ifstream file("..\\test\\vue.js");
     //std::ifstream file("..\\test\\vue.min.js");

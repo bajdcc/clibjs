@@ -42,6 +42,12 @@ namespace clib {
             std::make_tuple(K_CLASS, "class"),
             std::make_tuple(K_THIS, "this"),
             std::make_tuple(K_SUPER, "super"),
+            std::make_tuple(K_WITH, "with"),
+            std::make_tuple(K_TRY, "try"),
+            std::make_tuple(K_THROW, "throw"),
+            std::make_tuple(K_CATCH, "catch"),
+            std::make_tuple(K_FINALLY, "finally"),
+            std::make_tuple(K_DEBUGGER, "debugger"),
         };
         auto key_N = KEYWORD_END - KEYWORD_START - 1;
         for (auto i = 0; i < key_N; i++) {
@@ -560,7 +566,16 @@ namespace clib {
                             else if (text[j] == ']') squ = false;
                         }
                         j++;
-                        if (text[j] == 'g')j++;
+                        // postfix: /i /g /gi /ig /m
+                        if (text[j] == 'g') {
+                            if (text[j] == 'i')j++;
+                            j++;
+                        } else if (text[j] == 'i') {
+                            if (text[j] == 'g')j++;
+                            j++;
+                        } else if (text[j] == 'm') {
+                            j++;
+                        }
                         auto u = alloc_unit(line, column, i, j);
                         u.t = REGEX;
                         auto re = text.substr((size_t) i, (size_t) (j - i));
@@ -601,7 +616,7 @@ namespace clib {
                     case '>':
                         if (c1 == '>') {
                             if (c2 == '>') {
-                                auto c3 = text[i + 2];
+                                auto c3 = text[i + 3];
                                 if (c3 == '=') {
                                     T = T_ASSIGN_URSHIFT;
                                     j += 4;
@@ -609,6 +624,9 @@ namespace clib {
                                     T = T_URSHIFT;
                                     j += 3;
                                 }
+                            } else if (c2 == '=') {
+                                T = T_ASSIGN_RSHIFT;
+                                j += 3;
                             } else {
                                 T = T_RSHIFT;
                                 j += 2;

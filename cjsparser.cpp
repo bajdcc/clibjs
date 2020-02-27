@@ -15,9 +15,10 @@
 #define REPORT_ERROR 0
 #define REPORT_ERROR_FILE "parsing.log"
 
-#define TRACE_PARSING 0
+#define TRACE_PARSING 1
+#define DUMP_LEXER 0
 #define DUMP_PDA 0
-#define DUMP_PDA_FILE "PDA.log"
+#define DUMP_PDA_FILE "PDA.txt"
 #define DEBUG_AST 0
 #define CHECK_AST 0
 
@@ -27,6 +28,9 @@ namespace clib {
         semantic = s;
         lexer = std::make_unique<cjslexer>();
         lexer->input(str);
+#if DUMP_LEXER
+        lexer->dump();
+#endif
         ast = std::make_unique<cjsast>();
         current = nullptr;
         // 清空AST
@@ -94,8 +98,6 @@ namespace clib {
         DEF_LEXER(K_CATCH)
         DEF_LEXER(K_FINALLY)
         DEF_LEXER(K_DEBUGGER)
-        DEF_LEXER(K_GET)
-        DEF_LEXER(K_SET)
         // ---
         DEF_LEXER(T_ADD)
         DEF_LEXER(T_SUB)
@@ -169,6 +171,10 @@ namespace clib {
         DEF_RULE(expressionStatement)
         DEF_RULE(ifStatement)
         DEF_RULE(iterationStatement)
+        DEF_RULE(doStatement)
+        DEF_RULE(whileStatement)
+        DEF_RULE(forStatement)
+        DEF_RULE(forInStatement)
         DEF_RULE(continueStatement)
         DEF_RULE(breakStatement)
         DEF_RULE(returnStatement)
@@ -212,13 +218,11 @@ namespace clib {
         DEF_RULE(literal)
         DEF_RULE(numericLiteral)
         DEF_RULE(identifierName)
-        DEF_RULE(getter)
-        DEF_RULE(setter)
+        DEF_RULE(reservedWord)
+        DEF_RULE(keyword)
         DEF_RULE(eos)
         DEF_RULE(propertyExpressionAssignment)
         DEF_RULE(computedPropertyExpressionAssignment)
-        DEF_RULE(propertyGetter)
-        DEF_RULE(propertySetter)
         DEF_RULE(propertyShorthand)
         DEF_RULE(functionDecl)
         DEF_RULE(anoymousFunctionDecl)
@@ -231,6 +235,7 @@ namespace clib {
         DEF_RULE_EXP(newExpression)
         DEF_RULE_EXP(postIncrementExpression)
         DEF_RULE_EXP(postDecreaseExpression)
+        DEF_RULE_EXP(postfixExpression)
         DEF_RULE_EXP(deleteExpression)
         DEF_RULE_EXP(voidExpression)
         DEF_RULE_EXP(typeofExpression)
@@ -272,47 +277,44 @@ namespace clib {
                       | classDeclaration
                       | functionDeclaration;
         variableStatement = _K_VAR + variableDeclarationList + *eos;
-        variableDeclarationList = variableDeclaration + *(~_T_COMMA + variableDeclarationList);
+        variableDeclarationList = *(variableDeclarationList + ~_T_COMMA) + variableDeclaration;
         variableDeclaration = assignable + *(_T_ASSIGN + singleExpression);
         emptyStatement = _T_SEMI;
         expressionStatement = expressionSequence + *eos;
         ifStatement = _K_IF + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement + *(_K_ELSE + statement);
-        iterationStatement = _K_WHILE + ~_T_LPARAN + expressionSequence + ~_T_LPARAN + statement
-                             | _K_DO + statement + _K_WHILE + ~_T_LPARAN + expressionSequence + ~_T_LPARAN + *eos
-                             | _K_FOR + ~_T_LPARAN + *(expressionSequence | variableDeclarationList) + _T_SEMI +
-                               *expressionSequence + _T_SEMI + *expressionSequence + ~_T_LPARAN + statement
-                             | _K_FOR + ~_T_LPARAN + *(singleExpression | variableDeclarationList) + _K_IN +
-                               *expressionSequence + ~_T_LPARAN + statement;
+        iterationStatement = doStatement | whileStatement | forStatement | forInStatement;
+        doStatement = _K_DO + statement + _K_WHILE + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + *eos;
+        whileStatement = _K_WHILE + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement;
+        forStatement = _K_FOR + ~_T_LPARAN + *(expressionSequence | _K_VAR + variableDeclarationList) +
+                       _T_SEMI + *expressionSequence + _T_SEMI + *expressionSequence + ~_T_RPARAN + statement;
+        forInStatement = _K_FOR + ~_T_LPARAN + *(singleExpression | _K_VAR + variableDeclarationList) +
+                         _K_IN + expressionSequence + ~_T_RPARAN + statement;
         continueStatement = _K_CONTINUE + *_ID + *eos;
         breakStatement = _K_BREAK + *_ID + *eos;
         returnStatement = _K_RETURN + *expressionSequence + *eos;
-        withStatement = _K_WITH + ~_T_LPARAN + expressionSequence + ~_T_LPARAN + statement;
-        switchStatement = _K_SWITCH + ~_T_LPARAN + expressionSequence + ~_T_LPARAN + caseBlock;
+        withStatement = _K_WITH + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement;
+        switchStatement = _K_SWITCH + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + caseBlock;
         caseBlock = ~_T_LBRACE + *caseClauses + *(defaultClause + *caseClauses) + ~_T_RBRACE;
         caseClauses = caseClause + *caseClauses;
-        caseClause = _K_CASE + expressionSequence + _T_ASSIGN + *statementList;
-        defaultClause = _K_DEFAULT + _T_ASSIGN + *statementList;
-        labelledStatement = _ID + _T_ASSIGN + statement;
+        caseClause = _K_CASE + expressionSequence + _T_COLON + *statementList;
+        defaultClause = _K_DEFAULT + _T_COLON + *statementList;
+        labelledStatement = _ID + _T_COLON + statement;
         throwStatement = _K_THROW + expressionSequence + *eos;
         tryStatement = _K_TRY + block + (catchProduction + *finallyProduction | finallyProduction);
-        catchProduction = _K_CATCH + *(~_T_LPARAN + *assignable + ~_T_LPARAN) + block;
+        catchProduction = _K_CATCH + *(~_T_LPARAN + *assignable + ~_T_RPARAN) + block;
         finallyProduction = _K_FINALLY + block;
         debuggerStatement = _K_DEBUGGER + *eos;
         functionDeclaration = _K_FUNCTION + _ID + ~_T_LPARAN + *formalParameterList + ~_T_RPARAN +
-                              ~_T_LBRACE + functionBody + ~_T_RBRACE;
+                              ~_T_LBRACE + *functionBody + ~_T_RBRACE;
         classDeclaration = _K_CLASS + _ID + classTail;
         classTail = ~_T_LBRACE + classElements + ~_T_RBRACE;
-        classElements = classElement + *(~_T_COMMA + classElements);
+        classElements = *(classElements + ~_T_COMMA) + classElement;
         classElement = methodDefinition
                        | emptyStatement
                        | *_T_SHARP + propertyName + _T_ASSIGN + singleExpression;
         methodDefinition = *_T_SHARP + propertyName + ~_T_LPARAN + *formalParameterList + ~_T_RPARAN +
-                           ~_T_LBRACE + functionBody + ~_T_RBRACE
-                           | getter + ~_T_LPARAN + ~_T_RPARAN +
-                             ~_T_LBRACE + functionBody + ~_T_RBRACE
-                           | setter + ~_T_LPARAN + *formalParameterArg + ~_T_RPARAN +
-                             ~_T_LBRACE + functionBody + ~_T_RBRACE;
-        formalParameterList = assignable + *(~_T_COMMA + formalParameterList);
+                           ~_T_LBRACE + *functionBody + ~_T_RBRACE;
+        formalParameterList = *(formalParameterList + ~_T_COMMA) + assignable;
         formalParameterArg = assignable;
         functionBody = *functionBody + sourceElements;
         sourceElements = *sourceElements + statement;
@@ -337,7 +339,7 @@ namespace clib {
         block = ~_T_LBRACE + *statementList + ~_T_RBRACE;
         statementList = *statementList + statement;
         expressionStatement = expressionSequence + *eos;
-        expressionSequence = singleExpression + *(~_T_COMMA + singleExpression);
+        expressionSequence = *(expressionSequence + ~_T_COMMA) + singleExpression;
         thisExpression = _K_THIS;
         identifierExpression = _ID;
         superExpression = _K_SUPER;
@@ -345,8 +347,8 @@ namespace clib {
         arrayLiteralExpression = arrayLiteral;
         objectLiteralExpression = objectLiteral;
         parenthesizedExpression = ~_T_LPARAN + expressionSequence + ~_T_RPARAN;
-        functionExpression = _K_CLASS + ~_ID + classTail
-                             | anonymousFunction
+        functionExpression = anonymousFunction
+                             | classExpression
                              | thisExpression
                              | identifierExpression
                              | superExpression
@@ -354,24 +356,29 @@ namespace clib {
                              | arrayLiteralExpression
                              | objectLiteralExpression
                              | parenthesizedExpression;
-        classExpression = *(_K_CLASS + ~_ID + classTail) + functionExpression;
-        memberIndexExpression = *(memberIndexExpression + _T_LSQUARE + expressionSequence + _T_RSQUARE) +
-                                classExpression;
-        memberDotExpression = *(memberDotExpression + *_T_QUERY + _T_DOT + *_T_SHARP + identifierName) +
-                              memberIndexExpression;
-        argumentsExpression = *(argumentsExpression + arguments) + memberDotExpression;
-        newExpression = *(_K_NEW + singleExpression + *arguments) + argumentsExpression;
-        postIncrementExpression = *(postIncrementExpression + _T_INC) + newExpression;
-        postDecreaseExpression = postIncrementExpression + _T_DEC | postIncrementExpression;
-        deleteExpression = *(_K_DELETE + deleteExpression) + postDecreaseExpression;
-        voidExpression = *(_K_VOID + voidExpression) + deleteExpression;
-        typeofExpression = *(_K_TYPEOF + typeofExpression) + voidExpression;
-        preIncrementExpression = *(_T_INC + preIncrementExpression) + typeofExpression;
-        preDecreaseExpression = *(_T_DEC + preDecreaseExpression) + preIncrementExpression;
-        unaryPlusExpression = *(_T_ADD + unaryPlusExpression) + preDecreaseExpression;
-        unaryMinusExpression = *(_T_SUB + unaryMinusExpression) + unaryPlusExpression;
-        bitNotExpression = *(_T_BIT_NOT + bitNotExpression) + unaryMinusExpression;
-        notExpression = *(_T_LOG_NOT + notExpression) + bitNotExpression;
+        classExpression = _K_CLASS + ~_ID + classTail;
+        memberIndexExpression = *memberIndexExpression + _T_LSQUARE + expressionSequence + _T_RSQUARE;
+        memberDotExpression = *memberDotExpression + *_T_QUERY + _T_DOT + *_T_SHARP + identifierName;
+        argumentsExpression = *argumentsExpression + arguments;
+        postIncrementExpression = *postIncrementExpression + _T_INC;
+        postDecreaseExpression = *postDecreaseExpression + _T_DEC;
+        postfixExpression = postfixExpression +
+                            (memberIndexExpression
+                             | memberDotExpression
+                             | argumentsExpression
+                             | postIncrementExpression
+                             | postDecreaseExpression)
+                            | functionExpression;
+        newExpression = _K_NEW + singleExpression + *arguments | postfixExpression;
+        deleteExpression = _K_DELETE + deleteExpression | newExpression;
+        voidExpression = _K_VOID + voidExpression | deleteExpression;
+        typeofExpression = _K_TYPEOF + typeofExpression | voidExpression;
+        preIncrementExpression = _T_INC + preIncrementExpression | typeofExpression;
+        preDecreaseExpression = _T_DEC + preDecreaseExpression | preIncrementExpression;
+        unaryPlusExpression = _T_ADD + unaryPlusExpression | preDecreaseExpression;
+        unaryMinusExpression = _T_SUB + unaryMinusExpression | unaryPlusExpression;
+        bitNotExpression = _T_BIT_NOT + bitNotExpression | unaryMinusExpression;
+        notExpression = _T_LOG_NOT + notExpression | bitNotExpression;
         powerExpression = *(powerExpression + _T_POWER) + notExpression;
         multiplicativeExpression = *(multiplicativeExpression + (_T_MUL | _T_DIV | _T_MOD)) + powerExpression;
         additiveExpression = *(additiveExpression + (_T_ADD | _T_SUB)) + multiplicativeExpression;
@@ -397,11 +404,12 @@ namespace clib {
         assignmentExpression = *(assignmentExpression + _T_ASSIGN) + assignmentOperatorExpression;
         singleExpression = *(singleExpression + ~_T_COMMA) + assignmentExpression;
         literal = _K_NULL | _K_TRUE | _K_FALSE | _STRING | _REGEX | _NUMBER;
-        arrayLiteral = ~_T_LSQUARE + elementList + ~_T_RSQUARE;
-        elementList = *(elementList + *~_T_COMMA) + arrayElement;
+        arrayLiteral = ~_T_LSQUARE + *elementList + ~_T_RSQUARE;
+        elementList = *(elementList + ~_T_COMMA) + arrayElement;
         arrayElement = *_T_ELLIPSIS + singleExpression;
-        objectLiteral = ~_T_LBRACE + propertyAssignments + *~_T_COMMA + ~_T_RBRACE;
-        identifierName = _ID;
+        objectLiteral = ~_T_LBRACE + *propertyAssignments + *~_T_COMMA + ~_T_RBRACE;
+        identifierName = _ID | reservedWord;
+        reservedWord = keyword | _K_TRUE | _K_FALSE;
         numericLiteral = _NUMBER;
         assignable = _ID | arrayLiteral | objectLiteral;
         arguments = ~_T_LPARAN + *argument + ~_T_RPARAN;
@@ -409,14 +417,10 @@ namespace clib {
         propertyAssignments = *(propertyAssignments + ~_T_COMMA) + propertyAssignment;
         propertyAssignment = propertyExpressionAssignment
                              | computedPropertyExpressionAssignment
-                             | propertyGetter
-                             | propertySetter
                              | propertyShorthand;
-        propertyExpressionAssignment = propertyName + ~_T_ASSIGN + singleExpression;
+        propertyExpressionAssignment = propertyName + ~_T_COLON + singleExpression;
         computedPropertyExpressionAssignment = ~_T_LPARAN + singleExpression + ~_T_RPARAN +
-                                               _T_ASSIGN + singleExpression;
-        propertyGetter = getter + ~_T_LPARAN + ~_T_RPARAN + ~_T_LBRACE + functionBody + ~_T_RBRACE;
-        propertySetter = setter + ~_T_LPARAN + formalParameterArg + ~_T_RPARAN + ~_T_LBRACE + functionBody + ~_T_RBRACE;
+                                               ~_T_COLON + singleExpression;
         propertyShorthand = *_T_ELLIPSIS + singleExpression;
         propertyName = identifierName
                        | _STRING
@@ -427,13 +431,42 @@ namespace clib {
                             | arrowFunction;
         functionDecl = functionDeclaration;
         anoymousFunctionDecl = _K_FUNCTION + ~_T_LPARAN + *formalParameterList + ~_T_RPARAN +
-                               ~_T_LBRACE + functionBody + ~_T_RBRACE;
+                               ~_T_LBRACE + *functionBody + ~_T_RBRACE;
         arrowFunction = arrowFunctionParameters + ~_T_ARROW + arrowFunctionBody;
         arrowFunctionParameters = _ID | ~_T_LPARAN + *formalParameterList + ~_T_RPARAN;
-        arrowFunctionBody = singleExpression | _T_LBRACE + functionBody + _T_RBRACE;
-        getter = _K_GET + propertyName;
-        setter = _K_SET + propertyName;
+        arrowFunctionBody = singleExpression | _T_LBRACE + *functionBody + _T_RBRACE;
         eos = _T_SEMI | _END;
+        keyword = _K_BREAK
+                  | _K_DO
+                  | _K_INSTANCEOF
+                  | _K_TYPEOF
+                  | _K_CASE
+                  | _K_ELSE
+                  | _K_NEW
+                  | _K_VAR
+                  | _K_CATCH
+                  | _K_FINALLY
+                  | _K_RETURN
+                  | _K_VOID
+                  | _K_CONTINUE
+                  | _K_FOR
+                  | _K_SWITCH
+                  | _K_WHILE
+                  | _K_DEBUGGER
+                  | _K_FUNCTION
+                  | _K_THIS
+                  | _K_WITH
+                  | _K_DEFAULT
+                  | _K_IF
+                  | _K_THROW
+                  | _K_DELETE
+                  | _K_IN
+                  | _K_TRY
+                  | _K_CLASS
+                  | _K_SUPER
+                  | _K_LET;
+        unit.adjust(&functionExpression, &identifierExpression, e_shift, &anonymousFunction, e_shift);
+        unit.adjust(&iterationStatement, &forStatement, e_shift, &forInStatement, e_shift);
         unit.gen(&program);
 #if DUMP_PDA
         std::ofstream of(DUMP_PDA_FILE);
@@ -627,10 +660,18 @@ namespace clib {
                     }
                     auto jump = trans[trans_id].jump;
 #if TRACE_PARSING
-                    fprintf(stdout, "[%d:%d:%d]%s State: %3d => To: %3d   -- Action: %-10s -- Rule: %s\n",
-                            ast_cache_index, ast_stack.size(), bks.size(), is_end ? "*" : "", state, jump,
-                            pda_edge_str(t.type).c_str(), current_state.label.c_str());
-
+                    {
+                        auto line = 0;
+                        auto column = 0;
+                        if (!ast_cache.empty() && ast_cache_index > 0 && ast_cache_index <= ast_cache.size()) {
+                            line = ast_cache[ast_cache_index - 1]->line;
+                            column = ast_cache[ast_cache_index - 1]->column;
+                        }
+                        fprintf(stdout, "[%d:%d:%d:%d:%d]%s State: %3d => To: %3d   -- Action: %-10s -- Rule: %s\n",
+                                ast_cache_index, ast_stack.size(), bks.size(),
+                                line, column, is_end ? "*" : "", state, jump,
+                                pda_edge_str(t.type).c_str(), current_state.label.c_str());
+                    };
 #endif
 #if REPORT_ERROR
                     {

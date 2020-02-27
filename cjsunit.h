@@ -153,6 +153,14 @@ namespace clib {
         r_exp = 2,
     };
 
+    struct pda_coll_t {
+        unit *r;
+        unit *a;
+        pda_edge_t ea;
+        unit *b;
+        pda_edge_t eb;
+    };
+
     // 文法表达式
     class cjsunit : public unit_builder {
     public:
@@ -176,6 +184,8 @@ namespace clib {
         nga_edge *connect(nga_status *a, nga_status *b, bool is_pda) override;
 
         const std::vector<pda_rule> &get_pda() const;
+
+        void adjust(unit *r, unit *a, pda_edge_t ea, unit *b, pda_edge_t eb);
 
     private:
         nga_status *status();
@@ -212,6 +222,7 @@ namespace clib {
         std::unordered_map<const char *, coll_t> rulesMap;
         std::vector<pda_rule> pdas;
         unit_rule *current_rule{nullptr};
+        std::vector<pda_coll_t> adjusts;
     };
 }
 

@@ -62,14 +62,15 @@ Program
   Statement
    ExpressionStatement
     ExpressionSequence
-     MemberDotExpression
+     PostfixExpression
       IdentifierExpression
        id: console
-      operator: T_DOT
-      IdentifierName
-       id: log
-      ExpressionSequence
-       IdentifierExpression
+      MemberDotExpression
+       operator: T_DOT
+       IdentifierName
+        id: log
+      Arguments
+       Argument
         id: a
     Eos
      operator: T_SEMI

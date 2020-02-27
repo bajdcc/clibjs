@@ -1078,12 +1078,13 @@ namespace clib {
                 }
             }
         }
+        std::unordered_map<std::string, int> mapLabelsToPda;
         // GENERATE PDA TABLE
         {
             auto closure = get_closure(init_status, [](auto it) { return true; });
             std::unordered_map<pda_status *, int> pids;
             for (auto &c : closure) {
-                pids.insert(std::make_pair((pda_status *) c, pids.size()));
+                pids.insert(std::make_pair((pda_status *) c, (int) pids.size()));
             }
             for (size_t i = 0; i < closure.size(); ++i) {
                 auto c = (pda_status *) closure[i];
@@ -1094,10 +1095,14 @@ namespace clib {
                 pda.coll = rulesMap[to_rule(rules_list[pda.rule]->u)->s];
                 pda.label = c->label;
                 pdas.push_back(pda);
+                if (!adjusts.empty()) {
+                    mapLabelsToPda[c->label] = i;
+                }
             }
             for (size_t i = 0; i < closure.size(); ++i) {
                 auto &p = pdas[i];
                 auto outs = get_filter_out_edges(closure[i], [](auto it) { return true; });
+                std::unordered_set<uint32_t> reduces;
                 for (auto &o : outs) {
                     auto edge = (pda_edge *) o->edge;
                     pda_trans trans{};
@@ -1111,8 +1116,31 @@ namespace clib {
                     } else {
                         trans.status = -1;
                     }
+                    if ((trans.type == e_reduce || trans.type == e_reduce_exp) && trans.status >= 0) {
+                        auto h = 2 * (trans.jump * 2 * closure.size() + trans.status) + trans.type - e_reduce;
+                        if (reduces.find(h) != reduces.end()) {
+                            continue;
+                        }
+                        reduces.insert(h);
+                    }
                     std::copy(std::begin(LA[edge]), std::end(LA[edge]), std::back_inserter(trans.LA));
                     p.trans.push_back(trans);
+                }
+            }
+            for (const auto &adjust : adjusts) {
+                if (adjust.ea == e_shift && adjust.eb == e_shift) {
+                    auto r = get_closure(rules[to_rule(adjust.r)->s].status, [](auto it) { return true; });
+                    auto &_r = pdas.at(mapLabelsToPda.at(r.front()->label));
+                    auto a = get_closure(rules[to_rule(adjust.a)->s].status, [](auto it) { return true; });
+                    const auto &_a = mapLabelsToPda.at(a.front()->label);
+                    auto b = get_closure(rules[to_rule(adjust.b)->s].status, [](auto it) { return true; });
+                    const auto &_b = mapLabelsToPda.at(b.front()->label);
+                    auto &t = _r.trans;
+                    auto sa = std::find_if(t.begin(), t.end(), [_a](auto it) { return it.jump == _a; });
+                    auto sb = std::find_if(t.begin(), t.end(), [_b](auto it) { return it.jump == _b; });
+                    if (sa != t.end() && sb != t.end() && sa > sb) {
+                        std::iter_swap(sa, sb);
+                    }
                 }
             }
         }
@@ -1120,6 +1148,10 @@ namespace clib {
 
     const std::vector<pda_rule> &cjsunit::get_pda() const {
         return pdas;
+    }
+
+    void cjsunit::adjust(unit *r, unit *a, pda_edge_t ea, unit *b, pda_edge_t eb) {
+        adjusts.push_back({r, a, ea, b, eb});
     }
 
     void print(nga_status *node, std::ostream &os) {
@@ -1215,6 +1247,8 @@ namespace clib {
                 os << "    -->     Type: " << pda_edge_str(trans.type) << std::endl;
                 if (trans.type == e_reduce) {
                     os << "    -->     Reduce: " << trans.label << std::endl;
+                } else if (trans.type == e_reduce_exp) {
+                    os << "    -->     Reduce(exp): " << trans.label << std::endl;
                 }
                 if (!trans.LA.empty()) {
                     for (size_t i = 0; i < trans.LA.size(); ++i) {
