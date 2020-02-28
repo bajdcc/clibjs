@@ -465,8 +465,8 @@ namespace clib {
                   | _K_CLASS
                   | _K_SUPER
                   | _K_LET;
-        unit.adjust(&functionExpression, &identifierExpression, e_shift, &anonymousFunction, e_shift);
-        unit.adjust(&iterationStatement, &forStatement, e_shift, &forInStatement, e_shift);
+        unit.adjust(&functionExpression, &anonymousFunction, e_shift, -1);
+        unit.adjust(&iterationStatement, &forInStatement, e_shift, -1);
         unit.gen(&program);
 #if DUMP_PDA
         std::ofstream of(DUMP_PDA_FILE);

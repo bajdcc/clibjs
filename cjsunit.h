@@ -136,6 +136,7 @@ namespace clib {
         std::string label;
         std::vector<unit *> LA;
         bool marked;
+        int cost;
     };
 
     struct pda_rule {
@@ -157,8 +158,7 @@ namespace clib {
         unit *r;
         unit *a;
         pda_edge_t ea;
-        unit *b;
-        pda_edge_t eb;
+        int cost;
     };
 
     // 文法表达式
@@ -185,7 +185,7 @@ namespace clib {
 
         const std::vector<pda_rule> &get_pda() const;
 
-        void adjust(unit *r, unit *a, pda_edge_t ea, unit *b, pda_edge_t eb);
+        void adjust(unit *r, unit *a, pda_edge_t ea, int cost);
 
     private:
         nga_status *status();

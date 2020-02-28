@@ -1109,6 +1109,7 @@ namespace clib {
                     trans.jump = pids[(pda_status *) edge->end];
                     trans.type = edge->type;
                     trans.marked = edge->marked;
+                    trans.cost = 0;
                     auto v = prev.find(edge);
                     if (v != prev.end()) {
                         trans.status = pids[v->second];
@@ -1128,18 +1129,24 @@ namespace clib {
                 }
             }
             for (const auto &adjust : adjusts) {
-                if (adjust.ea == e_shift && adjust.eb == e_shift) {
+                if (adjust.ea == e_shift) {
                     auto r = get_closure(rules[to_rule(adjust.r)->s].status, [](auto it) { return true; });
                     auto &_r = pdas.at(mapLabelsToPda.at(r.front()->label));
                     auto a = get_closure(rules[to_rule(adjust.a)->s].status, [](auto it) { return true; });
                     const auto &_a = mapLabelsToPda.at(a.front()->label);
-                    auto b = get_closure(rules[to_rule(adjust.b)->s].status, [](auto it) { return true; });
-                    const auto &_b = mapLabelsToPda.at(b.front()->label);
                     auto &t = _r.trans;
-                    auto sa = std::find_if(t.begin(), t.end(), [_a](auto it) { return it.jump == _a; });
-                    auto sb = std::find_if(t.begin(), t.end(), [_b](auto it) { return it.jump == _b; });
-                    if (sa != t.end() && sb != t.end() && sa > sb) {
-                        std::iter_swap(sa, sb);
+                    auto sa = std::find_if(
+                        t.begin(), t.end(),
+                        [_a](auto it) { return it.type == e_shift && it.jump == _a; });
+                    if (sa != t.end()) {
+                        sa->cost = adjust.cost;
+                        std::sort(_r.trans.begin(), _r.trans.end(), [](const auto &a, const auto &b) {
+                            if (a.cost > b.cost)
+                                return true;
+                            if (a.type < b.type)
+                                return true;
+                            return a.jump < b.jump;
+                        });
                     }
                 }
             }
@@ -1150,8 +1157,8 @@ namespace clib {
         return pdas;
     }
 
-    void cjsunit::adjust(unit *r, unit *a, pda_edge_t ea, unit *b, pda_edge_t eb) {
-        adjusts.push_back({r, a, ea, b, eb});
+    void cjsunit::adjust(unit *r, unit *a, pda_edge_t ea, int cost) {
+        adjusts.push_back({r, a, ea, cost});
     }
 
     void print(nga_status *node, std::ostream &os) {

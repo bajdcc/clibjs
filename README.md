@@ -25,7 +25,7 @@ Scanned js files successfully, but spent more time **BECAUSE IT IS BACKTRACE LAL
 - [x] test/vue.js
 - [x] test/vue.min.js
 
-**Can adjust grammar priority when facing shift-conflicts.**
+**Can adjust grammar priority when facing shift-conflicts by setting cost value for sorting.**
 
 See `clib::cjsparser::gen` function.
 
