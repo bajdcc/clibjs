@@ -55,6 +55,8 @@ namespace clib {
         ast_node *root() const;
         void clear_ast();
 
+        using pda_coll_pred_cb = pda_coll_pred(*)(const cjslexer*, int idx);
+
     private:
 
         void next();
@@ -71,6 +73,9 @@ namespace clib {
         void match_type(lexer_t);
 
         void error(const std::string &);
+
+        static pda_coll_pred pred_for(const cjslexer*, int idx);
+        static pda_coll_pred pred_in(const cjslexer*, int idx);
 
     private:
         const lexer_unit *current{nullptr};

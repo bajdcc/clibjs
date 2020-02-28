@@ -1094,6 +1094,7 @@ namespace clib {
                 pda.final = c->final;
                 pda.coll = rulesMap[to_rule(rules_list[pda.rule]->u)->s];
                 pda.label = c->label;
+                pda.pred = false;
                 pdas.push_back(pda);
                 if (!adjusts.empty()) {
                     mapLabelsToPda[c->label] = i;
@@ -1139,14 +1140,48 @@ namespace clib {
                         t.begin(), t.end(),
                         [_a](auto it) { return it.type == e_shift && it.jump == _a; });
                     if (sa != t.end()) {
-                        sa->cost = adjust.cost;
-                        std::sort(_r.trans.begin(), _r.trans.end(), [](const auto &a, const auto &b) {
-                            if (a.cost > b.cost)
-                                return true;
-                            if (a.type < b.type)
-                                return true;
-                            return a.jump < b.jump;
-                        });
+                        if (adjust.cost != 0) {
+                            sa->cost = adjust.cost;
+                            std::sort(_r.trans.begin(), _r.trans.end(), [](const auto &a, const auto &b) {
+                                if (a.cost > b.cost)
+                                    return true;
+                                if (a.type < b.type)
+                                    return true;
+                                return a.jump < b.jump;
+                            });
+                        }
+                        if (adjust.pred) {
+                            if (!_r.pred)_r.pred = true;
+                            sa->pred = adjust.pred;
+                        }
+                    }
+                } else if (adjust.ea == e_left_recursion) {
+                    auto r = get_closure(rules[to_rule(adjust.r)->s].status, [](auto it) { return true; });
+                    auto f = std::find_if(
+                        r.begin(), r.end(),
+                        [](auto it) { return it->final; });
+                    if (f != r.end()) {
+                        auto &_r = pdas.at(mapLabelsToPda.at((*f)->label));
+                        auto &t = _r.trans;
+                        auto sa = std::find_if(
+                            t.begin(), t.end(),
+                            [](auto it) { return it.type == e_left_recursion; });
+                        if (sa != t.end()) {
+                            if (adjust.cost != 0) {
+                                sa->cost = adjust.cost;
+                                std::sort(_r.trans.begin(), _r.trans.end(), [](const auto &a, const auto &b) {
+                                    if (a.cost > b.cost)
+                                        return true;
+                                    if (a.type < b.type)
+                                        return true;
+                                    return a.jump < b.jump;
+                                });
+                            }
+                            if (adjust.pred) {
+                                if (!_r.pred)_r.pred = true;
+                                sa->pred = adjust.pred;
+                            }
+                        }
                     }
                 }
             }
@@ -1157,8 +1192,8 @@ namespace clib {
         return pdas;
     }
 
-    void cjsunit::adjust(unit *r, unit *a, pda_edge_t ea, int cost) {
-        adjusts.push_back({r, a, ea, cost});
+    void cjsunit::adjust(unit *r, unit *a, pda_edge_t ea, int cost, void *pred) {
+        adjusts.push_back({r, a, ea, cost, pred});
     }
 
     void print(nga_status *node, std::ostream &os) {

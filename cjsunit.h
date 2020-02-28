@@ -137,6 +137,7 @@ namespace clib {
         std::vector<unit *> LA;
         bool marked;
         int cost;
+        void *pred;
     };
 
     struct pda_rule {
@@ -146,6 +147,7 @@ namespace clib {
         coll_t coll;
         std::string label;
         std::vector<pda_trans> trans;
+        bool pred;
     };
 
     enum pda_rule_attr {
@@ -154,7 +156,21 @@ namespace clib {
         r_exp = 2,
     };
 
+    enum pda_coll_pred {
+        p_ALLOW,
+        p_DELAY,
+        p_REMOVE,
+    };
+
     struct pda_coll_t {
+        unit *r;
+        unit *a;
+        pda_edge_t ea;
+        int cost;
+        void *pred;
+    };
+
+    struct pda_coll2_t {
         unit *r;
         unit *a;
         pda_edge_t ea;
@@ -185,7 +201,7 @@ namespace clib {
 
         const std::vector<pda_rule> &get_pda() const;
 
-        void adjust(unit *r, unit *a, pda_edge_t ea, int cost);
+        void adjust(unit *r, unit *a, pda_edge_t ea, int cost, void *pred = nullptr);
 
     private:
         nga_status *status();

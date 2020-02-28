@@ -855,13 +855,15 @@ namespace clib {
             }
         }
         {
-            for (const auto &U:us) {
+            auto id = 0;
+            for (auto &U : us) {
                 switch (U.t) {
                     case SPACE:
                     case NEWLINE:
                     case COMMENT:
                         break;
                     default:
+                        U.id = id++;
                         units.push_back(U);
                         break;
                 }

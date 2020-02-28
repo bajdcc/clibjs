@@ -467,6 +467,8 @@ namespace clib {
                   | _K_LET;
         unit.adjust(&functionExpression, &anonymousFunction, e_shift, -1);
         unit.adjust(&iterationStatement, &forInStatement, e_shift, -1);
+        unit.adjust(&iterationStatement, &forStatement, e_shift, 0, (void *) &pred_for);
+        unit.adjust(&inExpression, &inExpression, e_left_recursion, 0, (void *) &pred_in);
         unit.gen(&program);
 #if DUMP_PDA
         std::ofstream of(DUMP_PDA_FILE);
@@ -597,6 +599,28 @@ namespace clib {
                         }
                         if (!trans_ids.empty()) {
                             std::sort(trans_ids.begin(), trans_ids.end(), std::greater<>());
+                            if (current_state.pred) {
+                                std::vector<int> then;
+                                std::vector<int> add;
+                                for (int t : trans_ids) {
+                                    auto id = t & ((1 << 16) - 1);
+                                    if (trans[id].pred) {
+                                        auto cb = (pda_coll_pred_cb) trans[id].pred;
+                                        auto r = cb(lexer.get(), current->id);
+                                        if (r == p_ALLOW) {
+                                            add.push_back(t);
+                                        } else if (r == p_DELAY) {
+                                            then.push_back(t);
+                                        }
+                                    } else {
+                                        add.push_back(t);
+                                    }
+                                }
+                                if (trans_ids.size() > add.size()) {
+                                    trans_ids = add;
+                                    std::copy(trans_ids.cbegin(), trans_ids.cend(), back_inserter(then));
+                                }
+                            }
                             if (trans_ids.size() > 1) {
                                 bk_tmp.lexer_index = ast_cache_index;
                                 bk_tmp.state_stack = state_stack;
@@ -987,5 +1011,38 @@ namespace clib {
         ss << ':' << std::setfill('0') << std::setw(3) << current->column;
         ss << ']' << ' ' << info;
         throw cexception(ss.str());
+    }
+
+    pda_coll_pred cjsparser::pred_for(const cjslexer *lexer, int idx) {
+        auto end = lexer->get_unit_size();
+        auto find_in = false;
+        for (auto i = idx + 1; i < end; i++) {
+            const auto &U = lexer->get_unit(i);
+            if (U.t == T_SEMI) {
+                break;
+            }
+            if (U.t == K_IN) {
+                find_in = true;
+                break;
+            }
+        }
+        return find_in ? p_DELAY : p_ALLOW;
+    }
+
+    pda_coll_pred cjsparser::pred_in(const cjslexer *lexer, int idx) {
+        auto find_for = false;
+        for (auto i = idx - 1; i >= 0; i--) {
+            const auto &U = lexer->get_unit(i);
+            if (U.t == T_LPARAN) {
+                if (i > 0 && lexer->get_unit(i - 1).t == K_FOR) {
+                    find_for = true;
+                }
+                break;
+            }
+            if (U.t != ID) {
+                break;
+            }
+        }
+        return find_for ? p_REMOVE : p_ALLOW;
     }
 }

@@ -23,6 +23,7 @@ namespace clib {
         int column{0};
         int start{0};
         int end{0};
+        int id{0};
     };
 
     class cjslexer {

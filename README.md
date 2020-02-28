@@ -10,7 +10,7 @@ JS-like script engine implemented by C++.
 
 - [x] Lexer\(scanned js files in `test` dir\)
 - [x] Parser\(Use LALR1 Parser with backtrace, see [clibparser](https://github.com/bajdcc/clibparser), Grammar: antlr/grammars-v4/javascript\)
-- [x] Ast(\ **Auto-generation** by LALR1 Parser\)
+- [x] Ast\(**Auto-generation** by LALR1 Parser\)
 - [ ] Gen
 - [ ] GC
 - [ ] Env
@@ -18,10 +18,10 @@ JS-like script engine implemented by C++.
 
 ## TEST
 
-Scanned js files successfully, but spent more time **BECAUSE IT IS BACKTRACE LALR1 PARSER**.
+Scanned js files successfully, but spent more time **BECAUSE IT IS BACKTRACE LALR1 PARSER**, now HARDCORE FIXED.
 
 - [x] test/jquery.js
-- [x] test/jquery.min.js\(parsing `for-in` spent much time\)
+- [x] test/jquery.min.js\(~~parsing `for-in` spent much time~~ now it's ok\)
 - [x] test/vue.js
 - [x] test/vue.min.js
 
@@ -30,9 +30,50 @@ Scanned js files successfully, but spent more time **BECAUSE IT IS BACKTRACE LAL
 See `clib::cjsparser::gen` function.
 
 ```cpp
-unit.adjust(&functionExpression, &identifierExpression, e_shift, &anonymousFunction, e_shift);
-unit.adjust(&iterationStatement, &forStatement, e_shift, &forInStatement, e_shift);
+unit.adjust(&functionExpression, &anonymousFunction, e_shift, -1);
+unit.adjust(&iterationStatement, &forInStatement, e_shift, -1);
+unit.adjust(&iterationStatement, &forStatement, e_shift, 0, (void *) &pred_for);
+unit.adjust(&inExpression, &inExpression, e_left_recursion, 0, (void *) &pred_in);
 ```
+
+**FIX: Add manual LL(n)**
+
+You can read ALL of the lexer words to decide whether you need to ALLOW/DELAY/REMOVE the PDA transition edge.
+
+```cpp
+pda_coll_pred cjsparser::pred_for(const cjslexer *lexer, int idx) {
+    auto end = lexer->get_unit_size();
+    auto find_in = false;
+    for (auto i = idx + 1; i < end; i++) {
+        const auto &U = lexer->get_unit(i);
+        if (U.t == T_SEMI) {
+            break;
+        }
+        if (U.t == K_IN) {
+            find_in = true;
+            break;
+        }
+    }
+    return find_in ? p_DELAY : p_ALLOW;
+}
+
+pda_coll_pred cjsparser::pred_in(const cjslexer *lexer, int idx) {
+    auto find_for = false;
+    for (auto i = idx - 1; i >= 0; i--) {
+        const auto &U = lexer->get_unit(i);
+        if (U.t == T_LPARAN) {
+            if (i > 0 && lexer->get_unit(i - 1).t == K_FOR) {
+                find_for = true;
+            }
+            break;
+        }
+        if (U.t != ID) {
+            break;
+        }
+    }
+    return find_for ? p_REMOVE : p_ALLOW;
+}
+ ```
 
 ## Grammar
 
