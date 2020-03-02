@@ -2,6 +2,10 @@
 
 JS-like script engine implemented by C++.
 
+## Features
+
+- [x] Parsing `jquery.js` and `Vue.js` in 1s.
+
 ## Environment
 
 - CLion, MinGW on Win7x64
@@ -18,7 +22,7 @@ JS-like script engine implemented by C++.
 
 ## TEST
 
-Scanned js files successfully, but spent more time **BECAUSE IT IS BACKTRACE LALR1 PARSER**, now HARDCORE FIXED.
+Scanned js files successfully, ~~but spent more time~~ **BECAUSE IT IS BACKTRACE LALR1 PARSER**, now HARDCORE FIXED.
 
 - [x] test/jquery.js
 - [x] test/jquery.min.js\(~~parsing `for-in` spent much time~~ now it's ok\)
@@ -74,6 +78,10 @@ pda_coll_pred cjsparser::pred_in(const cjslexer *lexer, int idx) {
     return find_for ? p_REMOVE : p_ALLOW;
 }
  ```
+ 
+**FIX: Removing backtrace saved before**
+ 
+ If runs to `var a = 1;`,it meets `;`, so removed backtrace array\(Indicating that AST checking before was correct\).
 
 ## Grammar
 

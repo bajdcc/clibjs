@@ -144,7 +144,6 @@ namespace clib {
             c_statement,
             c_block,
             c_statementList,
-            c_declaration,
             c_variableStatement,
             c_variableDeclarationList,
             c_variableDeclaration,

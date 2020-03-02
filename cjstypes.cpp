@@ -121,7 +121,6 @@ namespace clib {
                 "Statement",
                 "Block",
                 "StatementList",
-                "Declaration",
                 "VariableStatement",
                 "VariableDeclarationList",
                 "VariableDeclaration",

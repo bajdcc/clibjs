@@ -31,6 +31,7 @@ namespace clib {
         unit &operator|(const unit &u);
         unit &operator*();
         unit &operator~();
+        unit &operator()(void *cb);
         unit &init(unit_builder *builder);
         unit &set_t(unit_t type);
     };
@@ -45,10 +46,12 @@ namespace clib {
         bool skip{false};
         bool marked{false};
         unit *child{nullptr};
+        void *callback{nullptr};
 
         unit_collection &set_skip(bool skip);
         unit_collection &set_marked(bool skip);
         unit_collection &set_child(unit *node);
+        unit_collection &set_cb(void *cb);
     };
 
     struct unit_rule : public unit_collection {
@@ -76,6 +79,7 @@ namespace clib {
         nga_status *begin{nullptr}, *end{nullptr};
         bool skip{false};
         bool marked{false};
+        void *cb{nullptr};
         unit *data{nullptr};
     };
 
@@ -138,16 +142,18 @@ namespace clib {
         bool marked;
         int cost;
         void *pred;
+        void *cb;
     };
 
     struct pda_rule {
         int id;
         int rule;
         bool final;
+        bool pred;
+        bool cb;
         coll_t coll;
         std::string label;
         std::vector<pda_trans> trans;
-        bool pred;
     };
 
     enum pda_rule_attr {

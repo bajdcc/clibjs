@@ -163,7 +163,6 @@ namespace clib {
         DEF_RULE(statement)
         DEF_RULE(block)
         DEF_RULE(statementList)
-        DEF_RULE(declaration)
         DEF_RULE(variableStatement)
         DEF_RULE(variableDeclarationList)
         DEF_RULE(variableDeclaration)
@@ -273,9 +272,6 @@ namespace clib {
 #undef DEF_RULE_NOT_GREED
 #undef DEF_RULE_EXP
         program = sourceElements;
-        declaration = variableStatement
-                      | classDeclaration
-                      | functionDeclaration;
         variableStatement = _K_VAR + variableDeclarationList + *eos;
         variableDeclarationList = *(variableDeclarationList + ~_T_COMMA) + variableDeclaration;
         variableDeclaration = assignable + *(_T_ASSIGN + singleExpression);
@@ -435,7 +431,7 @@ namespace clib {
         arrowFunction = arrowFunctionParameters + ~_T_ARROW + arrowFunctionBody;
         arrowFunctionParameters = _ID | ~_T_LPARAN + *formalParameterList + ~_T_RPARAN;
         arrowFunctionBody = singleExpression | _T_LBRACE + *functionBody + _T_RBRACE;
-        eos = _T_SEMI | _END;
+        eos = (~~_T_SEMI)((void *) &clear_bk) | _END;
         keyword = _K_BREAK
                   | _K_DO
                   | _K_INSTANCEOF
@@ -681,6 +677,8 @@ namespace clib {
                             bk->direction = b_error;
                             break;
                         }
+                    } else if (current_state.cb && t.cb != nullptr) {
+                        ((terminal_cb) (t.cb))(lexer.get(), current->id, bks, bk);
                     }
                     auto jump = trans[trans_id].jump;
 #if TRACE_PARSING
@@ -1044,5 +1042,12 @@ namespace clib {
             }
         }
         return find_for ? p_REMOVE : p_ALLOW;
+    }
+
+    void cjsparser::clear_bk(const cjslexer *, int idx, std::vector<backtrace_t> &bks, backtrace_t *&bk) {
+        std::vector<backtrace_t> b(1);
+        std::swap(b[0], bks.back());
+        bks = b;
+        bk = &bks.back();
     }
 }

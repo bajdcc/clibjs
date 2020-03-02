@@ -55,7 +55,9 @@ namespace clib {
         ast_node *root() const;
         void clear_ast();
 
-        using pda_coll_pred_cb = pda_coll_pred(*)(const cjslexer*, int idx);
+        using pda_coll_pred_cb = pda_coll_pred(*)(const cjslexer *, int idx);
+        using terminal_cb = void (*)(const cjslexer *, int idx,
+                                     std::vector<backtrace_t> &bks, backtrace_t *&bk);
 
     private:
 
@@ -74,8 +76,10 @@ namespace clib {
 
         void error(const std::string &);
 
-        static pda_coll_pred pred_for(const cjslexer*, int idx);
-        static pda_coll_pred pred_in(const cjslexer*, int idx);
+        static pda_coll_pred pred_for(const cjslexer *, int idx);
+        static pda_coll_pred pred_in(const cjslexer *, int idx);
+        static void clear_bk(const cjslexer *, int idx,
+                std::vector<backtrace_t> &bks, backtrace_t *&bk);
 
     private:
         const lexer_unit *current{nullptr};
