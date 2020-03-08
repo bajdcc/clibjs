@@ -20,6 +20,7 @@ namespace clib {
             SPACE,
             NEWLINE,
             COMMENT,
+            RULE_NO_LINE,
             END,
             KEYWORD_START,
             K_NEW,
@@ -123,6 +124,7 @@ namespace clib {
             a_string,
             a_regex,
             a_number,
+            a_rule,
             AST_END,
         };
 

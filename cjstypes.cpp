@@ -19,6 +19,7 @@ namespace clib {
                 "SPACE",
                 "NEWLINE",
                 "COMMENT",
+                "RULE_NO_LINE",
                 "END",
                 "KEYWORD_START",
                 "K_NEW",
@@ -240,6 +241,7 @@ namespace clib {
                 "string",
                 "regex",
                 "number",
+                "rule",
             };
             return p.at(t);
         }

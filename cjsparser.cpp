@@ -65,6 +65,7 @@ namespace clib {
         DEF_LEXER(ID)
         DEF_LEXER(REGEX)
         DEF_LEXER(STRING)
+        DEF_LEXER(RULE_NO_LINE)
         // ---
         DEF_LEXER(K_NEW)
         DEF_LEXER(K_VAR)
@@ -285,9 +286,9 @@ namespace clib {
                        _T_SEMI + *expressionSequence + _T_SEMI + *expressionSequence + ~_T_RPARAN + statement;
         forInStatement = _K_FOR + ~_T_LPARAN + *(singleExpression | _K_VAR + variableDeclarationList) +
                          _K_IN + expressionSequence + ~_T_RPARAN + statement;
-        continueStatement = _K_CONTINUE + *_ID + *eos;
-        breakStatement = _K_BREAK + *_ID + *eos;
-        returnStatement = _K_RETURN + *expressionSequence + *eos;
+        continueStatement = _K_CONTINUE + *(~_RULE_NO_LINE + _ID) + *eos;
+        breakStatement = _K_BREAK + *(~_RULE_NO_LINE + _ID) + *eos;
+        returnStatement = _K_RETURN + *(~_RULE_NO_LINE + expressionSequence) + *eos;
         withStatement = _K_WITH + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement;
         switchStatement = _K_SWITCH + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + caseBlock;
         caseBlock = ~_T_LBRACE + *caseClauses + *(defaultClause + *caseClauses) + ~_T_RBRACE;
@@ -295,7 +296,7 @@ namespace clib {
         caseClause = _K_CASE + expressionSequence + _T_COLON + *statementList;
         defaultClause = _K_DEFAULT + _T_COLON + *statementList;
         labelledStatement = _ID + _T_COLON + statement;
-        throwStatement = _K_THROW + expressionSequence + *eos;
+        throwStatement = _K_THROW + ~_RULE_NO_LINE + expressionSequence + *eos;
         tryStatement = _K_TRY + block + (catchProduction + *finallyProduction | finallyProduction);
         catchProduction = _K_CATCH + *(~_T_LPARAN + *assignable + ~_T_RPARAN) + block;
         finallyProduction = _K_FINALLY + block;
@@ -358,7 +359,7 @@ namespace clib {
         argumentsExpression = *argumentsExpression + arguments;
         postIncrementExpression = *postIncrementExpression + _T_INC;
         postDecreaseExpression = *postDecreaseExpression + _T_DEC;
-        postfixExpression = postfixExpression +
+        postfixExpression = postfixExpression + ~_RULE_NO_LINE +
                             (memberIndexExpression
                              | memberDotExpression
                              | argumentsExpression
@@ -870,6 +871,19 @@ namespace clib {
             ast_cache_index++;
             return node;
         }
+        if (current->t == RULE_NO_LINE) {
+            auto node = ast->new_node(a_rule);
+            node->line = current->line;
+            node->column = current->column;
+            node->start = current->start;
+            node->end = current->end;
+            node->data._ins._1 = current->t;
+            node->data._ins._2 = current->id;
+            match_type(current->t);
+            ast_cache.push_back(node);
+            ast_cache_index++;
+            return node;
+        }
         error("invalid type");
         return nullptr;
     }
@@ -981,6 +995,18 @@ namespace clib {
         if (u->t != u_token)
             return false;
         auto token = to_token(u);
+        if (token->type == RULE_NO_LINE) {
+            if (ast_cache_index < ast_cache.size()) {
+                auto &cache = ast_cache[ast_cache_index];
+                if (cache->flag == a_rule) {
+                    if (cache->data._ins._1 == RULE_NO_LINE) {
+                        return lexer->get_no_line(cache->data._ins._2);
+                    }
+                }
+                return false;
+            }
+            return lexer->get_no_line(current->id);
+        }
         if (ast_cache_index < ast_cache.size()) {
             auto &cache = ast_cache[ast_cache_index];
             if (token->type > KEYWORD_START && token->type < KEYWORD_END)

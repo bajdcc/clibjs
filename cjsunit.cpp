@@ -1035,6 +1035,8 @@ namespace clib {
                         edge.data = node;
                         auto n = to_ref(node);
                         edge.type = n->skip ? e_pass : e_move;
+                        if (to_token(n->child)->type == RULE_NO_LINE)
+                            edge.type = e_rule;
                         edge.marked = n->marked;
                         edge.cb = n->callback;
                         token_set.insert(n->child);
@@ -1262,6 +1264,7 @@ namespace clib {
     std::tuple<pda_edge_t, std::string, int> pda_edge_string[] = {
             std::make_tuple(e_shift, "shift", 2),
             std::make_tuple(e_pass, "pass", 10),
+            std::make_tuple(e_rule, "rule", 1),
             std::make_tuple(e_move, "move", 1),
             std::make_tuple(e_left_recursion, "recursion", 3),
             std::make_tuple(e_left_recursion_not_greed, "recursion", 5),

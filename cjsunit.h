@@ -86,6 +86,7 @@ namespace clib {
     enum pda_edge_t {
         e_shift,
         e_pass,
+        e_rule,
         e_move,
         e_left_recursion,
         e_left_recursion_not_greed,

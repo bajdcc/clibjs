@@ -222,6 +222,9 @@ namespace clib {
             case a_number:
                 os << "number: " << node->data._number << std::endl;
                 break;
+            case a_rule:
+                os << "rule: " << lexer_string(node->data._op) << std::endl;
+                break;
         }
     }
 
@@ -247,6 +250,9 @@ namespace clib {
                 break;
             case a_number:
                 ss << "number: " << node->data._number;
+                break;
+            case a_rule:
+                ss << "rule: " << lexer_string(node->data._op);
                 break;
             default:
                 break;

@@ -41,6 +41,7 @@ namespace clib {
         int get_unit_size() const;
         std::string get_unit_desc(int idx) const;
         const char *get_data(int idx) const;
+        bool get_no_line(int idx) const;
 
         int get_index() const;
         void inc_index();
@@ -57,6 +58,7 @@ namespace clib {
         std::vector<char> data;
         std::vector<lexer_unit> units;
         std::unordered_map<std::string, lexer_t> mapKeyword;
+        std::vector<bool> no_line;
     };
 }
 

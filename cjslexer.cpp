@@ -856,15 +856,19 @@ namespace clib {
         }
         {
             auto id = 0;
+            auto no_l = true;
             for (auto &U : us) {
                 switch (U.t) {
-                    case SPACE:
                     case NEWLINE:
+                        no_l = false;
+                    case SPACE:
                     case COMMENT:
                         break;
                     default:
                         U.id = id++;
                         units.push_back(U);
+                        no_line.push_back(no_l);
+                        if (!no_l)no_l = true;
                         break;
                 }
             }
@@ -975,6 +979,13 @@ namespace clib {
             return nullptr;
         }
         return &data[idx];
+    }
+
+    bool cjslexer::get_no_line(int idx) const {
+        if (idx < 0 || idx >= (int) data.size()) {
+            return false;
+        }
+        return no_line[idx];
     }
 
     int cjslexer::get_unit_size() const {

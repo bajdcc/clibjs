@@ -83,15 +83,24 @@ pda_coll_pred cjsparser::pred_in(const cjslexer *lexer, int idx) {
  
  If runs to `var a = 1;`,it meets `;`, so removed backtrace array\(Indicating that AST checking before was correct\).
 
+**FIX: Support no line terminator**
+ 
+ Such as:
+ ```cpp
+ return
+ a
+ ```
+ 
+ Grammar: `returnStatement = _K_RETURN + *(~_RULE_NO_LINE + expressionSequence) + *eos;`
+ 
+ `RULE_NO_LINE` eats no lexer words but looks ahead for NO LINE WHITESPACE.
+
 ## Grammar
 
 See [grammars-v4/javascript](https://github.com/antlr/grammars-v4/blob/master/javascript/javascript/JavaScriptParser.g4).
 
 ```cpp
 program = sourceElements;
-declaration = variableStatement
-              | classDeclaration
-              | functionDeclaration;
 variableStatement = _K_VAR + variableDeclarationList + *eos;
 variableDeclarationList = *(variableDeclarationList + ~_T_COMMA) + variableDeclaration;
 variableDeclaration = assignable + *(_T_ASSIGN + singleExpression);
@@ -105,9 +114,9 @@ forStatement = _K_FOR + ~_T_LPARAN + *(expressionSequence | _K_VAR + variableDec
                _T_SEMI + *expressionSequence + _T_SEMI + *expressionSequence + ~_T_RPARAN + statement;
 forInStatement = _K_FOR + ~_T_LPARAN + *(singleExpression | _K_VAR + variableDeclarationList) +
                  _K_IN + expressionSequence + ~_T_RPARAN + statement;
-continueStatement = _K_CONTINUE + *_ID + *eos;
-breakStatement = _K_BREAK + *_ID + *eos;
-returnStatement = _K_RETURN + *expressionSequence + *eos;
+continueStatement = _K_CONTINUE + *(~_RULE_NO_LINE + _ID) + *eos;
+breakStatement = _K_BREAK + *(~_RULE_NO_LINE + _ID) + *eos;
+returnStatement = _K_RETURN + *(~_RULE_NO_LINE + expressionSequence) + *eos;
 withStatement = _K_WITH + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement;
 switchStatement = _K_SWITCH + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + caseBlock;
 caseBlock = ~_T_LBRACE + *caseClauses + *(defaultClause + *caseClauses) + ~_T_RBRACE;
@@ -115,7 +124,7 @@ caseClauses = caseClause + *caseClauses;
 caseClause = _K_CASE + expressionSequence + _T_COLON + *statementList;
 defaultClause = _K_DEFAULT + _T_COLON + *statementList;
 labelledStatement = _ID + _T_COLON + statement;
-throwStatement = _K_THROW + expressionSequence + *eos;
+throwStatement = _K_THROW + ~_RULE_NO_LINE + expressionSequence + *eos;
 tryStatement = _K_TRY + block + (catchProduction + *finallyProduction | finallyProduction);
 catchProduction = _K_CATCH + *(~_T_LPARAN + *assignable + ~_T_RPARAN) + block;
 finallyProduction = _K_FINALLY + block;
@@ -178,7 +187,7 @@ memberDotExpression = *memberDotExpression + *_T_QUERY + _T_DOT + *_T_SHARP + id
 argumentsExpression = *argumentsExpression + arguments;
 postIncrementExpression = *postIncrementExpression + _T_INC;
 postDecreaseExpression = *postDecreaseExpression + _T_DEC;
-postfixExpression = postfixExpression +
+postfixExpression = postfixExpression + ~_RULE_NO_LINE +
                     (memberIndexExpression
                      | memberDotExpression
                      | argumentsExpression
@@ -251,7 +260,7 @@ anoymousFunctionDecl = _K_FUNCTION + ~_T_LPARAN + *formalParameterList + ~_T_RPA
 arrowFunction = arrowFunctionParameters + ~_T_ARROW + arrowFunctionBody;
 arrowFunctionParameters = _ID | ~_T_LPARAN + *formalParameterList + ~_T_RPARAN;
 arrowFunctionBody = singleExpression | _T_LBRACE + *functionBody + _T_RBRACE;
-eos = _T_SEMI | _END;
+eos = (~~_T_SEMI)((void *) &clear_bk) | _END;
 keyword = _K_BREAK
           | _K_DO
           | _K_INSTANCEOF
@@ -281,6 +290,11 @@ keyword = _K_BREAK
           | _K_CLASS
           | _K_SUPER
           | _K_LET;
+unit.adjust(&functionExpression, &anonymousFunction, e_shift, -1);
+unit.adjust(&iterationStatement, &forInStatement, e_shift, -1);
+unit.adjust(&iterationStatement, &forStatement, e_shift, 0, (void *) &pred_for);
+unit.adjust(&inExpression, &inExpression, e_left_recursion, 0, (void *) &pred_in);
+unit.gen(&program);
 ```
 
 ## LALR1 PDA Table

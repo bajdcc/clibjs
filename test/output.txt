@@ -1,3 +1,2211 @@
+[0:1:1:0:0] State:   0 => To:   1   -- Action: shift      -- Rule: program => @ sourceElements
+[0:2:1:0:0] State:   1 => To:   2   -- Action: shift      -- Rule: sourceElements => [ @ sourceElements ] statement
+[0:3:1:0:0] State:   2 => To:   5   -- Action: shift      -- Rule: statement => @ ( block | variableStatement | emptySta
+tement | classDeclaration | expressionStatement | ifStatement | iterationStatement | continueStatement | breakStatement
+| returnStatement | withStatement | labelledStatement | switchStatement | throwStatement | tryStatement | debuggerStatem
+ent | functionDeclaration )
+[0:4:1:0:0] State:   5 => To:  22   -- Action: move       -- Rule: variableStatement => @ K_VAR variableDeclarationList
+[ eos ]
+[1:4:1:1:1] State:  22 => To:  43   -- Action: shift      -- Rule: variableStatement => K_VAR @ variableDeclarationList
+[ eos ]
+[1:5:1:1:1] State:  43 => To:  70   -- Action: shift      -- Rule: variableDeclarationList => [ @ variableDeclarationLis
+t ('T_COMMA') ] variableDeclaration
+[1:6:1:1:1] State:  70 => To:  99   -- Action: shift      -- Rule: variableDeclaration => @ assignable [ 'T_ASSIGN' sing
+leExpression ]
+[1:7:1:1:1] State:  99 => To: 136   -- Action: move       -- Rule: assignable => @ ( #ID# | arrayLiteral | objectLiteral
+ )
+[2:7:1:1:5] State: 136 => To: 163   -- Action: reduce     -- Rule: assignable => ( #ID# @ | arrayLiteral | objectLiteral
+ )
+[2:6:2:1:5] State: 163 => To: 189   -- Action: move       -- Rule: variableDeclaration => assignable @ [ 'T_ASSIGN' sing
+leExpression ]
+[3:6:2:1:7] State: 189 => To:  47   -- Action: shift      -- Rule: variableDeclaration => assignable [ 'T_ASSIGN' @ sing
+leExpression ]
+[3:7:2:1:7] State:  47 => To:  84   -- Action: shift      -- Rule: singleExpression => [ @ singleExpression ('T_COMMA')
+] assignmentExpression
+[3:8:2:1:7] State:  84 => To: 118   -- Action: shift      -- Rule: assignmentExpression => [ @ assignmentExpression 'T_A
+SSIGN' ] assignmentOperatorExpression
+[3:9:2:1:7] State: 118 => To: 150   -- Action: shift      -- Rule: assignmentOperatorExpression => [ @ assignmentOperato
+rExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' | '
+T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternaryEx
+pression
+[3:10:2:1:7] State: 150 => To: 176   -- Action: shift      -- Rule: ternaryExpression => @ logicalOrExpression [ 'T_QUER
+Y' singleExpression 'T_COLON' singleExpression ]
+[3:11:2:1:7] State: 176 => To: 204   -- Action: shift      -- Rule: logicalOrExpression => [ @ logicalOrExpression 'T_LO
+G_OR' ] logicalAndExpression
+[3:12:2:1:7] State: 204 => To: 231   -- Action: shift      -- Rule: logicalAndExpression => [ @ logicalAndExpression 'T_
+LOG_AND' ] bitOrExpression
+[3:13:2:1:7] State: 231 => To: 251   -- Action: shift      -- Rule: bitOrExpression => [ @ bitOrExpression 'T_BIT_OR' ]
+bitXOrExpression
+[3:14:2:1:7] State: 251 => To: 266   -- Action: shift      -- Rule: bitXOrExpression => [ @ bitXOrExpression 'T_BIT_XOR'
+ ] bitAndExpression
+[3:15:2:1:7] State: 266 => To: 307   -- Action: shift      -- Rule: bitAndExpression => [ @ bitAndExpression 'T_BIT_AND'
+ ] equalityExpression
+[3:16:2:1:7] State: 307 => To: 318   -- Action: shift      -- Rule: equalityExpression => [ @ equalityExpression ( 'T_EQ
+UAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression
+[3:17:2:1:7] State: 318 => To: 327   -- Action: shift      -- Rule: inExpression => [ @ inExpression K_IN ] instanceofEx
+pression
+[3:18:2:1:7] State: 327 => To: 332   -- Action: shift      -- Rule: instanceofExpression => [ @ instanceofExpression K_I
+NSTANCEOF ] relationalExpression
+[3:19:2:1:7] State: 332 => To: 339   -- Action: shift      -- Rule: relationalExpression => [ @ relationalExpression ( '
+T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression
+[3:20:2:1:7] State: 339 => To: 346   -- Action: shift      -- Rule: bitShiftExpression => [ @ bitShiftExpression ( 'T_LS
+HIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression
+[3:21:2:1:7] State: 346 => To: 350   -- Action: shift      -- Rule: coalesceExpression => [ @ coalesceExpression 'T_COAL
+ESCE' ] additiveExpression
+[3:22:2:1:7] State: 350 => To: 353   -- Action: shift      -- Rule: additiveExpression => [ @ additiveExpression ( 'T_AD
+D' | 'T_SUB' ) ] multiplicativeExpression
+[3:23:2:1:7] State: 353 => To: 356   -- Action: shift      -- Rule: multiplicativeExpression => [ @ multiplicativeExpres
+sion ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression
+[3:24:2:1:7] State: 356 => To: 359   -- Action: shift      -- Rule: powerExpression => [ @ powerExpression 'T_POWER' ] n
+otExpression
+[3:25:2:1:7] State: 359 => To: 363   -- Action: shift      -- Rule: notExpression => @ ( 'T_LOG_NOT' notExpression | bit
+NotExpression )
+[3:26:2:1:7] State: 363 => To: 370   -- Action: shift      -- Rule: bitNotExpression => @ ( 'T_BIT_NOT' bitNotExpression
+ | unaryMinusExpression )
+[3:27:2:1:7] State: 370 => To: 376   -- Action: shift      -- Rule: unaryMinusExpression => @ ( 'T_SUB' unaryMinusExpres
+sion | unaryPlusExpression )
+[3:28:2:1:7] State: 376 => To: 381   -- Action: shift      -- Rule: unaryPlusExpression => @ ( 'T_ADD' unaryPlusExpressi
+on | preDecreaseExpression )
+[3:29:2:1:7] State: 381 => To: 388   -- Action: shift      -- Rule: preDecreaseExpression => @ ( 'T_DEC' preDecreaseExpr
+ession | preIncrementExpression )
+[3:30:2:1:7] State: 388 => To: 396   -- Action: shift      -- Rule: preIncrementExpression => @ ( 'T_INC' preIncrementEx
+pression | typeofExpression )
+[3:31:2:1:7] State: 396 => To: 401   -- Action: shift      -- Rule: typeofExpression => @ ( K_TYPEOF typeofExpression |
+voidExpression )
+[3:32:2:1:7] State: 401 => To: 406   -- Action: shift      -- Rule: voidExpression => @ ( K_VOID voidExpression | delete
+Expression )
+[3:33:2:1:7] State: 406 => To: 414   -- Action: shift      -- Rule: deleteExpression => @ ( K_DELETE deleteExpression |
+newExpression )
+[3:34:2:1:7] State: 414 => To: 419   -- Action: shift      -- Rule: newExpression => @ ( K_NEW singleExpression [ argume
+nts ] | postfixExpression )
+[3:35:2:1:7] State: 419 => To: 424   -- Action: shift      -- Rule: postfixExpression => @ ( postfixExpression (#RULE_NO
+_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExpr
+ession ) | functionExpression )
+[3:36:2:1:7] State: 424 => To: 434   -- Action: shift      -- Rule: functionExpression => @ ( anonymousFunction | classE
+xpression | thisExpression | identifierExpression | superExpression | literalExpression | arrayLiteralExpression | objec
+tLiteralExpression | parenthesizedExpression )
+[3:37:2:1:7] State: 434 => To: 448   -- Action: shift      -- Rule: literalExpression => @ literal
+[3:38:2:1:7] State: 448 => To: 458   -- Action: move       -- Rule: literal => @ ( K_NULL | K_TRUE | K_FALSE | #STRING#
+| #REGEX# | #NUMBER# )
+[4:38:2:1:9] State: 458 => To: 469   -- Action: reduce     -- Rule: literal => ( K_NULL | K_TRUE | K_FALSE | #STRING# |
+#REGEX# | #NUMBER# @ )
+[4:37:2:1:9] State: 469 => To: 484   -- Action: reduce     -- Rule: literalExpression => literal @
+[4:36:2:1:9] State: 484 => To: 225   -- Action: reduce     -- Rule: functionExpression => ( anonymousFunction | classExp
+ression | thisExpression | identifierExpression | superExpression | literalExpression @ | arrayLiteralExpression | objec
+tLiteralExpression | parenthesizedExpression )
+[4:35:3:1:9] State: 225 => To: 249   -- Action: recursion  -- Rule: postfixExpression => ( postfixExpression (#RULE_NO_L
+INE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExpres
+sion ) | functionExpression @ )
+[4:35:3:1:9] State: 249 => To: 265   -- Action: rule       -- Rule: postfixExpression => ( postfixExpression @ (#RULE_NO
+_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExpr
+ession ) | functionExpression )
+parsing error: postfixExpression => ( postfixExpression (#RULE_NO_LINE#) @ ( memberIndexExpression | memberDotExpression
+ | argumentsExpression | postIncrementExpression | postDecreaseExpression ) | functionExpression )
+[4:35:3:1:9] State: 225 => To: 248   -- Action: reduce     -- Rule: postfixExpression => ( postfixExpression (#RULE_NO_L
+INE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExpres
+sion ) | functionExpression @ )
+[4:34:3:1:9] State: 248 => To: 264   -- Action: reduce     -- Rule: newExpression => ( K_NEW singleExpression [ argument
+s ] | postfixExpression @ )
+[4:33:3:1:9] State: 264 => To: 301   -- Action: reduce     -- Rule: deleteExpression => ( K_DELETE deleteExpression | ne
+wExpression @ )
+[4:32:3:1:9] State: 301 => To: 312   -- Action: reduce     -- Rule: voidExpression => ( K_VOID voidExpression | deleteEx
+pression @ )
+[4:31:3:1:9] State: 312 => To: 320   -- Action: reduce     -- Rule: typeofExpression => ( K_TYPEOF typeofExpression | vo
+idExpression @ )
+[4:30:3:1:9] State: 320 => To: 328   -- Action: reduce     -- Rule: preIncrementExpression => ( 'T_INC' preIncrementExpr
+ession | typeofExpression @ )
+[4:29:3:1:9] State: 328 => To: 334   -- Action: reduce     -- Rule: preDecreaseExpression => ( 'T_DEC' preDecreaseExpres
+sion | preIncrementExpression @ )
+[4:28:3:1:9] State: 334 => To: 340   -- Action: reduce     -- Rule: unaryPlusExpression => ( 'T_ADD' unaryPlusExpression
+ | preDecreaseExpression @ )
+[4:27:3:1:9] State: 340 => To: 347   -- Action: reduce     -- Rule: unaryMinusExpression => ( 'T_SUB' unaryMinusExpressi
+on | unaryPlusExpression @ )
+[4:26:3:1:9] State: 347 => To: 352   -- Action: reduce     -- Rule: bitNotExpression => ( 'T_BIT_NOT' bitNotExpression |
+ unaryMinusExpression @ )
+[4:25:3:1:9] State: 352 => To: 355   -- Action: reduce     -- Rule: notExpression => ( 'T_LOG_NOT' notExpression | bitNo
+tExpression @ )
+[4:24:3:1:9] State: 355 => To: 357   -- Action: reduce     -- Rule: powerExpression => [ powerExpression 'T_POWER' ] not
+Expression @
+[4:23:3:1:9] State: 357 => To: 360   -- Action: reduce     -- Rule: multiplicativeExpression => [ multiplicativeExpressi
+on ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression @
+[4:22:3:1:9] State: 360 => To: 366   -- Action: reduce     -- Rule: additiveExpression => [ additiveExpression ( 'T_ADD'
+ | 'T_SUB' ) ] multiplicativeExpression @
+[4:21:3:1:9] State: 366 => To: 374   -- Action: reduce     -- Rule: coalesceExpression => [ coalesceExpression 'T_COALES
+CE' ] additiveExpression @
+[4:20:3:1:9] State: 374 => To: 379   -- Action: reduce     -- Rule: bitShiftExpression => [ bitShiftExpression ( 'T_LSHI
+FT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression @
+[4:19:3:1:9] State: 379 => To: 386   -- Action: reduce     -- Rule: relationalExpression => [ relationalExpression ( 'T_
+LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression @
+[4:18:3:1:9] State: 386 => To: 390   -- Action: reduce     -- Rule: instanceofExpression => [ instanceofExpression K_INS
+TANCEOF ] relationalExpression @
+[4:17:3:1:9] State: 390 => To: 398   -- Action: reduce     -- Rule: inExpression => [ inExpression K_IN ] instanceofExpr
+ession @
+[4:16:3:1:9] State: 398 => To: 403   -- Action: reduce     -- Rule: equalityExpression => [ equalityExpression ( 'T_EQUA
+L' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression @
+[4:15:3:1:9] State: 403 => To: 409   -- Action: reduce     -- Rule: bitAndExpression => [ bitAndExpression 'T_BIT_AND' ]
+ equalityExpression @
+[4:14:3:1:9] State: 409 => To: 417   -- Action: reduce     -- Rule: bitXOrExpression => [ bitXOrExpression 'T_BIT_XOR' ]
+ bitAndExpression @
+[4:13:3:1:9] State: 417 => To: 422   -- Action: reduce     -- Rule: bitOrExpression => [ bitOrExpression 'T_BIT_OR' ] bi
+tXOrExpression @
+[4:12:3:1:9] State: 422 => To: 427   -- Action: reduce     -- Rule: logicalAndExpression => [ logicalAndExpression 'T_LO
+G_AND' ] bitOrExpression @
+[4:11:3:1:9] State: 427 => To: 439   -- Action: reduce     -- Rule: logicalOrExpression => [ logicalOrExpression 'T_LOG_
+OR' ] logicalAndExpression @
+[4:10:3:1:9] State: 439 => To: 451   -- Action: reduce     -- Rule: ternaryExpression => logicalOrExpression @ [ 'T_QUER
+Y' singleExpression 'T_COLON' singleExpression ]
+[4:9:3:1:9] State: 451 => To: 464   -- Action: reduce     -- Rule: assignmentOperatorExpression => [ assignmentOperatorE
+xpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' | 'T_
+ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternaryExpr
+ession @
+[4:8:3:1:9] State: 464 => To: 471   -- Action: reduce     -- Rule: assignmentExpression => [ assignmentExpression 'T_ASS
+IGN' ] assignmentOperatorExpression @
+[4:7:4:1:9] State: 471 => To: 498   -- Action: recursion  -- Rule: singleExpression => [ singleExpression ('T_COMMA') ]
+assignmentExpression @
+[4:7:4:1:9] State: 498 => To: 524   -- Action: pass       -- Rule: singleExpression => [ singleExpression @ ('T_COMMA')
+] assignmentExpression
+[5:7:4:1:13] State: 524 => To:  84   -- Action: shift      -- Rule: singleExpression => [ singleExpression ('T_COMMA') @
+ ] assignmentExpression
+[5:8:4:1:13] State:  84 => To: 118   -- Action: shift      -- Rule: assignmentExpression => [ @ assignmentExpression 'T_
+ASSIGN' ] assignmentOperatorExpression
+[5:9:4:1:13] State: 118 => To: 150   -- Action: shift      -- Rule: assignmentOperatorExpression => [ @ assignmentOperat
+orExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' |
+'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternaryE
+xpression
+[5:10:4:1:13] State: 150 => To: 176   -- Action: shift      -- Rule: ternaryExpression => @ logicalOrExpression [ 'T_QUE
+RY' singleExpression 'T_COLON' singleExpression ]
+[5:11:4:1:13] State: 176 => To: 204   -- Action: shift      -- Rule: logicalOrExpression => [ @ logicalOrExpression 'T_L
+OG_OR' ] logicalAndExpression
+[5:12:4:1:13] State: 204 => To: 231   -- Action: shift      -- Rule: logicalAndExpression => [ @ logicalAndExpression 'T
+_LOG_AND' ] bitOrExpression
+[5:13:4:1:13] State: 231 => To: 251   -- Action: shift      -- Rule: bitOrExpression => [ @ bitOrExpression 'T_BIT_OR' ]
+ bitXOrExpression
+[5:14:4:1:13] State: 251 => To: 266   -- Action: shift      -- Rule: bitXOrExpression => [ @ bitXOrExpression 'T_BIT_XOR
+' ] bitAndExpression
+[5:15:4:1:13] State: 266 => To: 307   -- Action: shift      -- Rule: bitAndExpression => [ @ bitAndExpression 'T_BIT_AND
+' ] equalityExpression
+[5:16:4:1:13] State: 307 => To: 318   -- Action: shift      -- Rule: equalityExpression => [ @ equalityExpression ( 'T_E
+QUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression
+[5:17:4:1:13] State: 318 => To: 327   -- Action: shift      -- Rule: inExpression => [ @ inExpression K_IN ] instanceofE
+xpression
+[5:18:4:1:13] State: 327 => To: 332   -- Action: shift      -- Rule: instanceofExpression => [ @ instanceofExpression K_
+INSTANCEOF ] relationalExpression
+[5:19:4:1:13] State: 332 => To: 339   -- Action: shift      -- Rule: relationalExpression => [ @ relationalExpression (
+'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression
+[5:20:4:1:13] State: 339 => To: 346   -- Action: shift      -- Rule: bitShiftExpression => [ @ bitShiftExpression ( 'T_L
+SHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression
+[5:21:4:1:13] State: 346 => To: 350   -- Action: shift      -- Rule: coalesceExpression => [ @ coalesceExpression 'T_COA
+LESCE' ] additiveExpression
+[5:22:4:1:13] State: 350 => To: 353   -- Action: shift      -- Rule: additiveExpression => [ @ additiveExpression ( 'T_A
+DD' | 'T_SUB' ) ] multiplicativeExpression
+[5:23:4:1:13] State: 353 => To: 356   -- Action: shift      -- Rule: multiplicativeExpression => [ @ multiplicativeExpre
+ssion ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression
+[5:24:4:1:13] State: 356 => To: 359   -- Action: shift      -- Rule: powerExpression => [ @ powerExpression 'T_POWER' ]
+notExpression
+[5:25:4:1:13] State: 359 => To: 363   -- Action: shift      -- Rule: notExpression => @ ( 'T_LOG_NOT' notExpression | bi
+tNotExpression )
+[5:26:4:1:13] State: 363 => To: 370   -- Action: shift      -- Rule: bitNotExpression => @ ( 'T_BIT_NOT' bitNotExpressio
+n | unaryMinusExpression )
+[5:27:4:1:13] State: 370 => To: 376   -- Action: shift      -- Rule: unaryMinusExpression => @ ( 'T_SUB' unaryMinusExpre
+ssion | unaryPlusExpression )
+[5:28:4:1:13] State: 376 => To: 381   -- Action: shift      -- Rule: unaryPlusExpression => @ ( 'T_ADD' unaryPlusExpress
+ion | preDecreaseExpression )
+[5:29:4:1:13] State: 381 => To: 388   -- Action: shift      -- Rule: preDecreaseExpression => @ ( 'T_DEC' preDecreaseExp
+ression | preIncrementExpression )
+[5:30:4:1:13] State: 388 => To: 396   -- Action: shift      -- Rule: preIncrementExpression => @ ( 'T_INC' preIncrementE
+xpression | typeofExpression )
+[5:31:4:1:13] State: 396 => To: 401   -- Action: shift      -- Rule: typeofExpression => @ ( K_TYPEOF typeofExpression |
+ voidExpression )
+[5:32:4:1:13] State: 401 => To: 406   -- Action: shift      -- Rule: voidExpression => @ ( K_VOID voidExpression | delet
+eExpression )
+[5:33:4:1:13] State: 406 => To: 414   -- Action: shift      -- Rule: deleteExpression => @ ( K_DELETE deleteExpression |
+ newExpression )
+[5:34:4:1:13] State: 414 => To: 419   -- Action: shift      -- Rule: newExpression => @ ( K_NEW singleExpression [ argum
+ents ] | postfixExpression )
+[5:35:4:1:13] State: 419 => To: 424   -- Action: shift      -- Rule: postfixExpression => @ ( postfixExpression (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression )
+[5:36:5:1:13] State: 424 => To: 432   -- Action: shift      -- Rule: functionExpression => @ ( anonymousFunction | class
+Expression | thisExpression | identifierExpression | superExpression | literalExpression | arrayLiteralExpression | obje
+ctLiteralExpression | parenthesizedExpression )
+[5:37:5:1:13] State: 432 => To: 446   -- Action: move       -- Rule: identifierExpression => @ #ID#
+[6:37:5:1:15] State: 446 => To: 456   -- Action: reduce     -- Rule: identifierExpression => #ID# @
+[6:36:5:1:15] State: 456 => To: 225   -- Action: reduce     -- Rule: functionExpression => ( anonymousFunction | classEx
+pression | thisExpression | identifierExpression @ | superExpression | literalExpression | arrayLiteralExpression | obje
+ctLiteralExpression | parenthesizedExpression )
+[6:35:6:1:15] State: 225 => To: 249   -- Action: recursion  -- Rule: postfixExpression => ( postfixExpression (#RULE_NO_
+LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExpre
+ssion ) | functionExpression @ )
+[6:35:6:1:15] State: 249 => To: 265   -- Action: rule       -- Rule: postfixExpression => ( postfixExpression @ (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression )
+parsing error: postfixExpression => ( postfixExpression (#RULE_NO_LINE#) @ ( memberIndexExpression | memberDotExpression
+ | argumentsExpression | postIncrementExpression | postDecreaseExpression ) | functionExpression )
+[6:35:6:1:15] State: 225 => To: 248   -- Action: reduce     -- Rule: postfixExpression => ( postfixExpression (#RULE_NO_
+LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExpre
+ssion ) | functionExpression @ )
+[6:34:6:1:15] State: 248 => To: 264   -- Action: reduce     -- Rule: newExpression => ( K_NEW singleExpression [ argumen
+ts ] | postfixExpression @ )
+[6:33:6:1:15] State: 264 => To: 301   -- Action: reduce     -- Rule: deleteExpression => ( K_DELETE deleteExpression | n
+ewExpression @ )
+[6:32:6:1:15] State: 301 => To: 312   -- Action: reduce     -- Rule: voidExpression => ( K_VOID voidExpression | deleteE
+xpression @ )
+[6:31:6:1:15] State: 312 => To: 320   -- Action: reduce     -- Rule: typeofExpression => ( K_TYPEOF typeofExpression | v
+oidExpression @ )
+[6:30:6:1:15] State: 320 => To: 328   -- Action: reduce     -- Rule: preIncrementExpression => ( 'T_INC' preIncrementExp
+ression | typeofExpression @ )
+[6:29:6:1:15] State: 328 => To: 334   -- Action: reduce     -- Rule: preDecreaseExpression => ( 'T_DEC' preDecreaseExpre
+ssion | preIncrementExpression @ )
+[6:28:6:1:15] State: 334 => To: 340   -- Action: reduce     -- Rule: unaryPlusExpression => ( 'T_ADD' unaryPlusExpressio
+n | preDecreaseExpression @ )
+[6:27:6:1:15] State: 340 => To: 347   -- Action: reduce     -- Rule: unaryMinusExpression => ( 'T_SUB' unaryMinusExpress
+ion | unaryPlusExpression @ )
+[6:26:6:1:15] State: 347 => To: 352   -- Action: reduce     -- Rule: bitNotExpression => ( 'T_BIT_NOT' bitNotExpression
+| unaryMinusExpression @ )
+[6:25:6:1:15] State: 352 => To: 355   -- Action: reduce     -- Rule: notExpression => ( 'T_LOG_NOT' notExpression | bitN
+otExpression @ )
+[6:24:6:1:15] State: 355 => To: 357   -- Action: reduce     -- Rule: powerExpression => [ powerExpression 'T_POWER' ] no
+tExpression @
+[6:23:6:1:15] State: 357 => To: 360   -- Action: reduce     -- Rule: multiplicativeExpression => [ multiplicativeExpress
+ion ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression @
+[6:22:6:1:15] State: 360 => To: 366   -- Action: reduce     -- Rule: additiveExpression => [ additiveExpression ( 'T_ADD
+' | 'T_SUB' ) ] multiplicativeExpression @
+[6:21:6:1:15] State: 366 => To: 374   -- Action: reduce     -- Rule: coalesceExpression => [ coalesceExpression 'T_COALE
+SCE' ] additiveExpression @
+[6:20:6:1:15] State: 374 => To: 379   -- Action: reduce     -- Rule: bitShiftExpression => [ bitShiftExpression ( 'T_LSH
+IFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression @
+[6:19:6:1:15] State: 379 => To: 386   -- Action: reduce     -- Rule: relationalExpression => [ relationalExpression ( 'T
+_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression @
+[6:18:6:1:15] State: 386 => To: 390   -- Action: reduce     -- Rule: instanceofExpression => [ instanceofExpression K_IN
+STANCEOF ] relationalExpression @
+[6:17:6:1:15] State: 390 => To: 398   -- Action: reduce     -- Rule: inExpression => [ inExpression K_IN ] instanceofExp
+ression @
+[6:16:6:1:15] State: 398 => To: 403   -- Action: reduce     -- Rule: equalityExpression => [ equalityExpression ( 'T_EQU
+AL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression @
+[6:15:6:1:15] State: 403 => To: 409   -- Action: reduce     -- Rule: bitAndExpression => [ bitAndExpression 'T_BIT_AND'
+] equalityExpression @
+[6:14:6:1:15] State: 409 => To: 417   -- Action: reduce     -- Rule: bitXOrExpression => [ bitXOrExpression 'T_BIT_XOR'
+] bitAndExpression @
+[6:13:6:1:15] State: 417 => To: 422   -- Action: reduce     -- Rule: bitOrExpression => [ bitOrExpression 'T_BIT_OR' ] b
+itXOrExpression @
+[6:12:6:1:15] State: 422 => To: 427   -- Action: reduce     -- Rule: logicalAndExpression => [ logicalAndExpression 'T_L
+OG_AND' ] bitOrExpression @
+[6:11:6:1:15] State: 427 => To: 439   -- Action: reduce     -- Rule: logicalOrExpression => [ logicalOrExpression 'T_LOG
+_OR' ] logicalAndExpression @
+[6:10:6:1:15] State: 439 => To: 451   -- Action: reduce     -- Rule: ternaryExpression => logicalOrExpression @ [ 'T_QUE
+RY' singleExpression 'T_COLON' singleExpression ]
+[6:9:6:1:15] State: 451 => To: 464   -- Action: reduce     -- Rule: assignmentOperatorExpression => [ assignmentOperator
+Expression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' | 'T
+_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternaryExp
+ression @
+[6:8:7:1:15] State: 464 => To: 470   -- Action: recursion  -- Rule: assignmentExpression => [ assignmentExpression 'T_AS
+SIGN' ] assignmentOperatorExpression @
+[6:8:7:1:15] State: 470 => To: 485   -- Action: move       -- Rule: assignmentExpression => [ assignmentExpression @ 'T_
+ASSIGN' ] assignmentOperatorExpression
+[7:8:7:1:17] State: 485 => To: 118   -- Action: shift      -- Rule: assignmentExpression => [ assignmentExpression 'T_AS
+SIGN' @ ] assignmentOperatorExpression
+[7:9:7:1:17] State: 118 => To: 150   -- Action: shift      -- Rule: assignmentOperatorExpression => [ @ assignmentOperat
+orExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' |
+'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternaryE
+xpression
+[7:10:7:1:17] State: 150 => To: 176   -- Action: shift      -- Rule: ternaryExpression => @ logicalOrExpression [ 'T_QUE
+RY' singleExpression 'T_COLON' singleExpression ]
+[7:11:7:1:17] State: 176 => To: 204   -- Action: shift      -- Rule: logicalOrExpression => [ @ logicalOrExpression 'T_L
+OG_OR' ] logicalAndExpression
+[7:12:7:1:17] State: 204 => To: 231   -- Action: shift      -- Rule: logicalAndExpression => [ @ logicalAndExpression 'T
+_LOG_AND' ] bitOrExpression
+[7:13:7:1:17] State: 231 => To: 251   -- Action: shift      -- Rule: bitOrExpression => [ @ bitOrExpression 'T_BIT_OR' ]
+ bitXOrExpression
+[7:14:7:1:17] State: 251 => To: 266   -- Action: shift      -- Rule: bitXOrExpression => [ @ bitXOrExpression 'T_BIT_XOR
+' ] bitAndExpression
+[7:15:7:1:17] State: 266 => To: 307   -- Action: shift      -- Rule: bitAndExpression => [ @ bitAndExpression 'T_BIT_AND
+' ] equalityExpression
+[7:16:7:1:17] State: 307 => To: 318   -- Action: shift      -- Rule: equalityExpression => [ @ equalityExpression ( 'T_E
+QUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression
+[7:17:7:1:17] State: 318 => To: 327   -- Action: shift      -- Rule: inExpression => [ @ inExpression K_IN ] instanceofE
+xpression
+[7:18:7:1:17] State: 327 => To: 332   -- Action: shift      -- Rule: instanceofExpression => [ @ instanceofExpression K_
+INSTANCEOF ] relationalExpression
+[7:19:7:1:17] State: 332 => To: 339   -- Action: shift      -- Rule: relationalExpression => [ @ relationalExpression (
+'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression
+[7:20:7:1:17] State: 339 => To: 346   -- Action: shift      -- Rule: bitShiftExpression => [ @ bitShiftExpression ( 'T_L
+SHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression
+[7:21:7:1:17] State: 346 => To: 350   -- Action: shift      -- Rule: coalesceExpression => [ @ coalesceExpression 'T_COA
+LESCE' ] additiveExpression
+[7:22:7:1:17] State: 350 => To: 353   -- Action: shift      -- Rule: additiveExpression => [ @ additiveExpression ( 'T_A
+DD' | 'T_SUB' ) ] multiplicativeExpression
+[7:23:7:1:17] State: 353 => To: 356   -- Action: shift      -- Rule: multiplicativeExpression => [ @ multiplicativeExpre
+ssion ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression
+[7:24:7:1:17] State: 356 => To: 359   -- Action: shift      -- Rule: powerExpression => [ @ powerExpression 'T_POWER' ]
+notExpression
+[7:25:7:1:17] State: 359 => To: 363   -- Action: shift      -- Rule: notExpression => @ ( 'T_LOG_NOT' notExpression | bi
+tNotExpression )
+[7:26:7:1:17] State: 363 => To: 370   -- Action: shift      -- Rule: bitNotExpression => @ ( 'T_BIT_NOT' bitNotExpressio
+n | unaryMinusExpression )
+[7:27:7:1:17] State: 370 => To: 376   -- Action: shift      -- Rule: unaryMinusExpression => @ ( 'T_SUB' unaryMinusExpre
+ssion | unaryPlusExpression )
+[7:28:7:1:17] State: 376 => To: 381   -- Action: shift      -- Rule: unaryPlusExpression => @ ( 'T_ADD' unaryPlusExpress
+ion | preDecreaseExpression )
+[7:29:7:1:17] State: 381 => To: 388   -- Action: shift      -- Rule: preDecreaseExpression => @ ( 'T_DEC' preDecreaseExp
+ression | preIncrementExpression )
+[7:30:7:1:17] State: 388 => To: 396   -- Action: shift      -- Rule: preIncrementExpression => @ ( 'T_INC' preIncrementE
+xpression | typeofExpression )
+[7:31:7:1:17] State: 396 => To: 401   -- Action: shift      -- Rule: typeofExpression => @ ( K_TYPEOF typeofExpression |
+ voidExpression )
+[7:32:7:1:17] State: 401 => To: 406   -- Action: shift      -- Rule: voidExpression => @ ( K_VOID voidExpression | delet
+eExpression )
+[7:33:7:1:17] State: 406 => To: 414   -- Action: shift      -- Rule: deleteExpression => @ ( K_DELETE deleteExpression |
+ newExpression )
+[7:34:7:1:17] State: 414 => To: 419   -- Action: shift      -- Rule: newExpression => @ ( K_NEW singleExpression [ argum
+ents ] | postfixExpression )
+[7:35:7:1:17] State: 419 => To: 424   -- Action: shift      -- Rule: postfixExpression => @ ( postfixExpression (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression )
+[7:36:8:1:17] State: 424 => To: 432   -- Action: shift      -- Rule: functionExpression => @ ( anonymousFunction | class
+Expression | thisExpression | identifierExpression | superExpression | literalExpression | arrayLiteralExpression | obje
+ctLiteralExpression | parenthesizedExpression )
+[7:37:8:1:17] State: 432 => To: 446   -- Action: move       -- Rule: identifierExpression => @ #ID#
+[8:37:8:1:19] State: 446 => To: 456   -- Action: reduce     -- Rule: identifierExpression => #ID# @
+[8:36:8:1:19] State: 456 => To: 225   -- Action: reduce     -- Rule: functionExpression => ( anonymousFunction | classEx
+pression | thisExpression | identifierExpression @ | superExpression | literalExpression | arrayLiteralExpression | obje
+ctLiteralExpression | parenthesizedExpression )
+[8:35:9:1:19] State: 225 => To: 249   -- Action: recursion  -- Rule: postfixExpression => ( postfixExpression (#RULE_NO_
+LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExpre
+ssion ) | functionExpression @ )
+[8:35:9:1:19] State: 249 => To: 265   -- Action: rule       -- Rule: postfixExpression => ( postfixExpression @ (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression )
+parsing error: postfixExpression => ( postfixExpression (#RULE_NO_LINE#) @ ( memberIndexExpression | memberDotExpression
+ | argumentsExpression | postIncrementExpression | postDecreaseExpression ) | functionExpression )
+[8:35:9:1:19] State: 225 => To: 248   -- Action: reduce     -- Rule: postfixExpression => ( postfixExpression (#RULE_NO_
+LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExpre
+ssion ) | functionExpression @ )
+[8:34:9:1:19] State: 248 => To: 264   -- Action: reduce     -- Rule: newExpression => ( K_NEW singleExpression [ argumen
+ts ] | postfixExpression @ )
+[8:33:9:1:19] State: 264 => To: 301   -- Action: reduce     -- Rule: deleteExpression => ( K_DELETE deleteExpression | n
+ewExpression @ )
+[8:32:9:1:19] State: 301 => To: 312   -- Action: reduce     -- Rule: voidExpression => ( K_VOID voidExpression | deleteE
+xpression @ )
+[8:31:9:1:19] State: 312 => To: 320   -- Action: reduce     -- Rule: typeofExpression => ( K_TYPEOF typeofExpression | v
+oidExpression @ )
+[8:30:9:1:19] State: 320 => To: 328   -- Action: reduce     -- Rule: preIncrementExpression => ( 'T_INC' preIncrementExp
+ression | typeofExpression @ )
+[8:29:9:1:19] State: 328 => To: 334   -- Action: reduce     -- Rule: preDecreaseExpression => ( 'T_DEC' preDecreaseExpre
+ssion | preIncrementExpression @ )
+[8:28:9:1:19] State: 334 => To: 340   -- Action: reduce     -- Rule: unaryPlusExpression => ( 'T_ADD' unaryPlusExpressio
+n | preDecreaseExpression @ )
+[8:27:9:1:19] State: 340 => To: 347   -- Action: reduce     -- Rule: unaryMinusExpression => ( 'T_SUB' unaryMinusExpress
+ion | unaryPlusExpression @ )
+[8:26:9:1:19] State: 347 => To: 352   -- Action: reduce     -- Rule: bitNotExpression => ( 'T_BIT_NOT' bitNotExpression
+| unaryMinusExpression @ )
+[8:25:9:1:19] State: 352 => To: 355   -- Action: reduce     -- Rule: notExpression => ( 'T_LOG_NOT' notExpression | bitN
+otExpression @ )
+[8:24:9:1:19] State: 355 => To: 357   -- Action: reduce     -- Rule: powerExpression => [ powerExpression 'T_POWER' ] no
+tExpression @
+[8:23:9:1:19] State: 357 => To: 360   -- Action: reduce     -- Rule: multiplicativeExpression => [ multiplicativeExpress
+ion ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression @
+[8:22:9:1:19] State: 360 => To: 366   -- Action: reduce     -- Rule: additiveExpression => [ additiveExpression ( 'T_ADD
+' | 'T_SUB' ) ] multiplicativeExpression @
+[8:21:9:1:19] State: 366 => To: 374   -- Action: reduce     -- Rule: coalesceExpression => [ coalesceExpression 'T_COALE
+SCE' ] additiveExpression @
+[8:20:9:1:19] State: 374 => To: 379   -- Action: reduce     -- Rule: bitShiftExpression => [ bitShiftExpression ( 'T_LSH
+IFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression @
+[8:19:9:1:19] State: 379 => To: 386   -- Action: reduce     -- Rule: relationalExpression => [ relationalExpression ( 'T
+_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression @
+[8:18:9:1:19] State: 386 => To: 390   -- Action: reduce     -- Rule: instanceofExpression => [ instanceofExpression K_IN
+STANCEOF ] relationalExpression @
+[8:17:9:1:19] State: 390 => To: 398   -- Action: reduce     -- Rule: inExpression => [ inExpression K_IN ] instanceofExp
+ression @
+[8:16:9:1:19] State: 398 => To: 403   -- Action: reduce     -- Rule: equalityExpression => [ equalityExpression ( 'T_EQU
+AL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression @
+[8:15:9:1:19] State: 403 => To: 409   -- Action: reduce     -- Rule: bitAndExpression => [ bitAndExpression 'T_BIT_AND'
+] equalityExpression @
+[8:14:9:1:19] State: 409 => To: 417   -- Action: reduce     -- Rule: bitXOrExpression => [ bitXOrExpression 'T_BIT_XOR'
+] bitAndExpression @
+[8:13:9:1:19] State: 417 => To: 422   -- Action: reduce     -- Rule: bitOrExpression => [ bitOrExpression 'T_BIT_OR' ] b
+itXOrExpression @
+[8:12:9:1:19] State: 422 => To: 427   -- Action: reduce     -- Rule: logicalAndExpression => [ logicalAndExpression 'T_L
+OG_AND' ] bitOrExpression @
+[8:11:9:1:19] State: 427 => To: 439   -- Action: reduce     -- Rule: logicalOrExpression => [ logicalOrExpression 'T_LOG
+_OR' ] logicalAndExpression @
+[8:10:9:1:19] State: 439 => To: 451   -- Action: reduce     -- Rule: ternaryExpression => logicalOrExpression @ [ 'T_QUE
+RY' singleExpression 'T_COLON' singleExpression ]
+[8:9:9:1:19] State: 451 => To: 464   -- Action: reduce     -- Rule: assignmentOperatorExpression => [ assignmentOperator
+Expression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' | 'T
+_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternaryExp
+ression @
+[8:8:9:1:19] State: 464 => To: 471   -- Action: reduce     -- Rule: assignmentExpression => [ assignmentExpression 'T_AS
+SIGN' ] assignmentOperatorExpression @
+[8:7:10:1:19] State: 471 => To: 498   -- Action: recursion  -- Rule: singleExpression => [ singleExpression ('T_COMMA')
+] assignmentExpression @
+[8:7:10:1:19] State: 498 => To: 524   -- Action: pass       -- Rule: singleExpression => [ singleExpression @ ('T_COMMA'
+) ] assignmentExpression
+[9:7:10:1:20] State: 524 => To:  84   -- Action: shift      -- Rule: singleExpression => [ singleExpression ('T_COMMA')
+@ ] assignmentExpression
+[9:8:10:1:20] State:  84 => To: 118   -- Action: shift      -- Rule: assignmentExpression => [ @ assignmentExpression 'T
+_ASSIGN' ] assignmentOperatorExpression
+[9:9:10:1:20] State: 118 => To: 150   -- Action: shift      -- Rule: assignmentOperatorExpression => [ @ assignmentOpera
+torExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' |
+ 'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternary
+Expression
+[9:10:10:1:20] State: 150 => To: 176   -- Action: shift      -- Rule: ternaryExpression => @ logicalOrExpression [ 'T_QU
+ERY' singleExpression 'T_COLON' singleExpression ]
+[9:11:10:1:20] State: 176 => To: 204   -- Action: shift      -- Rule: logicalOrExpression => [ @ logicalOrExpression 'T_
+LOG_OR' ] logicalAndExpression
+[9:12:10:1:20] State: 204 => To: 231   -- Action: shift      -- Rule: logicalAndExpression => [ @ logicalAndExpression '
+T_LOG_AND' ] bitOrExpression
+[9:13:10:1:20] State: 231 => To: 251   -- Action: shift      -- Rule: bitOrExpression => [ @ bitOrExpression 'T_BIT_OR'
+] bitXOrExpression
+[9:14:10:1:20] State: 251 => To: 266   -- Action: shift      -- Rule: bitXOrExpression => [ @ bitXOrExpression 'T_BIT_XO
+R' ] bitAndExpression
+[9:15:10:1:20] State: 266 => To: 307   -- Action: shift      -- Rule: bitAndExpression => [ @ bitAndExpression 'T_BIT_AN
+D' ] equalityExpression
+[9:16:10:1:20] State: 307 => To: 318   -- Action: shift      -- Rule: equalityExpression => [ @ equalityExpression ( 'T_
+EQUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression
+[9:17:10:1:20] State: 318 => To: 327   -- Action: shift      -- Rule: inExpression => [ @ inExpression K_IN ] instanceof
+Expression
+[9:18:10:1:20] State: 327 => To: 332   -- Action: shift      -- Rule: instanceofExpression => [ @ instanceofExpression K
+_INSTANCEOF ] relationalExpression
+[9:19:10:1:20] State: 332 => To: 339   -- Action: shift      -- Rule: relationalExpression => [ @ relationalExpression (
+ 'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression
+[9:20:10:1:20] State: 339 => To: 346   -- Action: shift      -- Rule: bitShiftExpression => [ @ bitShiftExpression ( 'T_
+LSHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression
+[9:21:10:1:20] State: 346 => To: 350   -- Action: shift      -- Rule: coalesceExpression => [ @ coalesceExpression 'T_CO
+ALESCE' ] additiveExpression
+[9:22:10:1:20] State: 350 => To: 353   -- Action: shift      -- Rule: additiveExpression => [ @ additiveExpression ( 'T_
+ADD' | 'T_SUB' ) ] multiplicativeExpression
+[9:23:10:1:20] State: 353 => To: 356   -- Action: shift      -- Rule: multiplicativeExpression => [ @ multiplicativeExpr
+ession ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression
+[9:24:10:1:20] State: 356 => To: 359   -- Action: shift      -- Rule: powerExpression => [ @ powerExpression 'T_POWER' ]
+ notExpression
+[9:25:10:1:20] State: 359 => To: 363   -- Action: shift      -- Rule: notExpression => @ ( 'T_LOG_NOT' notExpression | b
+itNotExpression )
+[9:26:10:1:20] State: 363 => To: 370   -- Action: shift      -- Rule: bitNotExpression => @ ( 'T_BIT_NOT' bitNotExpressi
+on | unaryMinusExpression )
+[9:27:10:1:20] State: 370 => To: 376   -- Action: shift      -- Rule: unaryMinusExpression => @ ( 'T_SUB' unaryMinusExpr
+ession | unaryPlusExpression )
+[9:28:10:1:20] State: 376 => To: 381   -- Action: shift      -- Rule: unaryPlusExpression => @ ( 'T_ADD' unaryPlusExpres
+sion | preDecreaseExpression )
+[9:29:10:1:20] State: 381 => To: 388   -- Action: shift      -- Rule: preDecreaseExpression => @ ( 'T_DEC' preDecreaseEx
+pression | preIncrementExpression )
+[9:30:10:1:20] State: 388 => To: 396   -- Action: shift      -- Rule: preIncrementExpression => @ ( 'T_INC' preIncrement
+Expression | typeofExpression )
+[9:31:10:1:20] State: 396 => To: 401   -- Action: shift      -- Rule: typeofExpression => @ ( K_TYPEOF typeofExpression
+| voidExpression )
+[9:32:10:1:20] State: 401 => To: 406   -- Action: shift      -- Rule: voidExpression => @ ( K_VOID voidExpression | dele
+teExpression )
+[9:33:10:1:20] State: 406 => To: 414   -- Action: shift      -- Rule: deleteExpression => @ ( K_DELETE deleteExpression
+| newExpression )
+[9:34:10:1:20] State: 414 => To: 419   -- Action: shift      -- Rule: newExpression => @ ( K_NEW singleExpression [ argu
+ments ] | postfixExpression )
+[9:35:10:1:20] State: 419 => To: 424   -- Action: shift      -- Rule: postfixExpression => @ ( postfixExpression (#RULE_
+NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseEx
+pression ) | functionExpression )
+[9:36:11:1:20] State: 424 => To: 432   -- Action: shift      -- Rule: functionExpression => @ ( anonymousFunction | clas
+sExpression | thisExpression | identifierExpression | superExpression | literalExpression | arrayLiteralExpression | obj
+ectLiteralExpression | parenthesizedExpression )
+[9:37:11:1:20] State: 432 => To: 446   -- Action: move       -- Rule: identifierExpression => @ #ID#
+[10:37:11:1:22] State: 446 => To: 456   -- Action: reduce     -- Rule: identifierExpression => #ID# @
+[10:36:11:1:22] State: 456 => To: 225   -- Action: reduce     -- Rule: functionExpression => ( anonymousFunction | class
+Expression | thisExpression | identifierExpression @ | superExpression | literalExpression | arrayLiteralExpression | ob
+jectLiteralExpression | parenthesizedExpression )
+[10:35:12:1:22] State: 225 => To: 249   -- Action: recursion  -- Rule: postfixExpression => ( postfixExpression (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression @ )
+[10:35:12:1:22] State: 249 => To: 265   -- Action: rule       -- Rule: postfixExpression => ( postfixExpression @ (#RULE
+_NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseE
+xpression ) | functionExpression )
+parsing error: postfixExpression => ( postfixExpression (#RULE_NO_LINE#) @ ( memberIndexExpression | memberDotExpression
+ | argumentsExpression | postIncrementExpression | postDecreaseExpression ) | functionExpression )
+[10:35:12:1:22] State: 225 => To: 248   -- Action: reduce     -- Rule: postfixExpression => ( postfixExpression (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression @ )
+[10:34:12:1:22] State: 248 => To: 264   -- Action: reduce     -- Rule: newExpression => ( K_NEW singleExpression [ argum
+ents ] | postfixExpression @ )
+[10:33:12:1:22] State: 264 => To: 301   -- Action: reduce     -- Rule: deleteExpression => ( K_DELETE deleteExpression |
+ newExpression @ )
+[10:32:12:1:22] State: 301 => To: 312   -- Action: reduce     -- Rule: voidExpression => ( K_VOID voidExpression | delet
+eExpression @ )
+[10:31:12:1:22] State: 312 => To: 320   -- Action: reduce     -- Rule: typeofExpression => ( K_TYPEOF typeofExpression |
+ voidExpression @ )
+[10:30:12:1:22] State: 320 => To: 328   -- Action: reduce     -- Rule: preIncrementExpression => ( 'T_INC' preIncrementE
+xpression | typeofExpression @ )
+[10:29:12:1:22] State: 328 => To: 334   -- Action: reduce     -- Rule: preDecreaseExpression => ( 'T_DEC' preDecreaseExp
+ression | preIncrementExpression @ )
+[10:28:12:1:22] State: 334 => To: 340   -- Action: reduce     -- Rule: unaryPlusExpression => ( 'T_ADD' unaryPlusExpress
+ion | preDecreaseExpression @ )
+[10:27:12:1:22] State: 340 => To: 347   -- Action: reduce     -- Rule: unaryMinusExpression => ( 'T_SUB' unaryMinusExpre
+ssion | unaryPlusExpression @ )
+[10:26:12:1:22] State: 347 => To: 352   -- Action: reduce     -- Rule: bitNotExpression => ( 'T_BIT_NOT' bitNotExpressio
+n | unaryMinusExpression @ )
+[10:25:12:1:22] State: 352 => To: 355   -- Action: reduce     -- Rule: notExpression => ( 'T_LOG_NOT' notExpression | bi
+tNotExpression @ )
+[10:24:12:1:22] State: 355 => To: 357   -- Action: reduce     -- Rule: powerExpression => [ powerExpression 'T_POWER' ]
+notExpression @
+[10:23:12:1:22] State: 357 => To: 360   -- Action: reduce     -- Rule: multiplicativeExpression => [ multiplicativeExpre
+ssion ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression @
+[10:22:12:1:22] State: 360 => To: 366   -- Action: reduce     -- Rule: additiveExpression => [ additiveExpression ( 'T_A
+DD' | 'T_SUB' ) ] multiplicativeExpression @
+[10:21:12:1:22] State: 366 => To: 374   -- Action: reduce     -- Rule: coalesceExpression => [ coalesceExpression 'T_COA
+LESCE' ] additiveExpression @
+[10:20:12:1:22] State: 374 => To: 379   -- Action: reduce     -- Rule: bitShiftExpression => [ bitShiftExpression ( 'T_L
+SHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression @
+[10:19:12:1:22] State: 379 => To: 386   -- Action: reduce     -- Rule: relationalExpression => [ relationalExpression (
+'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression @
+[10:18:12:1:22] State: 386 => To: 390   -- Action: reduce     -- Rule: instanceofExpression => [ instanceofExpression K_
+INSTANCEOF ] relationalExpression @
+[10:17:12:1:22] State: 390 => To: 398   -- Action: reduce     -- Rule: inExpression => [ inExpression K_IN ] instanceofE
+xpression @
+[10:16:12:1:22] State: 398 => To: 403   -- Action: reduce     -- Rule: equalityExpression => [ equalityExpression ( 'T_E
+QUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression @
+[10:15:12:1:22] State: 403 => To: 409   -- Action: reduce     -- Rule: bitAndExpression => [ bitAndExpression 'T_BIT_AND
+' ] equalityExpression @
+[10:14:12:1:22] State: 409 => To: 417   -- Action: reduce     -- Rule: bitXOrExpression => [ bitXOrExpression 'T_BIT_XOR
+' ] bitAndExpression @
+[10:13:12:1:22] State: 417 => To: 422   -- Action: reduce     -- Rule: bitOrExpression => [ bitOrExpression 'T_BIT_OR' ]
+ bitXOrExpression @
+[10:12:12:1:22] State: 422 => To: 427   -- Action: reduce     -- Rule: logicalAndExpression => [ logicalAndExpression 'T
+_LOG_AND' ] bitOrExpression @
+[10:11:12:1:22] State: 427 => To: 439   -- Action: reduce     -- Rule: logicalOrExpression => [ logicalOrExpression 'T_L
+OG_OR' ] logicalAndExpression @
+[10:10:12:1:22] State: 439 => To: 451   -- Action: reduce     -- Rule: ternaryExpression => logicalOrExpression @ [ 'T_Q
+UERY' singleExpression 'T_COLON' singleExpression ]
+[10:9:12:1:22] State: 451 => To: 464   -- Action: reduce     -- Rule: assignmentOperatorExpression => [ assignmentOperat
+orExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' |
+'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternaryE
+xpression @
+[10:8:13:1:22] State: 464 => To: 470   -- Action: recursion  -- Rule: assignmentExpression => [ assignmentExpression 'T_
+ASSIGN' ] assignmentOperatorExpression @
+[10:8:13:1:22] State: 470 => To: 485   -- Action: move       -- Rule: assignmentExpression => [ assignmentExpression @ '
+T_ASSIGN' ] assignmentOperatorExpression
+[11:8:13:1:24] State: 485 => To: 118   -- Action: shift      -- Rule: assignmentExpression => [ assignmentExpression 'T_
+ASSIGN' @ ] assignmentOperatorExpression
+[11:9:13:1:24] State: 118 => To: 150   -- Action: shift      -- Rule: assignmentOperatorExpression => [ @ assignmentOper
+atorExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT'
+| 'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternar
+yExpression
+[11:10:13:1:24] State: 150 => To: 176   -- Action: shift      -- Rule: ternaryExpression => @ logicalOrExpression [ 'T_Q
+UERY' singleExpression 'T_COLON' singleExpression ]
+[11:11:13:1:24] State: 176 => To: 204   -- Action: shift      -- Rule: logicalOrExpression => [ @ logicalOrExpression 'T
+_LOG_OR' ] logicalAndExpression
+[11:12:13:1:24] State: 204 => To: 231   -- Action: shift      -- Rule: logicalAndExpression => [ @ logicalAndExpression
+'T_LOG_AND' ] bitOrExpression
+[11:13:13:1:24] State: 231 => To: 251   -- Action: shift      -- Rule: bitOrExpression => [ @ bitOrExpression 'T_BIT_OR'
+ ] bitXOrExpression
+[11:14:13:1:24] State: 251 => To: 266   -- Action: shift      -- Rule: bitXOrExpression => [ @ bitXOrExpression 'T_BIT_X
+OR' ] bitAndExpression
+[11:15:13:1:24] State: 266 => To: 307   -- Action: shift      -- Rule: bitAndExpression => [ @ bitAndExpression 'T_BIT_A
+ND' ] equalityExpression
+[11:16:13:1:24] State: 307 => To: 318   -- Action: shift      -- Rule: equalityExpression => [ @ equalityExpression ( 'T
+_EQUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression
+[11:17:13:1:24] State: 318 => To: 327   -- Action: shift      -- Rule: inExpression => [ @ inExpression K_IN ] instanceo
+fExpression
+[11:18:13:1:24] State: 327 => To: 332   -- Action: shift      -- Rule: instanceofExpression => [ @ instanceofExpression
+K_INSTANCEOF ] relationalExpression
+[11:19:13:1:24] State: 332 => To: 339   -- Action: shift      -- Rule: relationalExpression => [ @ relationalExpression
+( 'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression
+[11:20:13:1:24] State: 339 => To: 346   -- Action: shift      -- Rule: bitShiftExpression => [ @ bitShiftExpression ( 'T
+_LSHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression
+[11:21:13:1:24] State: 346 => To: 350   -- Action: shift      -- Rule: coalesceExpression => [ @ coalesceExpression 'T_C
+OALESCE' ] additiveExpression
+[11:22:13:1:24] State: 350 => To: 353   -- Action: shift      -- Rule: additiveExpression => [ @ additiveExpression ( 'T
+_ADD' | 'T_SUB' ) ] multiplicativeExpression
+[11:23:13:1:24] State: 353 => To: 356   -- Action: shift      -- Rule: multiplicativeExpression => [ @ multiplicativeExp
+ression ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression
+[11:24:13:1:24] State: 356 => To: 359   -- Action: shift      -- Rule: powerExpression => [ @ powerExpression 'T_POWER'
+] notExpression
+[11:25:13:1:24] State: 359 => To: 363   -- Action: shift      -- Rule: notExpression => @ ( 'T_LOG_NOT' notExpression |
+bitNotExpression )
+[11:26:13:1:24] State: 363 => To: 370   -- Action: shift      -- Rule: bitNotExpression => @ ( 'T_BIT_NOT' bitNotExpress
+ion | unaryMinusExpression )
+[11:27:13:1:24] State: 370 => To: 376   -- Action: shift      -- Rule: unaryMinusExpression => @ ( 'T_SUB' unaryMinusExp
+ression | unaryPlusExpression )
+[11:28:13:1:24] State: 376 => To: 381   -- Action: shift      -- Rule: unaryPlusExpression => @ ( 'T_ADD' unaryPlusExpre
+ssion | preDecreaseExpression )
+[11:29:13:1:24] State: 381 => To: 388   -- Action: shift      -- Rule: preDecreaseExpression => @ ( 'T_DEC' preDecreaseE
+xpression | preIncrementExpression )
+[11:30:13:1:24] State: 388 => To: 396   -- Action: shift      -- Rule: preIncrementExpression => @ ( 'T_INC' preIncremen
+tExpression | typeofExpression )
+[11:31:13:1:24] State: 396 => To: 401   -- Action: shift      -- Rule: typeofExpression => @ ( K_TYPEOF typeofExpression
+ | voidExpression )
+[11:32:13:1:24] State: 401 => To: 406   -- Action: shift      -- Rule: voidExpression => @ ( K_VOID voidExpression | del
+eteExpression )
+[11:33:13:1:24] State: 406 => To: 414   -- Action: shift      -- Rule: deleteExpression => @ ( K_DELETE deleteExpression
+ | newExpression )
+[11:34:13:1:24] State: 414 => To: 419   -- Action: shift      -- Rule: newExpression => @ ( K_NEW singleExpression [ arg
+uments ] | postfixExpression )
+[11:35:13:1:24] State: 419 => To: 424   -- Action: shift      -- Rule: postfixExpression => @ ( postfixExpression (#RULE
+_NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseE
+xpression ) | functionExpression )
+[11:36:13:1:24] State: 424 => To: 434   -- Action: shift      -- Rule: functionExpression => @ ( anonymousFunction | cla
+ssExpression | thisExpression | identifierExpression | superExpression | literalExpression | arrayLiteralExpression | ob
+jectLiteralExpression | parenthesizedExpression )
+[11:37:13:1:24] State: 434 => To: 448   -- Action: shift      -- Rule: literalExpression => @ literal
+[11:38:13:1:24] State: 448 => To: 460   -- Action: move       -- Rule: literal => @ ( K_NULL | K_TRUE | K_FALSE | #STRIN
+G# | #REGEX# | #NUMBER# )
+[12:38:13:1:26] State: 460 => To: 469   -- Action: reduce     -- Rule: literal => ( K_NULL | K_TRUE @ | K_FALSE | #STRIN
+G# | #REGEX# | #NUMBER# )
+[12:37:13:1:26] State: 469 => To: 484   -- Action: reduce     -- Rule: literalExpression => literal @
+[12:36:13:1:26] State: 484 => To: 225   -- Action: reduce     -- Rule: functionExpression => ( anonymousFunction | class
+Expression | thisExpression | identifierExpression | superExpression | literalExpression @ | arrayLiteralExpression | ob
+jectLiteralExpression | parenthesizedExpression )
+[12:35:14:1:26] State: 225 => To: 249   -- Action: recursion  -- Rule: postfixExpression => ( postfixExpression (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression @ )
+[12:35:14:1:26] State: 249 => To: 265   -- Action: rule       -- Rule: postfixExpression => ( postfixExpression @ (#RULE
+_NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseE
+xpression ) | functionExpression )
+parsing error: postfixExpression => ( postfixExpression (#RULE_NO_LINE#) @ ( memberIndexExpression | memberDotExpression
+ | argumentsExpression | postIncrementExpression | postDecreaseExpression ) | functionExpression )
+[12:35:14:1:26] State: 225 => To: 248   -- Action: reduce     -- Rule: postfixExpression => ( postfixExpression (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression @ )
+[12:34:14:1:26] State: 248 => To: 264   -- Action: reduce     -- Rule: newExpression => ( K_NEW singleExpression [ argum
+ents ] | postfixExpression @ )
+[12:33:14:1:26] State: 264 => To: 301   -- Action: reduce     -- Rule: deleteExpression => ( K_DELETE deleteExpression |
+ newExpression @ )
+[12:32:14:1:26] State: 301 => To: 312   -- Action: reduce     -- Rule: voidExpression => ( K_VOID voidExpression | delet
+eExpression @ )
+[12:31:14:1:26] State: 312 => To: 320   -- Action: reduce     -- Rule: typeofExpression => ( K_TYPEOF typeofExpression |
+ voidExpression @ )
+[12:30:14:1:26] State: 320 => To: 328   -- Action: reduce     -- Rule: preIncrementExpression => ( 'T_INC' preIncrementE
+xpression | typeofExpression @ )
+[12:29:14:1:26] State: 328 => To: 334   -- Action: reduce     -- Rule: preDecreaseExpression => ( 'T_DEC' preDecreaseExp
+ression | preIncrementExpression @ )
+[12:28:14:1:26] State: 334 => To: 340   -- Action: reduce     -- Rule: unaryPlusExpression => ( 'T_ADD' unaryPlusExpress
+ion | preDecreaseExpression @ )
+[12:27:14:1:26] State: 340 => To: 347   -- Action: reduce     -- Rule: unaryMinusExpression => ( 'T_SUB' unaryMinusExpre
+ssion | unaryPlusExpression @ )
+[12:26:14:1:26] State: 347 => To: 352   -- Action: reduce     -- Rule: bitNotExpression => ( 'T_BIT_NOT' bitNotExpressio
+n | unaryMinusExpression @ )
+[12:25:14:1:26] State: 352 => To: 355   -- Action: reduce     -- Rule: notExpression => ( 'T_LOG_NOT' notExpression | bi
+tNotExpression @ )
+[12:24:14:1:26] State: 355 => To: 357   -- Action: reduce     -- Rule: powerExpression => [ powerExpression 'T_POWER' ]
+notExpression @
+[12:23:14:1:26] State: 357 => To: 360   -- Action: reduce     -- Rule: multiplicativeExpression => [ multiplicativeExpre
+ssion ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression @
+[12:22:14:1:26] State: 360 => To: 366   -- Action: reduce     -- Rule: additiveExpression => [ additiveExpression ( 'T_A
+DD' | 'T_SUB' ) ] multiplicativeExpression @
+[12:21:14:1:26] State: 366 => To: 374   -- Action: reduce     -- Rule: coalesceExpression => [ coalesceExpression 'T_COA
+LESCE' ] additiveExpression @
+[12:20:14:1:26] State: 374 => To: 379   -- Action: reduce     -- Rule: bitShiftExpression => [ bitShiftExpression ( 'T_L
+SHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression @
+[12:19:14:1:26] State: 379 => To: 386   -- Action: reduce     -- Rule: relationalExpression => [ relationalExpression (
+'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression @
+[12:18:14:1:26] State: 386 => To: 390   -- Action: reduce     -- Rule: instanceofExpression => [ instanceofExpression K_
+INSTANCEOF ] relationalExpression @
+[12:17:14:1:26] State: 390 => To: 398   -- Action: reduce     -- Rule: inExpression => [ inExpression K_IN ] instanceofE
+xpression @
+[12:16:14:1:26] State: 398 => To: 403   -- Action: reduce     -- Rule: equalityExpression => [ equalityExpression ( 'T_E
+QUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression @
+[12:15:14:1:26] State: 403 => To: 409   -- Action: reduce     -- Rule: bitAndExpression => [ bitAndExpression 'T_BIT_AND
+' ] equalityExpression @
+[12:14:14:1:26] State: 409 => To: 417   -- Action: reduce     -- Rule: bitXOrExpression => [ bitXOrExpression 'T_BIT_XOR
+' ] bitAndExpression @
+[12:13:14:1:26] State: 417 => To: 422   -- Action: reduce     -- Rule: bitOrExpression => [ bitOrExpression 'T_BIT_OR' ]
+ bitXOrExpression @
+[12:12:14:1:26] State: 422 => To: 427   -- Action: reduce     -- Rule: logicalAndExpression => [ logicalAndExpression 'T
+_LOG_AND' ] bitOrExpression @
+[12:11:14:1:26] State: 427 => To: 439   -- Action: reduce     -- Rule: logicalOrExpression => [ logicalOrExpression 'T_L
+OG_OR' ] logicalAndExpression @
+[12:10:14:1:26] State: 439 => To: 451   -- Action: reduce     -- Rule: ternaryExpression => logicalOrExpression @ [ 'T_Q
+UERY' singleExpression 'T_COLON' singleExpression ]
+[12:9:14:1:26] State: 451 => To: 464   -- Action: reduce     -- Rule: assignmentOperatorExpression => [ assignmentOperat
+orExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' |
+'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternaryE
+xpression @
+[12:8:14:1:26] State: 464 => To: 471   -- Action: reduce     -- Rule: assignmentExpression => [ assignmentExpression 'T_
+ASSIGN' ] assignmentOperatorExpression @
+[12:7:15:1:26] State: 471 => To: 498   -- Action: recursion  -- Rule: singleExpression => [ singleExpression ('T_COMMA')
+ ] assignmentExpression @
+[12:7:15:1:26] State: 498 => To: 524   -- Action: pass       -- Rule: singleExpression => [ singleExpression @ ('T_COMMA
+') ] assignmentExpression
+[13:7:15:1:30] State: 524 => To:  84   -- Action: shift      -- Rule: singleExpression => [ singleExpression ('T_COMMA')
+ @ ] assignmentExpression
+[13:8:15:1:30] State:  84 => To: 118   -- Action: shift      -- Rule: assignmentExpression => [ @ assignmentExpression '
+T_ASSIGN' ] assignmentOperatorExpression
+[13:9:15:1:30] State: 118 => To: 150   -- Action: shift      -- Rule: assignmentOperatorExpression => [ @ assignmentOper
+atorExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT'
+| 'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternar
+yExpression
+[13:10:15:1:30] State: 150 => To: 176   -- Action: shift      -- Rule: ternaryExpression => @ logicalOrExpression [ 'T_Q
+UERY' singleExpression 'T_COLON' singleExpression ]
+[13:11:15:1:30] State: 176 => To: 204   -- Action: shift      -- Rule: logicalOrExpression => [ @ logicalOrExpression 'T
+_LOG_OR' ] logicalAndExpression
+[13:12:15:1:30] State: 204 => To: 231   -- Action: shift      -- Rule: logicalAndExpression => [ @ logicalAndExpression
+'T_LOG_AND' ] bitOrExpression
+[13:13:15:1:30] State: 231 => To: 251   -- Action: shift      -- Rule: bitOrExpression => [ @ bitOrExpression 'T_BIT_OR'
+ ] bitXOrExpression
+[13:14:15:1:30] State: 251 => To: 266   -- Action: shift      -- Rule: bitXOrExpression => [ @ bitXOrExpression 'T_BIT_X
+OR' ] bitAndExpression
+[13:15:15:1:30] State: 266 => To: 307   -- Action: shift      -- Rule: bitAndExpression => [ @ bitAndExpression 'T_BIT_A
+ND' ] equalityExpression
+[13:16:15:1:30] State: 307 => To: 318   -- Action: shift      -- Rule: equalityExpression => [ @ equalityExpression ( 'T
+_EQUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression
+[13:17:15:1:30] State: 318 => To: 327   -- Action: shift      -- Rule: inExpression => [ @ inExpression K_IN ] instanceo
+fExpression
+[13:18:15:1:30] State: 327 => To: 332   -- Action: shift      -- Rule: instanceofExpression => [ @ instanceofExpression
+K_INSTANCEOF ] relationalExpression
+[13:19:15:1:30] State: 332 => To: 339   -- Action: shift      -- Rule: relationalExpression => [ @ relationalExpression
+( 'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression
+[13:20:15:1:30] State: 339 => To: 346   -- Action: shift      -- Rule: bitShiftExpression => [ @ bitShiftExpression ( 'T
+_LSHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression
+[13:21:15:1:30] State: 346 => To: 350   -- Action: shift      -- Rule: coalesceExpression => [ @ coalesceExpression 'T_C
+OALESCE' ] additiveExpression
+[13:22:15:1:30] State: 350 => To: 353   -- Action: shift      -- Rule: additiveExpression => [ @ additiveExpression ( 'T
+_ADD' | 'T_SUB' ) ] multiplicativeExpression
+[13:23:15:1:30] State: 353 => To: 356   -- Action: shift      -- Rule: multiplicativeExpression => [ @ multiplicativeExp
+ression ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression
+[13:24:15:1:30] State: 356 => To: 359   -- Action: shift      -- Rule: powerExpression => [ @ powerExpression 'T_POWER'
+] notExpression
+[13:25:15:1:30] State: 359 => To: 363   -- Action: shift      -- Rule: notExpression => @ ( 'T_LOG_NOT' notExpression |
+bitNotExpression )
+[13:26:15:1:30] State: 363 => To: 370   -- Action: shift      -- Rule: bitNotExpression => @ ( 'T_BIT_NOT' bitNotExpress
+ion | unaryMinusExpression )
+[13:27:15:1:30] State: 370 => To: 376   -- Action: shift      -- Rule: unaryMinusExpression => @ ( 'T_SUB' unaryMinusExp
+ression | unaryPlusExpression )
+[13:28:15:1:30] State: 376 => To: 381   -- Action: shift      -- Rule: unaryPlusExpression => @ ( 'T_ADD' unaryPlusExpre
+ssion | preDecreaseExpression )
+[13:29:15:1:30] State: 381 => To: 388   -- Action: shift      -- Rule: preDecreaseExpression => @ ( 'T_DEC' preDecreaseE
+xpression | preIncrementExpression )
+[13:30:15:1:30] State: 388 => To: 396   -- Action: shift      -- Rule: preIncrementExpression => @ ( 'T_INC' preIncremen
+tExpression | typeofExpression )
+[13:31:15:1:30] State: 396 => To: 401   -- Action: shift      -- Rule: typeofExpression => @ ( K_TYPEOF typeofExpression
+ | voidExpression )
+[13:32:15:1:30] State: 401 => To: 406   -- Action: shift      -- Rule: voidExpression => @ ( K_VOID voidExpression | del
+eteExpression )
+[13:33:15:1:30] State: 406 => To: 414   -- Action: shift      -- Rule: deleteExpression => @ ( K_DELETE deleteExpression
+ | newExpression )
+[13:34:15:1:30] State: 414 => To: 419   -- Action: shift      -- Rule: newExpression => @ ( K_NEW singleExpression [ arg
+uments ] | postfixExpression )
+[13:35:15:1:30] State: 419 => To: 424   -- Action: shift      -- Rule: postfixExpression => @ ( postfixExpression (#RULE
+_NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseE
+xpression ) | functionExpression )
+[13:36:16:1:30] State: 424 => To: 432   -- Action: shift      -- Rule: functionExpression => @ ( anonymousFunction | cla
+ssExpression | thisExpression | identifierExpression | superExpression | literalExpression | arrayLiteralExpression | ob
+jectLiteralExpression | parenthesizedExpression )
+[13:37:16:1:30] State: 432 => To: 446   -- Action: move       -- Rule: identifierExpression => @ #ID#
+[14:37:16:1:32] State: 446 => To: 456   -- Action: reduce     -- Rule: identifierExpression => #ID# @
+[14:36:16:1:32] State: 456 => To: 225   -- Action: reduce     -- Rule: functionExpression => ( anonymousFunction | class
+Expression | thisExpression | identifierExpression @ | superExpression | literalExpression | arrayLiteralExpression | ob
+jectLiteralExpression | parenthesizedExpression )
+[14:35:17:1:32] State: 225 => To: 249   -- Action: recursion  -- Rule: postfixExpression => ( postfixExpression (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression @ )
+[14:35:17:1:32] State: 249 => To: 265   -- Action: rule       -- Rule: postfixExpression => ( postfixExpression @ (#RULE
+_NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseE
+xpression ) | functionExpression )
+parsing error: postfixExpression => ( postfixExpression (#RULE_NO_LINE#) @ ( memberIndexExpression | memberDotExpression
+ | argumentsExpression | postIncrementExpression | postDecreaseExpression ) | functionExpression )
+[14:35:17:1:32] State: 225 => To: 248   -- Action: reduce     -- Rule: postfixExpression => ( postfixExpression (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression @ )
+[14:34:17:1:32] State: 248 => To: 264   -- Action: reduce     -- Rule: newExpression => ( K_NEW singleExpression [ argum
+ents ] | postfixExpression @ )
+[14:33:17:1:32] State: 264 => To: 301   -- Action: reduce     -- Rule: deleteExpression => ( K_DELETE deleteExpression |
+ newExpression @ )
+[14:32:17:1:32] State: 301 => To: 312   -- Action: reduce     -- Rule: voidExpression => ( K_VOID voidExpression | delet
+eExpression @ )
+[14:31:17:1:32] State: 312 => To: 320   -- Action: reduce     -- Rule: typeofExpression => ( K_TYPEOF typeofExpression |
+ voidExpression @ )
+[14:30:17:1:32] State: 320 => To: 328   -- Action: reduce     -- Rule: preIncrementExpression => ( 'T_INC' preIncrementE
+xpression | typeofExpression @ )
+[14:29:17:1:32] State: 328 => To: 334   -- Action: reduce     -- Rule: preDecreaseExpression => ( 'T_DEC' preDecreaseExp
+ression | preIncrementExpression @ )
+[14:28:17:1:32] State: 334 => To: 340   -- Action: reduce     -- Rule: unaryPlusExpression => ( 'T_ADD' unaryPlusExpress
+ion | preDecreaseExpression @ )
+[14:27:17:1:32] State: 340 => To: 347   -- Action: reduce     -- Rule: unaryMinusExpression => ( 'T_SUB' unaryMinusExpre
+ssion | unaryPlusExpression @ )
+[14:26:17:1:32] State: 347 => To: 352   -- Action: reduce     -- Rule: bitNotExpression => ( 'T_BIT_NOT' bitNotExpressio
+n | unaryMinusExpression @ )
+[14:25:17:1:32] State: 352 => To: 355   -- Action: reduce     -- Rule: notExpression => ( 'T_LOG_NOT' notExpression | bi
+tNotExpression @ )
+[14:24:17:1:32] State: 355 => To: 357   -- Action: reduce     -- Rule: powerExpression => [ powerExpression 'T_POWER' ]
+notExpression @
+[14:23:17:1:32] State: 357 => To: 360   -- Action: reduce     -- Rule: multiplicativeExpression => [ multiplicativeExpre
+ssion ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression @
+[14:22:17:1:32] State: 360 => To: 366   -- Action: reduce     -- Rule: additiveExpression => [ additiveExpression ( 'T_A
+DD' | 'T_SUB' ) ] multiplicativeExpression @
+[14:21:17:1:32] State: 366 => To: 374   -- Action: reduce     -- Rule: coalesceExpression => [ coalesceExpression 'T_COA
+LESCE' ] additiveExpression @
+[14:20:17:1:32] State: 374 => To: 379   -- Action: reduce     -- Rule: bitShiftExpression => [ bitShiftExpression ( 'T_L
+SHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression @
+[14:19:17:1:32] State: 379 => To: 386   -- Action: reduce     -- Rule: relationalExpression => [ relationalExpression (
+'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression @
+[14:18:17:1:32] State: 386 => To: 390   -- Action: reduce     -- Rule: instanceofExpression => [ instanceofExpression K_
+INSTANCEOF ] relationalExpression @
+[14:17:17:1:32] State: 390 => To: 398   -- Action: reduce     -- Rule: inExpression => [ inExpression K_IN ] instanceofE
+xpression @
+[14:16:17:1:32] State: 398 => To: 403   -- Action: reduce     -- Rule: equalityExpression => [ equalityExpression ( 'T_E
+QUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression @
+[14:15:17:1:32] State: 403 => To: 409   -- Action: reduce     -- Rule: bitAndExpression => [ bitAndExpression 'T_BIT_AND
+' ] equalityExpression @
+[14:14:17:1:32] State: 409 => To: 417   -- Action: reduce     -- Rule: bitXOrExpression => [ bitXOrExpression 'T_BIT_XOR
+' ] bitAndExpression @
+[14:13:17:1:32] State: 417 => To: 422   -- Action: reduce     -- Rule: bitOrExpression => [ bitOrExpression 'T_BIT_OR' ]
+ bitXOrExpression @
+[14:12:17:1:32] State: 422 => To: 427   -- Action: reduce     -- Rule: logicalAndExpression => [ logicalAndExpression 'T
+_LOG_AND' ] bitOrExpression @
+[14:11:17:1:32] State: 427 => To: 439   -- Action: reduce     -- Rule: logicalOrExpression => [ logicalOrExpression 'T_L
+OG_OR' ] logicalAndExpression @
+[14:10:17:1:32] State: 439 => To: 451   -- Action: reduce     -- Rule: ternaryExpression => logicalOrExpression @ [ 'T_Q
+UERY' singleExpression 'T_COLON' singleExpression ]
+[14:9:17:1:32] State: 451 => To: 464   -- Action: reduce     -- Rule: assignmentOperatorExpression => [ assignmentOperat
+orExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' |
+'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternaryE
+xpression @
+[14:8:18:1:32] State: 464 => To: 470   -- Action: recursion  -- Rule: assignmentExpression => [ assignmentExpression 'T_
+ASSIGN' ] assignmentOperatorExpression @
+[14:8:18:1:32] State: 470 => To: 485   -- Action: move       -- Rule: assignmentExpression => [ assignmentExpression @ '
+T_ASSIGN' ] assignmentOperatorExpression
+[15:8:18:1:34] State: 485 => To: 118   -- Action: shift      -- Rule: assignmentExpression => [ assignmentExpression 'T_
+ASSIGN' @ ] assignmentOperatorExpression
+[15:9:18:1:34] State: 118 => To: 150   -- Action: shift      -- Rule: assignmentOperatorExpression => [ @ assignmentOper
+atorExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT'
+| 'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternar
+yExpression
+[15:10:18:1:34] State: 150 => To: 176   -- Action: shift      -- Rule: ternaryExpression => @ logicalOrExpression [ 'T_Q
+UERY' singleExpression 'T_COLON' singleExpression ]
+[15:11:18:1:34] State: 176 => To: 204   -- Action: shift      -- Rule: logicalOrExpression => [ @ logicalOrExpression 'T
+_LOG_OR' ] logicalAndExpression
+[15:12:18:1:34] State: 204 => To: 231   -- Action: shift      -- Rule: logicalAndExpression => [ @ logicalAndExpression
+'T_LOG_AND' ] bitOrExpression
+[15:13:18:1:34] State: 231 => To: 251   -- Action: shift      -- Rule: bitOrExpression => [ @ bitOrExpression 'T_BIT_OR'
+ ] bitXOrExpression
+[15:14:18:1:34] State: 251 => To: 266   -- Action: shift      -- Rule: bitXOrExpression => [ @ bitXOrExpression 'T_BIT_X
+OR' ] bitAndExpression
+[15:15:18:1:34] State: 266 => To: 307   -- Action: shift      -- Rule: bitAndExpression => [ @ bitAndExpression 'T_BIT_A
+ND' ] equalityExpression
+[15:16:18:1:34] State: 307 => To: 318   -- Action: shift      -- Rule: equalityExpression => [ @ equalityExpression ( 'T
+_EQUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression
+[15:17:18:1:34] State: 318 => To: 327   -- Action: shift      -- Rule: inExpression => [ @ inExpression K_IN ] instanceo
+fExpression
+[15:18:18:1:34] State: 327 => To: 332   -- Action: shift      -- Rule: instanceofExpression => [ @ instanceofExpression
+K_INSTANCEOF ] relationalExpression
+[15:19:18:1:34] State: 332 => To: 339   -- Action: shift      -- Rule: relationalExpression => [ @ relationalExpression
+( 'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression
+[15:20:18:1:34] State: 339 => To: 346   -- Action: shift      -- Rule: bitShiftExpression => [ @ bitShiftExpression ( 'T
+_LSHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression
+[15:21:18:1:34] State: 346 => To: 350   -- Action: shift      -- Rule: coalesceExpression => [ @ coalesceExpression 'T_C
+OALESCE' ] additiveExpression
+[15:22:18:1:34] State: 350 => To: 353   -- Action: shift      -- Rule: additiveExpression => [ @ additiveExpression ( 'T
+_ADD' | 'T_SUB' ) ] multiplicativeExpression
+[15:23:18:1:34] State: 353 => To: 356   -- Action: shift      -- Rule: multiplicativeExpression => [ @ multiplicativeExp
+ression ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression
+[15:24:18:1:34] State: 356 => To: 359   -- Action: shift      -- Rule: powerExpression => [ @ powerExpression 'T_POWER'
+] notExpression
+[15:25:18:1:34] State: 359 => To: 363   -- Action: shift      -- Rule: notExpression => @ ( 'T_LOG_NOT' notExpression |
+bitNotExpression )
+[15:26:18:1:34] State: 363 => To: 370   -- Action: shift      -- Rule: bitNotExpression => @ ( 'T_BIT_NOT' bitNotExpress
+ion | unaryMinusExpression )
+[15:27:18:1:34] State: 370 => To: 376   -- Action: shift      -- Rule: unaryMinusExpression => @ ( 'T_SUB' unaryMinusExp
+ression | unaryPlusExpression )
+[15:28:18:1:34] State: 376 => To: 381   -- Action: shift      -- Rule: unaryPlusExpression => @ ( 'T_ADD' unaryPlusExpre
+ssion | preDecreaseExpression )
+[15:29:18:1:34] State: 381 => To: 388   -- Action: shift      -- Rule: preDecreaseExpression => @ ( 'T_DEC' preDecreaseE
+xpression | preIncrementExpression )
+[15:30:18:1:34] State: 388 => To: 396   -- Action: shift      -- Rule: preIncrementExpression => @ ( 'T_INC' preIncremen
+tExpression | typeofExpression )
+[15:31:18:1:34] State: 396 => To: 401   -- Action: shift      -- Rule: typeofExpression => @ ( K_TYPEOF typeofExpression
+ | voidExpression )
+[15:32:18:1:34] State: 401 => To: 406   -- Action: shift      -- Rule: voidExpression => @ ( K_VOID voidExpression | del
+eteExpression )
+[15:33:18:1:34] State: 406 => To: 414   -- Action: shift      -- Rule: deleteExpression => @ ( K_DELETE deleteExpression
+ | newExpression )
+[15:34:18:1:34] State: 414 => To: 419   -- Action: shift      -- Rule: newExpression => @ ( K_NEW singleExpression [ arg
+uments ] | postfixExpression )
+[15:35:18:1:34] State: 419 => To: 424   -- Action: shift      -- Rule: postfixExpression => @ ( postfixExpression (#RULE
+_NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseE
+xpression ) | functionExpression )
+[15:36:18:1:34] State: 424 => To: 434   -- Action: shift      -- Rule: functionExpression => @ ( anonymousFunction | cla
+ssExpression | thisExpression | identifierExpression | superExpression | literalExpression | arrayLiteralExpression | ob
+jectLiteralExpression | parenthesizedExpression )
+[15:37:18:1:34] State: 434 => To: 448   -- Action: shift      -- Rule: literalExpression => @ literal
+[15:38:18:1:34] State: 448 => To: 462   -- Action: move       -- Rule: literal => @ ( K_NULL | K_TRUE | K_FALSE | #STRIN
+G# | #REGEX# | #NUMBER# )
+[16:38:18:1:40] State: 462 => To: 469   -- Action: reduce     -- Rule: literal => ( K_NULL | K_TRUE | K_FALSE | #STRING#
+ @ | #REGEX# | #NUMBER# )
+[16:37:18:1:40] State: 469 => To: 484   -- Action: reduce     -- Rule: literalExpression => literal @
+[16:36:18:1:40] State: 484 => To: 225   -- Action: reduce     -- Rule: functionExpression => ( anonymousFunction | class
+Expression | thisExpression | identifierExpression | superExpression | literalExpression @ | arrayLiteralExpression | ob
+jectLiteralExpression | parenthesizedExpression )
+[16:35:19:1:40] State: 225 => To: 249   -- Action: recursion  -- Rule: postfixExpression => ( postfixExpression (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression @ )
+[16:35:19:1:40] State: 249 => To: 265   -- Action: rule       -- Rule: postfixExpression => ( postfixExpression @ (#RULE
+_NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseE
+xpression ) | functionExpression )
+parsing error: postfixExpression => ( postfixExpression (#RULE_NO_LINE#) @ ( memberIndexExpression | memberDotExpression
+ | argumentsExpression | postIncrementExpression | postDecreaseExpression ) | functionExpression )
+[16:35:19:1:40] State: 225 => To: 248   -- Action: reduce     -- Rule: postfixExpression => ( postfixExpression (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression @ )
+[16:34:19:1:40] State: 248 => To: 264   -- Action: reduce     -- Rule: newExpression => ( K_NEW singleExpression [ argum
+ents ] | postfixExpression @ )
+[16:33:19:1:40] State: 264 => To: 301   -- Action: reduce     -- Rule: deleteExpression => ( K_DELETE deleteExpression |
+ newExpression @ )
+[16:32:19:1:40] State: 301 => To: 312   -- Action: reduce     -- Rule: voidExpression => ( K_VOID voidExpression | delet
+eExpression @ )
+[16:31:19:1:40] State: 312 => To: 320   -- Action: reduce     -- Rule: typeofExpression => ( K_TYPEOF typeofExpression |
+ voidExpression @ )
+[16:30:19:1:40] State: 320 => To: 328   -- Action: reduce     -- Rule: preIncrementExpression => ( 'T_INC' preIncrementE
+xpression | typeofExpression @ )
+[16:29:19:1:40] State: 328 => To: 334   -- Action: reduce     -- Rule: preDecreaseExpression => ( 'T_DEC' preDecreaseExp
+ression | preIncrementExpression @ )
+[16:28:19:1:40] State: 334 => To: 340   -- Action: reduce     -- Rule: unaryPlusExpression => ( 'T_ADD' unaryPlusExpress
+ion | preDecreaseExpression @ )
+[16:27:19:1:40] State: 340 => To: 347   -- Action: reduce     -- Rule: unaryMinusExpression => ( 'T_SUB' unaryMinusExpre
+ssion | unaryPlusExpression @ )
+[16:26:19:1:40] State: 347 => To: 352   -- Action: reduce     -- Rule: bitNotExpression => ( 'T_BIT_NOT' bitNotExpressio
+n | unaryMinusExpression @ )
+[16:25:19:1:40] State: 352 => To: 355   -- Action: reduce     -- Rule: notExpression => ( 'T_LOG_NOT' notExpression | bi
+tNotExpression @ )
+[16:24:19:1:40] State: 355 => To: 357   -- Action: reduce     -- Rule: powerExpression => [ powerExpression 'T_POWER' ]
+notExpression @
+[16:23:19:1:40] State: 357 => To: 360   -- Action: reduce     -- Rule: multiplicativeExpression => [ multiplicativeExpre
+ssion ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression @
+[16:22:19:1:40] State: 360 => To: 366   -- Action: reduce     -- Rule: additiveExpression => [ additiveExpression ( 'T_A
+DD' | 'T_SUB' ) ] multiplicativeExpression @
+[16:21:19:1:40] State: 366 => To: 374   -- Action: reduce     -- Rule: coalesceExpression => [ coalesceExpression 'T_COA
+LESCE' ] additiveExpression @
+[16:20:19:1:40] State: 374 => To: 379   -- Action: reduce     -- Rule: bitShiftExpression => [ bitShiftExpression ( 'T_L
+SHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression @
+[16:19:19:1:40] State: 379 => To: 386   -- Action: reduce     -- Rule: relationalExpression => [ relationalExpression (
+'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression @
+[16:18:19:1:40] State: 386 => To: 390   -- Action: reduce     -- Rule: instanceofExpression => [ instanceofExpression K_
+INSTANCEOF ] relationalExpression @
+[16:17:19:1:40] State: 390 => To: 398   -- Action: reduce     -- Rule: inExpression => [ inExpression K_IN ] instanceofE
+xpression @
+[16:16:19:1:40] State: 398 => To: 403   -- Action: reduce     -- Rule: equalityExpression => [ equalityExpression ( 'T_E
+QUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression @
+[16:15:19:1:40] State: 403 => To: 409   -- Action: reduce     -- Rule: bitAndExpression => [ bitAndExpression 'T_BIT_AND
+' ] equalityExpression @
+[16:14:19:1:40] State: 409 => To: 417   -- Action: reduce     -- Rule: bitXOrExpression => [ bitXOrExpression 'T_BIT_XOR
+' ] bitAndExpression @
+[16:13:19:1:40] State: 417 => To: 422   -- Action: reduce     -- Rule: bitOrExpression => [ bitOrExpression 'T_BIT_OR' ]
+ bitXOrExpression @
+[16:12:19:1:40] State: 422 => To: 427   -- Action: reduce     -- Rule: logicalAndExpression => [ logicalAndExpression 'T
+_LOG_AND' ] bitOrExpression @
+[16:11:19:1:40] State: 427 => To: 439   -- Action: reduce     -- Rule: logicalOrExpression => [ logicalOrExpression 'T_L
+OG_OR' ] logicalAndExpression @
+[16:10:19:1:40] State: 439 => To: 451   -- Action: reduce     -- Rule: ternaryExpression => logicalOrExpression @ [ 'T_Q
+UERY' singleExpression 'T_COLON' singleExpression ]
+[16:9:19:1:40] State: 451 => To: 464   -- Action: reduce     -- Rule: assignmentOperatorExpression => [ assignmentOperat
+orExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' |
+'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternaryE
+xpression @
+[16:8:19:1:40] State: 464 => To: 471   -- Action: reduce     -- Rule: assignmentExpression => [ assignmentExpression 'T_
+ASSIGN' ] assignmentOperatorExpression @
+[16:7:20:1:40] State: 471 => To: 498   -- Action: recursion  -- Rule: singleExpression => [ singleExpression ('T_COMMA')
+ ] assignmentExpression @
+[16:7:20:1:40] State: 498 => To: 524   -- Action: pass       -- Rule: singleExpression => [ singleExpression @ ('T_COMMA
+') ] assignmentExpression
+[17:7:20:1:40] State: 524 => To:  84   -- Action: shift      -- Rule: singleExpression => [ singleExpression ('T_COMMA')
+ @ ] assignmentExpression
+[17:8:20:1:40] State:  84 => To: 118   -- Action: shift      -- Rule: assignmentExpression => [ @ assignmentExpression '
+T_ASSIGN' ] assignmentOperatorExpression
+[17:9:20:1:40] State: 118 => To: 150   -- Action: shift      -- Rule: assignmentOperatorExpression => [ @ assignmentOper
+atorExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT'
+| 'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternar
+yExpression
+[17:10:20:1:40] State: 150 => To: 176   -- Action: shift      -- Rule: ternaryExpression => @ logicalOrExpression [ 'T_Q
+UERY' singleExpression 'T_COLON' singleExpression ]
+[17:11:20:1:40] State: 176 => To: 204   -- Action: shift      -- Rule: logicalOrExpression => [ @ logicalOrExpression 'T
+_LOG_OR' ] logicalAndExpression
+[17:12:20:1:40] State: 204 => To: 231   -- Action: shift      -- Rule: logicalAndExpression => [ @ logicalAndExpression
+'T_LOG_AND' ] bitOrExpression
+[17:13:20:1:40] State: 231 => To: 251   -- Action: shift      -- Rule: bitOrExpression => [ @ bitOrExpression 'T_BIT_OR'
+ ] bitXOrExpression
+[17:14:20:1:40] State: 251 => To: 266   -- Action: shift      -- Rule: bitXOrExpression => [ @ bitXOrExpression 'T_BIT_X
+OR' ] bitAndExpression
+[17:15:20:1:40] State: 266 => To: 307   -- Action: shift      -- Rule: bitAndExpression => [ @ bitAndExpression 'T_BIT_A
+ND' ] equalityExpression
+[17:16:20:1:40] State: 307 => To: 318   -- Action: shift      -- Rule: equalityExpression => [ @ equalityExpression ( 'T
+_EQUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression
+[17:17:20:1:40] State: 318 => To: 327   -- Action: shift      -- Rule: inExpression => [ @ inExpression K_IN ] instanceo
+fExpression
+[17:18:20:1:40] State: 327 => To: 332   -- Action: shift      -- Rule: instanceofExpression => [ @ instanceofExpression
+K_INSTANCEOF ] relationalExpression
+[17:19:20:1:40] State: 332 => To: 339   -- Action: shift      -- Rule: relationalExpression => [ @ relationalExpression
+( 'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression
+[17:20:20:1:40] State: 339 => To: 346   -- Action: shift      -- Rule: bitShiftExpression => [ @ bitShiftExpression ( 'T
+_LSHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression
+[17:21:20:1:40] State: 346 => To: 350   -- Action: shift      -- Rule: coalesceExpression => [ @ coalesceExpression 'T_C
+OALESCE' ] additiveExpression
+[17:22:20:1:40] State: 350 => To: 353   -- Action: shift      -- Rule: additiveExpression => [ @ additiveExpression ( 'T
+_ADD' | 'T_SUB' ) ] multiplicativeExpression
+[17:23:20:1:40] State: 353 => To: 356   -- Action: shift      -- Rule: multiplicativeExpression => [ @ multiplicativeExp
+ression ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression
+[17:24:20:1:40] State: 356 => To: 359   -- Action: shift      -- Rule: powerExpression => [ @ powerExpression 'T_POWER'
+] notExpression
+[17:25:20:1:40] State: 359 => To: 363   -- Action: shift      -- Rule: notExpression => @ ( 'T_LOG_NOT' notExpression |
+bitNotExpression )
+[17:26:20:1:40] State: 363 => To: 370   -- Action: shift      -- Rule: bitNotExpression => @ ( 'T_BIT_NOT' bitNotExpress
+ion | unaryMinusExpression )
+[17:27:20:1:40] State: 370 => To: 376   -- Action: shift      -- Rule: unaryMinusExpression => @ ( 'T_SUB' unaryMinusExp
+ression | unaryPlusExpression )
+[17:28:20:1:40] State: 376 => To: 381   -- Action: shift      -- Rule: unaryPlusExpression => @ ( 'T_ADD' unaryPlusExpre
+ssion | preDecreaseExpression )
+[17:29:20:1:40] State: 381 => To: 388   -- Action: shift      -- Rule: preDecreaseExpression => @ ( 'T_DEC' preDecreaseE
+xpression | preIncrementExpression )
+[17:30:20:1:40] State: 388 => To: 396   -- Action: shift      -- Rule: preIncrementExpression => @ ( 'T_INC' preIncremen
+tExpression | typeofExpression )
+[17:31:20:1:40] State: 396 => To: 401   -- Action: shift      -- Rule: typeofExpression => @ ( K_TYPEOF typeofExpression
+ | voidExpression )
+[17:32:20:1:40] State: 401 => To: 406   -- Action: shift      -- Rule: voidExpression => @ ( K_VOID voidExpression | del
+eteExpression )
+[17:33:20:1:40] State: 406 => To: 414   -- Action: shift      -- Rule: deleteExpression => @ ( K_DELETE deleteExpression
+ | newExpression )
+[17:34:20:1:40] State: 414 => To: 419   -- Action: shift      -- Rule: newExpression => @ ( K_NEW singleExpression [ arg
+uments ] | postfixExpression )
+[17:35:20:1:40] State: 419 => To: 424   -- Action: shift      -- Rule: postfixExpression => @ ( postfixExpression (#RULE
+_NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseE
+xpression ) | functionExpression )
+[17:36:21:1:40] State: 424 => To: 432   -- Action: shift      -- Rule: functionExpression => @ ( anonymousFunction | cla
+ssExpression | thisExpression | identifierExpression | superExpression | literalExpression | arrayLiteralExpression | ob
+jectLiteralExpression | parenthesizedExpression )
+[17:37:21:1:40] State: 432 => To: 446   -- Action: move       -- Rule: identifierExpression => @ #ID#
+[18:37:21:1:42] State: 446 => To: 456   -- Action: reduce     -- Rule: identifierExpression => #ID# @
+[18:36:21:1:42] State: 456 => To: 225   -- Action: reduce     -- Rule: functionExpression => ( anonymousFunction | class
+Expression | thisExpression | identifierExpression @ | superExpression | literalExpression | arrayLiteralExpression | ob
+jectLiteralExpression | parenthesizedExpression )
+[18:35:22:1:42] State: 225 => To: 249   -- Action: recursion  -- Rule: postfixExpression => ( postfixExpression (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression @ )
+[18:35:22:1:42] State: 249 => To: 265   -- Action: rule       -- Rule: postfixExpression => ( postfixExpression @ (#RULE
+_NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseE
+xpression ) | functionExpression )
+parsing error: postfixExpression => ( postfixExpression (#RULE_NO_LINE#) @ ( memberIndexExpression | memberDotExpression
+ | argumentsExpression | postIncrementExpression | postDecreaseExpression ) | functionExpression )
+[18:35:22:1:42] State: 225 => To: 248   -- Action: reduce     -- Rule: postfixExpression => ( postfixExpression (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression @ )
+[18:34:22:1:42] State: 248 => To: 264   -- Action: reduce     -- Rule: newExpression => ( K_NEW singleExpression [ argum
+ents ] | postfixExpression @ )
+[18:33:22:1:42] State: 264 => To: 301   -- Action: reduce     -- Rule: deleteExpression => ( K_DELETE deleteExpression |
+ newExpression @ )
+[18:32:22:1:42] State: 301 => To: 312   -- Action: reduce     -- Rule: voidExpression => ( K_VOID voidExpression | delet
+eExpression @ )
+[18:31:22:1:42] State: 312 => To: 320   -- Action: reduce     -- Rule: typeofExpression => ( K_TYPEOF typeofExpression |
+ voidExpression @ )
+[18:30:22:1:42] State: 320 => To: 328   -- Action: reduce     -- Rule: preIncrementExpression => ( 'T_INC' preIncrementE
+xpression | typeofExpression @ )
+[18:29:22:1:42] State: 328 => To: 334   -- Action: reduce     -- Rule: preDecreaseExpression => ( 'T_DEC' preDecreaseExp
+ression | preIncrementExpression @ )
+[18:28:22:1:42] State: 334 => To: 340   -- Action: reduce     -- Rule: unaryPlusExpression => ( 'T_ADD' unaryPlusExpress
+ion | preDecreaseExpression @ )
+[18:27:22:1:42] State: 340 => To: 347   -- Action: reduce     -- Rule: unaryMinusExpression => ( 'T_SUB' unaryMinusExpre
+ssion | unaryPlusExpression @ )
+[18:26:22:1:42] State: 347 => To: 352   -- Action: reduce     -- Rule: bitNotExpression => ( 'T_BIT_NOT' bitNotExpressio
+n | unaryMinusExpression @ )
+[18:25:22:1:42] State: 352 => To: 355   -- Action: reduce     -- Rule: notExpression => ( 'T_LOG_NOT' notExpression | bi
+tNotExpression @ )
+[18:24:22:1:42] State: 355 => To: 357   -- Action: reduce     -- Rule: powerExpression => [ powerExpression 'T_POWER' ]
+notExpression @
+[18:23:22:1:42] State: 357 => To: 360   -- Action: reduce     -- Rule: multiplicativeExpression => [ multiplicativeExpre
+ssion ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression @
+[18:22:22:1:42] State: 360 => To: 366   -- Action: reduce     -- Rule: additiveExpression => [ additiveExpression ( 'T_A
+DD' | 'T_SUB' ) ] multiplicativeExpression @
+[18:21:22:1:42] State: 366 => To: 374   -- Action: reduce     -- Rule: coalesceExpression => [ coalesceExpression 'T_COA
+LESCE' ] additiveExpression @
+[18:20:22:1:42] State: 374 => To: 379   -- Action: reduce     -- Rule: bitShiftExpression => [ bitShiftExpression ( 'T_L
+SHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression @
+[18:19:22:1:42] State: 379 => To: 386   -- Action: reduce     -- Rule: relationalExpression => [ relationalExpression (
+'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression @
+[18:18:22:1:42] State: 386 => To: 390   -- Action: reduce     -- Rule: instanceofExpression => [ instanceofExpression K_
+INSTANCEOF ] relationalExpression @
+[18:17:22:1:42] State: 390 => To: 398   -- Action: reduce     -- Rule: inExpression => [ inExpression K_IN ] instanceofE
+xpression @
+[18:16:22:1:42] State: 398 => To: 403   -- Action: reduce     -- Rule: equalityExpression => [ equalityExpression ( 'T_E
+QUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression @
+[18:15:22:1:42] State: 403 => To: 409   -- Action: reduce     -- Rule: bitAndExpression => [ bitAndExpression 'T_BIT_AND
+' ] equalityExpression @
+[18:14:22:1:42] State: 409 => To: 417   -- Action: reduce     -- Rule: bitXOrExpression => [ bitXOrExpression 'T_BIT_XOR
+' ] bitAndExpression @
+[18:13:22:1:42] State: 417 => To: 422   -- Action: reduce     -- Rule: bitOrExpression => [ bitOrExpression 'T_BIT_OR' ]
+ bitXOrExpression @
+[18:12:22:1:42] State: 422 => To: 427   -- Action: reduce     -- Rule: logicalAndExpression => [ logicalAndExpression 'T
+_LOG_AND' ] bitOrExpression @
+[18:11:22:1:42] State: 427 => To: 439   -- Action: reduce     -- Rule: logicalOrExpression => [ logicalOrExpression 'T_L
+OG_OR' ] logicalAndExpression @
+[18:10:22:1:42] State: 439 => To: 451   -- Action: reduce     -- Rule: ternaryExpression => logicalOrExpression @ [ 'T_Q
+UERY' singleExpression 'T_COLON' singleExpression ]
+[18:9:22:1:42] State: 451 => To: 464   -- Action: reduce     -- Rule: assignmentOperatorExpression => [ assignmentOperat
+orExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' |
+'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternaryE
+xpression @
+[18:8:23:1:42] State: 464 => To: 470   -- Action: recursion  -- Rule: assignmentExpression => [ assignmentExpression 'T_
+ASSIGN' ] assignmentOperatorExpression @
+[18:8:23:1:42] State: 470 => To: 485   -- Action: move       -- Rule: assignmentExpression => [ assignmentExpression @ '
+T_ASSIGN' ] assignmentOperatorExpression
+[19:8:23:1:44] State: 485 => To: 118   -- Action: shift      -- Rule: assignmentExpression => [ assignmentExpression 'T_
+ASSIGN' @ ] assignmentOperatorExpression
+[19:9:23:1:44] State: 118 => To: 150   -- Action: shift      -- Rule: assignmentOperatorExpression => [ @ assignmentOper
+atorExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT'
+| 'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternar
+yExpression
+[19:10:23:1:44] State: 150 => To: 176   -- Action: shift      -- Rule: ternaryExpression => @ logicalOrExpression [ 'T_Q
+UERY' singleExpression 'T_COLON' singleExpression ]
+[19:11:23:1:44] State: 176 => To: 204   -- Action: shift      -- Rule: logicalOrExpression => [ @ logicalOrExpression 'T
+_LOG_OR' ] logicalAndExpression
+[19:12:23:1:44] State: 204 => To: 231   -- Action: shift      -- Rule: logicalAndExpression => [ @ logicalAndExpression
+'T_LOG_AND' ] bitOrExpression
+[19:13:23:1:44] State: 231 => To: 251   -- Action: shift      -- Rule: bitOrExpression => [ @ bitOrExpression 'T_BIT_OR'
+ ] bitXOrExpression
+[19:14:23:1:44] State: 251 => To: 266   -- Action: shift      -- Rule: bitXOrExpression => [ @ bitXOrExpression 'T_BIT_X
+OR' ] bitAndExpression
+[19:15:23:1:44] State: 266 => To: 307   -- Action: shift      -- Rule: bitAndExpression => [ @ bitAndExpression 'T_BIT_A
+ND' ] equalityExpression
+[19:16:23:1:44] State: 307 => To: 318   -- Action: shift      -- Rule: equalityExpression => [ @ equalityExpression ( 'T
+_EQUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression
+[19:17:23:1:44] State: 318 => To: 327   -- Action: shift      -- Rule: inExpression => [ @ inExpression K_IN ] instanceo
+fExpression
+[19:18:23:1:44] State: 327 => To: 332   -- Action: shift      -- Rule: instanceofExpression => [ @ instanceofExpression
+K_INSTANCEOF ] relationalExpression
+[19:19:23:1:44] State: 332 => To: 339   -- Action: shift      -- Rule: relationalExpression => [ @ relationalExpression
+( 'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression
+[19:20:23:1:44] State: 339 => To: 346   -- Action: shift      -- Rule: bitShiftExpression => [ @ bitShiftExpression ( 'T
+_LSHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression
+[19:21:23:1:44] State: 346 => To: 350   -- Action: shift      -- Rule: coalesceExpression => [ @ coalesceExpression 'T_C
+OALESCE' ] additiveExpression
+[19:22:23:1:44] State: 350 => To: 353   -- Action: shift      -- Rule: additiveExpression => [ @ additiveExpression ( 'T
+_ADD' | 'T_SUB' ) ] multiplicativeExpression
+[19:23:23:1:44] State: 353 => To: 356   -- Action: shift      -- Rule: multiplicativeExpression => [ @ multiplicativeExp
+ression ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression
+[19:24:23:1:44] State: 356 => To: 359   -- Action: shift      -- Rule: powerExpression => [ @ powerExpression 'T_POWER'
+] notExpression
+[19:25:23:1:44] State: 359 => To: 363   -- Action: shift      -- Rule: notExpression => @ ( 'T_LOG_NOT' notExpression |
+bitNotExpression )
+[19:26:23:1:44] State: 363 => To: 370   -- Action: shift      -- Rule: bitNotExpression => @ ( 'T_BIT_NOT' bitNotExpress
+ion | unaryMinusExpression )
+[19:27:23:1:44] State: 370 => To: 376   -- Action: shift      -- Rule: unaryMinusExpression => @ ( 'T_SUB' unaryMinusExp
+ression | unaryPlusExpression )
+[19:28:23:1:44] State: 376 => To: 381   -- Action: shift      -- Rule: unaryPlusExpression => @ ( 'T_ADD' unaryPlusExpre
+ssion | preDecreaseExpression )
+[19:29:23:1:44] State: 381 => To: 388   -- Action: shift      -- Rule: preDecreaseExpression => @ ( 'T_DEC' preDecreaseE
+xpression | preIncrementExpression )
+[19:30:23:1:44] State: 388 => To: 396   -- Action: shift      -- Rule: preIncrementExpression => @ ( 'T_INC' preIncremen
+tExpression | typeofExpression )
+[19:31:23:1:44] State: 396 => To: 401   -- Action: shift      -- Rule: typeofExpression => @ ( K_TYPEOF typeofExpression
+ | voidExpression )
+[19:32:23:1:44] State: 401 => To: 406   -- Action: shift      -- Rule: voidExpression => @ ( K_VOID voidExpression | del
+eteExpression )
+[19:33:23:1:44] State: 406 => To: 414   -- Action: shift      -- Rule: deleteExpression => @ ( K_DELETE deleteExpression
+ | newExpression )
+[19:34:23:1:44] State: 414 => To: 419   -- Action: shift      -- Rule: newExpression => @ ( K_NEW singleExpression [ arg
+uments ] | postfixExpression )
+[19:35:23:1:44] State: 419 => To: 424   -- Action: shift      -- Rule: postfixExpression => @ ( postfixExpression (#RULE
+_NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseE
+xpression ) | functionExpression )
+[19:36:23:1:44] State: 424 => To: 434   -- Action: shift      -- Rule: functionExpression => @ ( anonymousFunction | cla
+ssExpression | thisExpression | identifierExpression | superExpression | literalExpression | arrayLiteralExpression | ob
+jectLiteralExpression | parenthesizedExpression )
+[19:37:23:1:44] State: 434 => To: 448   -- Action: shift      -- Rule: literalExpression => @ literal
+[19:38:23:1:44] State: 448 => To: 462   -- Action: move       -- Rule: literal => @ ( K_NULL | K_TRUE | K_FALSE | #STRIN
+G# | #REGEX# | #NUMBER# )
+[20:38:23:1:52] State: 462 => To: 469   -- Action: reduce     -- Rule: literal => ( K_NULL | K_TRUE | K_FALSE | #STRING#
+ @ | #REGEX# | #NUMBER# )
+[20:37:23:1:52] State: 469 => To: 484   -- Action: reduce     -- Rule: literalExpression => literal @
+[20:36:23:1:52] State: 484 => To: 225   -- Action: reduce     -- Rule: functionExpression => ( anonymousFunction | class
+Expression | thisExpression | identifierExpression | superExpression | literalExpression @ | arrayLiteralExpression | ob
+jectLiteralExpression | parenthesizedExpression )
+[20:35:24:1:52] State: 225 => To: 249   -- Action: recursion  -- Rule: postfixExpression => ( postfixExpression (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression @ )
+[20:35:24:1:52] State: 249 => To: 265   -- Action: rule       -- Rule: postfixExpression => ( postfixExpression @ (#RULE
+_NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseE
+xpression ) | functionExpression )
+parsing error: postfixExpression => ( postfixExpression (#RULE_NO_LINE#) @ ( memberIndexExpression | memberDotExpression
+ | argumentsExpression | postIncrementExpression | postDecreaseExpression ) | functionExpression )
+[20:35:24:1:52] State: 225 => To: 248   -- Action: reduce     -- Rule: postfixExpression => ( postfixExpression (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression @ )
+[20:34:24:1:52] State: 248 => To: 264   -- Action: reduce     -- Rule: newExpression => ( K_NEW singleExpression [ argum
+ents ] | postfixExpression @ )
+[20:33:24:1:52] State: 264 => To: 301   -- Action: reduce     -- Rule: deleteExpression => ( K_DELETE deleteExpression |
+ newExpression @ )
+[20:32:24:1:52] State: 301 => To: 312   -- Action: reduce     -- Rule: voidExpression => ( K_VOID voidExpression | delet
+eExpression @ )
+[20:31:24:1:52] State: 312 => To: 320   -- Action: reduce     -- Rule: typeofExpression => ( K_TYPEOF typeofExpression |
+ voidExpression @ )
+[20:30:24:1:52] State: 320 => To: 328   -- Action: reduce     -- Rule: preIncrementExpression => ( 'T_INC' preIncrementE
+xpression | typeofExpression @ )
+[20:29:24:1:52] State: 328 => To: 334   -- Action: reduce     -- Rule: preDecreaseExpression => ( 'T_DEC' preDecreaseExp
+ression | preIncrementExpression @ )
+[20:28:24:1:52] State: 334 => To: 340   -- Action: reduce     -- Rule: unaryPlusExpression => ( 'T_ADD' unaryPlusExpress
+ion | preDecreaseExpression @ )
+[20:27:24:1:52] State: 340 => To: 347   -- Action: reduce     -- Rule: unaryMinusExpression => ( 'T_SUB' unaryMinusExpre
+ssion | unaryPlusExpression @ )
+[20:26:24:1:52] State: 347 => To: 352   -- Action: reduce     -- Rule: bitNotExpression => ( 'T_BIT_NOT' bitNotExpressio
+n | unaryMinusExpression @ )
+[20:25:24:1:52] State: 352 => To: 355   -- Action: reduce     -- Rule: notExpression => ( 'T_LOG_NOT' notExpression | bi
+tNotExpression @ )
+[20:24:24:1:52] State: 355 => To: 357   -- Action: reduce     -- Rule: powerExpression => [ powerExpression 'T_POWER' ]
+notExpression @
+[20:23:24:1:52] State: 357 => To: 360   -- Action: reduce     -- Rule: multiplicativeExpression => [ multiplicativeExpre
+ssion ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression @
+[20:22:24:1:52] State: 360 => To: 366   -- Action: reduce     -- Rule: additiveExpression => [ additiveExpression ( 'T_A
+DD' | 'T_SUB' ) ] multiplicativeExpression @
+[20:21:24:1:52] State: 366 => To: 374   -- Action: reduce     -- Rule: coalesceExpression => [ coalesceExpression 'T_COA
+LESCE' ] additiveExpression @
+[20:20:24:1:52] State: 374 => To: 379   -- Action: reduce     -- Rule: bitShiftExpression => [ bitShiftExpression ( 'T_L
+SHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression @
+[20:19:24:1:52] State: 379 => To: 386   -- Action: reduce     -- Rule: relationalExpression => [ relationalExpression (
+'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression @
+[20:18:24:1:52] State: 386 => To: 390   -- Action: reduce     -- Rule: instanceofExpression => [ instanceofExpression K_
+INSTANCEOF ] relationalExpression @
+[20:17:24:1:52] State: 390 => To: 398   -- Action: reduce     -- Rule: inExpression => [ inExpression K_IN ] instanceofE
+xpression @
+[20:16:24:1:52] State: 398 => To: 403   -- Action: reduce     -- Rule: equalityExpression => [ equalityExpression ( 'T_E
+QUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression @
+[20:15:24:1:52] State: 403 => To: 409   -- Action: reduce     -- Rule: bitAndExpression => [ bitAndExpression 'T_BIT_AND
+' ] equalityExpression @
+[20:14:24:1:52] State: 409 => To: 417   -- Action: reduce     -- Rule: bitXOrExpression => [ bitXOrExpression 'T_BIT_XOR
+' ] bitAndExpression @
+[20:13:24:1:52] State: 417 => To: 422   -- Action: reduce     -- Rule: bitOrExpression => [ bitOrExpression 'T_BIT_OR' ]
+ bitXOrExpression @
+[20:12:24:1:52] State: 422 => To: 427   -- Action: reduce     -- Rule: logicalAndExpression => [ logicalAndExpression 'T
+_LOG_AND' ] bitOrExpression @
+[20:11:24:1:52] State: 427 => To: 439   -- Action: reduce     -- Rule: logicalOrExpression => [ logicalOrExpression 'T_L
+OG_OR' ] logicalAndExpression @
+[20:10:24:1:52] State: 439 => To: 451   -- Action: reduce     -- Rule: ternaryExpression => logicalOrExpression @ [ 'T_Q
+UERY' singleExpression 'T_COLON' singleExpression ]
+[20:9:24:1:52] State: 451 => To: 464   -- Action: reduce     -- Rule: assignmentOperatorExpression => [ assignmentOperat
+orExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' |
+'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternaryE
+xpression @
+[20:8:24:1:52] State: 464 => To: 471   -- Action: reduce     -- Rule: assignmentExpression => [ assignmentExpression 'T_
+ASSIGN' ] assignmentOperatorExpression @
+[20:7:25:1:52] State: 471 => To: 498   -- Action: recursion  -- Rule: singleExpression => [ singleExpression ('T_COMMA')
+ ] assignmentExpression @
+[20:7:25:1:52] State: 498 => To: 524   -- Action: pass       -- Rule: singleExpression => [ singleExpression @ ('T_COMMA
+') ] assignmentExpression
+[21:7:25:1:52] State: 524 => To:  84   -- Action: shift      -- Rule: singleExpression => [ singleExpression ('T_COMMA')
+ @ ] assignmentExpression
+[21:8:25:1:52] State:  84 => To: 118   -- Action: shift      -- Rule: assignmentExpression => [ @ assignmentExpression '
+T_ASSIGN' ] assignmentOperatorExpression
+[21:9:25:1:52] State: 118 => To: 150   -- Action: shift      -- Rule: assignmentOperatorExpression => [ @ assignmentOper
+atorExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT'
+| 'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternar
+yExpression
+[21:10:25:1:52] State: 150 => To: 176   -- Action: shift      -- Rule: ternaryExpression => @ logicalOrExpression [ 'T_Q
+UERY' singleExpression 'T_COLON' singleExpression ]
+[21:11:25:1:52] State: 176 => To: 204   -- Action: shift      -- Rule: logicalOrExpression => [ @ logicalOrExpression 'T
+_LOG_OR' ] logicalAndExpression
+[21:12:25:1:52] State: 204 => To: 231   -- Action: shift      -- Rule: logicalAndExpression => [ @ logicalAndExpression
+'T_LOG_AND' ] bitOrExpression
+[21:13:25:1:52] State: 231 => To: 251   -- Action: shift      -- Rule: bitOrExpression => [ @ bitOrExpression 'T_BIT_OR'
+ ] bitXOrExpression
+[21:14:25:1:52] State: 251 => To: 266   -- Action: shift      -- Rule: bitXOrExpression => [ @ bitXOrExpression 'T_BIT_X
+OR' ] bitAndExpression
+[21:15:25:1:52] State: 266 => To: 307   -- Action: shift      -- Rule: bitAndExpression => [ @ bitAndExpression 'T_BIT_A
+ND' ] equalityExpression
+[21:16:25:1:52] State: 307 => To: 318   -- Action: shift      -- Rule: equalityExpression => [ @ equalityExpression ( 'T
+_EQUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression
+[21:17:25:1:52] State: 318 => To: 327   -- Action: shift      -- Rule: inExpression => [ @ inExpression K_IN ] instanceo
+fExpression
+[21:18:25:1:52] State: 327 => To: 332   -- Action: shift      -- Rule: instanceofExpression => [ @ instanceofExpression
+K_INSTANCEOF ] relationalExpression
+[21:19:25:1:52] State: 332 => To: 339   -- Action: shift      -- Rule: relationalExpression => [ @ relationalExpression
+( 'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression
+[21:20:25:1:52] State: 339 => To: 346   -- Action: shift      -- Rule: bitShiftExpression => [ @ bitShiftExpression ( 'T
+_LSHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression
+[21:21:25:1:52] State: 346 => To: 350   -- Action: shift      -- Rule: coalesceExpression => [ @ coalesceExpression 'T_C
+OALESCE' ] additiveExpression
+[21:22:25:1:52] State: 350 => To: 353   -- Action: shift      -- Rule: additiveExpression => [ @ additiveExpression ( 'T
+_ADD' | 'T_SUB' ) ] multiplicativeExpression
+[21:23:25:1:52] State: 353 => To: 356   -- Action: shift      -- Rule: multiplicativeExpression => [ @ multiplicativeExp
+ression ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression
+[21:24:25:1:52] State: 356 => To: 359   -- Action: shift      -- Rule: powerExpression => [ @ powerExpression 'T_POWER'
+] notExpression
+[21:25:25:1:52] State: 359 => To: 363   -- Action: shift      -- Rule: notExpression => @ ( 'T_LOG_NOT' notExpression |
+bitNotExpression )
+[21:26:25:1:52] State: 363 => To: 370   -- Action: shift      -- Rule: bitNotExpression => @ ( 'T_BIT_NOT' bitNotExpress
+ion | unaryMinusExpression )
+[21:27:25:1:52] State: 370 => To: 376   -- Action: shift      -- Rule: unaryMinusExpression => @ ( 'T_SUB' unaryMinusExp
+ression | unaryPlusExpression )
+[21:28:25:1:52] State: 376 => To: 381   -- Action: shift      -- Rule: unaryPlusExpression => @ ( 'T_ADD' unaryPlusExpre
+ssion | preDecreaseExpression )
+[21:29:25:1:52] State: 381 => To: 388   -- Action: shift      -- Rule: preDecreaseExpression => @ ( 'T_DEC' preDecreaseE
+xpression | preIncrementExpression )
+[21:30:25:1:52] State: 388 => To: 396   -- Action: shift      -- Rule: preIncrementExpression => @ ( 'T_INC' preIncremen
+tExpression | typeofExpression )
+[21:31:25:1:52] State: 396 => To: 401   -- Action: shift      -- Rule: typeofExpression => @ ( K_TYPEOF typeofExpression
+ | voidExpression )
+[21:32:25:1:52] State: 401 => To: 406   -- Action: shift      -- Rule: voidExpression => @ ( K_VOID voidExpression | del
+eteExpression )
+[21:33:25:1:52] State: 406 => To: 414   -- Action: shift      -- Rule: deleteExpression => @ ( K_DELETE deleteExpression
+ | newExpression )
+[21:34:25:1:52] State: 414 => To: 419   -- Action: shift      -- Rule: newExpression => @ ( K_NEW singleExpression [ arg
+uments ] | postfixExpression )
+[21:35:25:1:52] State: 419 => To: 424   -- Action: shift      -- Rule: postfixExpression => @ ( postfixExpression (#RULE
+_NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseE
+xpression ) | functionExpression )
+[21:36:26:1:52] State: 424 => To: 432   -- Action: shift      -- Rule: functionExpression => @ ( anonymousFunction | cla
+ssExpression | thisExpression | identifierExpression | superExpression | literalExpression | arrayLiteralExpression | ob
+jectLiteralExpression | parenthesizedExpression )
+[21:37:26:1:52] State: 432 => To: 446   -- Action: move       -- Rule: identifierExpression => @ #ID#
+[22:37:26:1:54] State: 446 => To: 456   -- Action: reduce     -- Rule: identifierExpression => #ID# @
+[22:36:26:1:54] State: 456 => To: 225   -- Action: reduce     -- Rule: functionExpression => ( anonymousFunction | class
+Expression | thisExpression | identifierExpression @ | superExpression | literalExpression | arrayLiteralExpression | ob
+jectLiteralExpression | parenthesizedExpression )
+[22:35:27:1:54] State: 225 => To: 249   -- Action: recursion  -- Rule: postfixExpression => ( postfixExpression (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression @ )
+[22:35:27:1:54] State: 249 => To: 265   -- Action: rule       -- Rule: postfixExpression => ( postfixExpression @ (#RULE
+_NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseE
+xpression ) | functionExpression )
+parsing error: postfixExpression => ( postfixExpression (#RULE_NO_LINE#) @ ( memberIndexExpression | memberDotExpression
+ | argumentsExpression | postIncrementExpression | postDecreaseExpression ) | functionExpression )
+[22:35:27:1:54] State: 225 => To: 248   -- Action: reduce     -- Rule: postfixExpression => ( postfixExpression (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression @ )
+[22:34:27:1:54] State: 248 => To: 264   -- Action: reduce     -- Rule: newExpression => ( K_NEW singleExpression [ argum
+ents ] | postfixExpression @ )
+[22:33:27:1:54] State: 264 => To: 301   -- Action: reduce     -- Rule: deleteExpression => ( K_DELETE deleteExpression |
+ newExpression @ )
+[22:32:27:1:54] State: 301 => To: 312   -- Action: reduce     -- Rule: voidExpression => ( K_VOID voidExpression | delet
+eExpression @ )
+[22:31:27:1:54] State: 312 => To: 320   -- Action: reduce     -- Rule: typeofExpression => ( K_TYPEOF typeofExpression |
+ voidExpression @ )
+[22:30:27:1:54] State: 320 => To: 328   -- Action: reduce     -- Rule: preIncrementExpression => ( 'T_INC' preIncrementE
+xpression | typeofExpression @ )
+[22:29:27:1:54] State: 328 => To: 334   -- Action: reduce     -- Rule: preDecreaseExpression => ( 'T_DEC' preDecreaseExp
+ression | preIncrementExpression @ )
+[22:28:27:1:54] State: 334 => To: 340   -- Action: reduce     -- Rule: unaryPlusExpression => ( 'T_ADD' unaryPlusExpress
+ion | preDecreaseExpression @ )
+[22:27:27:1:54] State: 340 => To: 347   -- Action: reduce     -- Rule: unaryMinusExpression => ( 'T_SUB' unaryMinusExpre
+ssion | unaryPlusExpression @ )
+[22:26:27:1:54] State: 347 => To: 352   -- Action: reduce     -- Rule: bitNotExpression => ( 'T_BIT_NOT' bitNotExpressio
+n | unaryMinusExpression @ )
+[22:25:27:1:54] State: 352 => To: 355   -- Action: reduce     -- Rule: notExpression => ( 'T_LOG_NOT' notExpression | bi
+tNotExpression @ )
+[22:24:27:1:54] State: 355 => To: 357   -- Action: reduce     -- Rule: powerExpression => [ powerExpression 'T_POWER' ]
+notExpression @
+[22:23:27:1:54] State: 357 => To: 360   -- Action: reduce     -- Rule: multiplicativeExpression => [ multiplicativeExpre
+ssion ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression @
+[22:22:27:1:54] State: 360 => To: 366   -- Action: reduce     -- Rule: additiveExpression => [ additiveExpression ( 'T_A
+DD' | 'T_SUB' ) ] multiplicativeExpression @
+[22:21:27:1:54] State: 366 => To: 374   -- Action: reduce     -- Rule: coalesceExpression => [ coalesceExpression 'T_COA
+LESCE' ] additiveExpression @
+[22:20:27:1:54] State: 374 => To: 379   -- Action: reduce     -- Rule: bitShiftExpression => [ bitShiftExpression ( 'T_L
+SHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression @
+[22:19:27:1:54] State: 379 => To: 386   -- Action: reduce     -- Rule: relationalExpression => [ relationalExpression (
+'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression @
+[22:18:27:1:54] State: 386 => To: 390   -- Action: reduce     -- Rule: instanceofExpression => [ instanceofExpression K_
+INSTANCEOF ] relationalExpression @
+[22:17:27:1:54] State: 390 => To: 398   -- Action: reduce     -- Rule: inExpression => [ inExpression K_IN ] instanceofE
+xpression @
+[22:16:27:1:54] State: 398 => To: 403   -- Action: reduce     -- Rule: equalityExpression => [ equalityExpression ( 'T_E
+QUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression @
+[22:15:27:1:54] State: 403 => To: 409   -- Action: reduce     -- Rule: bitAndExpression => [ bitAndExpression 'T_BIT_AND
+' ] equalityExpression @
+[22:14:27:1:54] State: 409 => To: 417   -- Action: reduce     -- Rule: bitXOrExpression => [ bitXOrExpression 'T_BIT_XOR
+' ] bitAndExpression @
+[22:13:27:1:54] State: 417 => To: 422   -- Action: reduce     -- Rule: bitOrExpression => [ bitOrExpression 'T_BIT_OR' ]
+ bitXOrExpression @
+[22:12:27:1:54] State: 422 => To: 427   -- Action: reduce     -- Rule: logicalAndExpression => [ logicalAndExpression 'T
+_LOG_AND' ] bitOrExpression @
+[22:11:27:1:54] State: 427 => To: 439   -- Action: reduce     -- Rule: logicalOrExpression => [ logicalOrExpression 'T_L
+OG_OR' ] logicalAndExpression @
+[22:10:27:1:54] State: 439 => To: 451   -- Action: reduce     -- Rule: ternaryExpression => logicalOrExpression @ [ 'T_Q
+UERY' singleExpression 'T_COLON' singleExpression ]
+[22:9:27:1:54] State: 451 => To: 464   -- Action: reduce     -- Rule: assignmentOperatorExpression => [ assignmentOperat
+orExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' |
+'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternaryE
+xpression @
+[22:8:28:1:54] State: 464 => To: 470   -- Action: recursion  -- Rule: assignmentExpression => [ assignmentExpression 'T_
+ASSIGN' ] assignmentOperatorExpression @
+[22:8:28:1:54] State: 470 => To: 485   -- Action: move       -- Rule: assignmentExpression => [ assignmentExpression @ '
+T_ASSIGN' ] assignmentOperatorExpression
+[23:8:28:1:56] State: 485 => To: 118   -- Action: shift      -- Rule: assignmentExpression => [ assignmentExpression 'T_
+ASSIGN' @ ] assignmentOperatorExpression
+[23:9:28:1:56] State: 118 => To: 150   -- Action: shift      -- Rule: assignmentOperatorExpression => [ @ assignmentOper
+atorExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT'
+| 'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternar
+yExpression
+[23:10:28:1:56] State: 150 => To: 176   -- Action: shift      -- Rule: ternaryExpression => @ logicalOrExpression [ 'T_Q
+UERY' singleExpression 'T_COLON' singleExpression ]
+[23:11:28:1:56] State: 176 => To: 204   -- Action: shift      -- Rule: logicalOrExpression => [ @ logicalOrExpression 'T
+_LOG_OR' ] logicalAndExpression
+[23:12:28:1:56] State: 204 => To: 231   -- Action: shift      -- Rule: logicalAndExpression => [ @ logicalAndExpression
+'T_LOG_AND' ] bitOrExpression
+[23:13:28:1:56] State: 231 => To: 251   -- Action: shift      -- Rule: bitOrExpression => [ @ bitOrExpression 'T_BIT_OR'
+ ] bitXOrExpression
+[23:14:28:1:56] State: 251 => To: 266   -- Action: shift      -- Rule: bitXOrExpression => [ @ bitXOrExpression 'T_BIT_X
+OR' ] bitAndExpression
+[23:15:28:1:56] State: 266 => To: 307   -- Action: shift      -- Rule: bitAndExpression => [ @ bitAndExpression 'T_BIT_A
+ND' ] equalityExpression
+[23:16:28:1:56] State: 307 => To: 318   -- Action: shift      -- Rule: equalityExpression => [ @ equalityExpression ( 'T
+_EQUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression
+[23:17:28:1:56] State: 318 => To: 327   -- Action: shift      -- Rule: inExpression => [ @ inExpression K_IN ] instanceo
+fExpression
+[23:18:28:1:56] State: 327 => To: 332   -- Action: shift      -- Rule: instanceofExpression => [ @ instanceofExpression
+K_INSTANCEOF ] relationalExpression
+[23:19:28:1:56] State: 332 => To: 339   -- Action: shift      -- Rule: relationalExpression => [ @ relationalExpression
+( 'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression
+[23:20:28:1:56] State: 339 => To: 346   -- Action: shift      -- Rule: bitShiftExpression => [ @ bitShiftExpression ( 'T
+_LSHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression
+[23:21:28:1:56] State: 346 => To: 350   -- Action: shift      -- Rule: coalesceExpression => [ @ coalesceExpression 'T_C
+OALESCE' ] additiveExpression
+[23:22:28:1:56] State: 350 => To: 353   -- Action: shift      -- Rule: additiveExpression => [ @ additiveExpression ( 'T
+_ADD' | 'T_SUB' ) ] multiplicativeExpression
+[23:23:28:1:56] State: 353 => To: 356   -- Action: shift      -- Rule: multiplicativeExpression => [ @ multiplicativeExp
+ression ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression
+[23:24:28:1:56] State: 356 => To: 359   -- Action: shift      -- Rule: powerExpression => [ @ powerExpression 'T_POWER'
+] notExpression
+[23:25:28:1:56] State: 359 => To: 363   -- Action: shift      -- Rule: notExpression => @ ( 'T_LOG_NOT' notExpression |
+bitNotExpression )
+[23:26:28:1:56] State: 363 => To: 370   -- Action: shift      -- Rule: bitNotExpression => @ ( 'T_BIT_NOT' bitNotExpress
+ion | unaryMinusExpression )
+[23:27:28:1:56] State: 370 => To: 376   -- Action: shift      -- Rule: unaryMinusExpression => @ ( 'T_SUB' unaryMinusExp
+ression | unaryPlusExpression )
+[23:28:28:1:56] State: 376 => To: 381   -- Action: shift      -- Rule: unaryPlusExpression => @ ( 'T_ADD' unaryPlusExpre
+ssion | preDecreaseExpression )
+[23:29:28:1:56] State: 381 => To: 388   -- Action: shift      -- Rule: preDecreaseExpression => @ ( 'T_DEC' preDecreaseE
+xpression | preIncrementExpression )
+[23:30:28:1:56] State: 388 => To: 396   -- Action: shift      -- Rule: preIncrementExpression => @ ( 'T_INC' preIncremen
+tExpression | typeofExpression )
+[23:31:28:1:56] State: 396 => To: 401   -- Action: shift      -- Rule: typeofExpression => @ ( K_TYPEOF typeofExpression
+ | voidExpression )
+[23:32:28:1:56] State: 401 => To: 406   -- Action: shift      -- Rule: voidExpression => @ ( K_VOID voidExpression | del
+eteExpression )
+[23:33:28:1:56] State: 406 => To: 414   -- Action: shift      -- Rule: deleteExpression => @ ( K_DELETE deleteExpression
+ | newExpression )
+[23:34:28:1:56] State: 414 => To: 419   -- Action: shift      -- Rule: newExpression => @ ( K_NEW singleExpression [ arg
+uments ] | postfixExpression )
+[23:35:28:1:56] State: 419 => To: 424   -- Action: shift      -- Rule: postfixExpression => @ ( postfixExpression (#RULE
+_NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseE
+xpression ) | functionExpression )
+[23:36:28:1:56] State: 424 => To: 434   -- Action: shift      -- Rule: functionExpression => @ ( anonymousFunction | cla
+ssExpression | thisExpression | identifierExpression | superExpression | literalExpression | arrayLiteralExpression | ob
+jectLiteralExpression | parenthesizedExpression )
+[23:37:28:1:56] State: 434 => To: 448   -- Action: shift      -- Rule: literalExpression => @ literal
+[23:38:28:1:56] State: 448 => To: 463   -- Action: move       -- Rule: literal => @ ( K_NULL | K_TRUE | K_FALSE | #STRIN
+G# | #REGEX# | #NUMBER# )
+[24:38:28:1:58] State: 463 => To: 469   -- Action: reduce     -- Rule: literal => ( K_NULL | K_TRUE | K_FALSE | #STRING#
+ | #REGEX# @ | #NUMBER# )
+[24:37:28:1:58] State: 469 => To: 484   -- Action: reduce     -- Rule: literalExpression => literal @
+[24:36:28:1:58] State: 484 => To: 225   -- Action: reduce     -- Rule: functionExpression => ( anonymousFunction | class
+Expression | thisExpression | identifierExpression | superExpression | literalExpression @ | arrayLiteralExpression | ob
+jectLiteralExpression | parenthesizedExpression )
+[24:35:29:1:58] State: 225 => To: 249   -- Action: recursion  -- Rule: postfixExpression => ( postfixExpression (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression @ )
+[24:35:29:1:58] State: 249 => To: 265   -- Action: rule       -- Rule: postfixExpression => ( postfixExpression @ (#RULE
+_NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseE
+xpression ) | functionExpression )
+parsing error: postfixExpression => ( postfixExpression (#RULE_NO_LINE#) @ ( memberIndexExpression | memberDotExpression
+ | argumentsExpression | postIncrementExpression | postDecreaseExpression ) | functionExpression )
+[24:35:29:1:58] State: 225 => To: 248   -- Action: reduce     -- Rule: postfixExpression => ( postfixExpression (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression @ )
+[24:34:29:1:58] State: 248 => To: 264   -- Action: reduce     -- Rule: newExpression => ( K_NEW singleExpression [ argum
+ents ] | postfixExpression @ )
+[24:33:29:1:58] State: 264 => To: 301   -- Action: reduce     -- Rule: deleteExpression => ( K_DELETE deleteExpression |
+ newExpression @ )
+[24:32:29:1:58] State: 301 => To: 312   -- Action: reduce     -- Rule: voidExpression => ( K_VOID voidExpression | delet
+eExpression @ )
+[24:31:29:1:58] State: 312 => To: 320   -- Action: reduce     -- Rule: typeofExpression => ( K_TYPEOF typeofExpression |
+ voidExpression @ )
+[24:30:29:1:58] State: 320 => To: 328   -- Action: reduce     -- Rule: preIncrementExpression => ( 'T_INC' preIncrementE
+xpression | typeofExpression @ )
+[24:29:29:1:58] State: 328 => To: 334   -- Action: reduce     -- Rule: preDecreaseExpression => ( 'T_DEC' preDecreaseExp
+ression | preIncrementExpression @ )
+[24:28:29:1:58] State: 334 => To: 340   -- Action: reduce     -- Rule: unaryPlusExpression => ( 'T_ADD' unaryPlusExpress
+ion | preDecreaseExpression @ )
+[24:27:29:1:58] State: 340 => To: 347   -- Action: reduce     -- Rule: unaryMinusExpression => ( 'T_SUB' unaryMinusExpre
+ssion | unaryPlusExpression @ )
+[24:26:29:1:58] State: 347 => To: 352   -- Action: reduce     -- Rule: bitNotExpression => ( 'T_BIT_NOT' bitNotExpressio
+n | unaryMinusExpression @ )
+[24:25:29:1:58] State: 352 => To: 355   -- Action: reduce     -- Rule: notExpression => ( 'T_LOG_NOT' notExpression | bi
+tNotExpression @ )
+[24:24:29:1:58] State: 355 => To: 357   -- Action: reduce     -- Rule: powerExpression => [ powerExpression 'T_POWER' ]
+notExpression @
+[24:23:29:1:58] State: 357 => To: 360   -- Action: reduce     -- Rule: multiplicativeExpression => [ multiplicativeExpre
+ssion ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression @
+[24:22:29:1:58] State: 360 => To: 366   -- Action: reduce     -- Rule: additiveExpression => [ additiveExpression ( 'T_A
+DD' | 'T_SUB' ) ] multiplicativeExpression @
+[24:21:29:1:58] State: 366 => To: 374   -- Action: reduce     -- Rule: coalesceExpression => [ coalesceExpression 'T_COA
+LESCE' ] additiveExpression @
+[24:20:29:1:58] State: 374 => To: 379   -- Action: reduce     -- Rule: bitShiftExpression => [ bitShiftExpression ( 'T_L
+SHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression @
+[24:19:29:1:58] State: 379 => To: 386   -- Action: reduce     -- Rule: relationalExpression => [ relationalExpression (
+'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression @
+[24:18:29:1:58] State: 386 => To: 390   -- Action: reduce     -- Rule: instanceofExpression => [ instanceofExpression K_
+INSTANCEOF ] relationalExpression @
+[24:17:29:1:58] State: 390 => To: 398   -- Action: reduce     -- Rule: inExpression => [ inExpression K_IN ] instanceofE
+xpression @
+[24:16:29:1:58] State: 398 => To: 403   -- Action: reduce     -- Rule: equalityExpression => [ equalityExpression ( 'T_E
+QUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression @
+[24:15:29:1:58] State: 403 => To: 409   -- Action: reduce     -- Rule: bitAndExpression => [ bitAndExpression 'T_BIT_AND
+' ] equalityExpression @
+[24:14:29:1:58] State: 409 => To: 417   -- Action: reduce     -- Rule: bitXOrExpression => [ bitXOrExpression 'T_BIT_XOR
+' ] bitAndExpression @
+[24:13:29:1:58] State: 417 => To: 422   -- Action: reduce     -- Rule: bitOrExpression => [ bitOrExpression 'T_BIT_OR' ]
+ bitXOrExpression @
+[24:12:29:1:58] State: 422 => To: 427   -- Action: reduce     -- Rule: logicalAndExpression => [ logicalAndExpression 'T
+_LOG_AND' ] bitOrExpression @
+[24:11:29:1:58] State: 427 => To: 439   -- Action: reduce     -- Rule: logicalOrExpression => [ logicalOrExpression 'T_L
+OG_OR' ] logicalAndExpression @
+[24:10:29:1:58] State: 439 => To: 451   -- Action: reduce     -- Rule: ternaryExpression => logicalOrExpression @ [ 'T_Q
+UERY' singleExpression 'T_COLON' singleExpression ]
+[24:9:29:1:58] State: 451 => To: 464   -- Action: reduce     -- Rule: assignmentOperatorExpression => [ assignmentOperat
+orExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' |
+'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternaryE
+xpression @
+[24:8:29:1:58] State: 464 => To: 471   -- Action: reduce     -- Rule: assignmentExpression => [ assignmentExpression 'T_
+ASSIGN' ] assignmentOperatorExpression @
+[24:7:29:1:58] State: 471 => To: 501   -- Action: reduce     -- Rule: singleExpression => [ singleExpression ('T_COMMA')
+ ] assignmentExpression @
+[24:6:29:1:58] State: 501 => To: 190   -- Action: reduce     -- Rule: variableDeclaration => assignable [ 'T_ASSIGN' sin
+gleExpression @ ]
+[24:5:29:1:58] State: 190 => To: 216   -- Action: reduce     -- Rule: variableDeclarationList => [ variableDeclarationLi
+st ('T_COMMA') ] variableDeclaration @
+[24:4:30:1:58] State: 216 => To:  53   -- Action: shift      -- Rule: variableStatement => K_VAR variableDeclarationList
+ @ [ eos ]
+[24:5:1:1:58] State:  53 => To:  89   -- Action: pass       -- Rule: eos => @ ( ('T_SEMI') | #END# )
+[25:5:1:1:66] State:  89 => To: 130   -- Action: reduce     -- Rule: eos => ( ('T_SEMI') @ | #END# )
+[25:4:1:1:66] State: 130 => To: 155   -- Action: reduce     -- Rule: variableStatement => K_VAR variableDeclarationList
+[ eos @ ]
+[25:3:1:1:66] State: 155 => To:  79   -- Action: reduce     -- Rule: statement => ( block | variableStatement @ | emptyS
+tatement | classDeclaration | expressionStatement | ifStatement | iterationStatement | continueStatement | breakStatemen
+t | returnStatement | withStatement | labelledStatement | switchStatement | throwStatement | tryStatement | debuggerStat
+ement | functionDeclaration )
+[25:2:2:1:66] State:  79 => To: 110   -- Action: recursion  -- Rule: sourceElements => [ sourceElements ] statement @
+[25:2:2:1:66] State: 110 => To:   2   -- Action: shift      -- Rule: sourceElements => [ sourceElements @ ] statement
+[25:3:2:1:66] State:   2 => To:   5   -- Action: shift      -- Rule: statement => @ ( block | variableStatement | emptyS
+tatement | classDeclaration | expressionStatement | ifStatement | iterationStatement | continueStatement | breakStatemen
+t | returnStatement | withStatement | labelledStatement | switchStatement | throwStatement | tryStatement | debuggerStat
+ement | functionDeclaration )
+[25:4:2:1:66] State:   5 => To:  22   -- Action: move       -- Rule: variableStatement => @ K_VAR variableDeclarationLis
+t [ eos ]
+[26:4:2:2:1] State:  22 => To:  43   -- Action: shift      -- Rule: variableStatement => K_VAR @ variableDeclarationList
+ [ eos ]
+[26:5:2:2:1] State:  43 => To:  70   -- Action: shift      -- Rule: variableDeclarationList => [ @ variableDeclarationLi
+st ('T_COMMA') ] variableDeclaration
+[26:6:2:2:1] State:  70 => To:  99   -- Action: shift      -- Rule: variableDeclaration => @ assignable [ 'T_ASSIGN' sin
+gleExpression ]
+[26:7:2:2:1] State:  99 => To: 136   -- Action: move       -- Rule: assignable => @ ( #ID# | arrayLiteral | objectLitera
+l )
+[27:7:2:2:5] State: 136 => To: 163   -- Action: reduce     -- Rule: assignable => ( #ID# @ | arrayLiteral | objectLitera
+l )
+[27:6:3:2:5] State: 163 => To: 189   -- Action: move       -- Rule: variableDeclaration => assignable @ [ 'T_ASSIGN' sin
+gleExpression ]
+[28:6:3:2:7] State: 189 => To:  47   -- Action: shift      -- Rule: variableDeclaration => assignable [ 'T_ASSIGN' @ sin
+gleExpression ]
+[28:7:3:2:7] State:  47 => To:  84   -- Action: shift      -- Rule: singleExpression => [ @ singleExpression ('T_COMMA')
+ ] assignmentExpression
+[28:8:3:2:7] State:  84 => To: 118   -- Action: shift      -- Rule: assignmentExpression => [ @ assignmentExpression 'T_
+ASSIGN' ] assignmentOperatorExpression
+[28:9:3:2:7] State: 118 => To: 150   -- Action: shift      -- Rule: assignmentOperatorExpression => [ @ assignmentOperat
+orExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' |
+'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternaryE
+xpression
+[28:10:3:2:7] State: 150 => To: 176   -- Action: shift      -- Rule: ternaryExpression => @ logicalOrExpression [ 'T_QUE
+RY' singleExpression 'T_COLON' singleExpression ]
+[28:11:3:2:7] State: 176 => To: 204   -- Action: shift      -- Rule: logicalOrExpression => [ @ logicalOrExpression 'T_L
+OG_OR' ] logicalAndExpression
+[28:12:3:2:7] State: 204 => To: 231   -- Action: shift      -- Rule: logicalAndExpression => [ @ logicalAndExpression 'T
+_LOG_AND' ] bitOrExpression
+[28:13:3:2:7] State: 231 => To: 251   -- Action: shift      -- Rule: bitOrExpression => [ @ bitOrExpression 'T_BIT_OR' ]
+ bitXOrExpression
+[28:14:3:2:7] State: 251 => To: 266   -- Action: shift      -- Rule: bitXOrExpression => [ @ bitXOrExpression 'T_BIT_XOR
+' ] bitAndExpression
+[28:15:3:2:7] State: 266 => To: 307   -- Action: shift      -- Rule: bitAndExpression => [ @ bitAndExpression 'T_BIT_AND
+' ] equalityExpression
+[28:16:3:2:7] State: 307 => To: 318   -- Action: shift      -- Rule: equalityExpression => [ @ equalityExpression ( 'T_E
+QUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression
+[28:17:3:2:7] State: 318 => To: 327   -- Action: shift      -- Rule: inExpression => [ @ inExpression K_IN ] instanceofE
+xpression
+[28:18:3:2:7] State: 327 => To: 332   -- Action: shift      -- Rule: instanceofExpression => [ @ instanceofExpression K_
+INSTANCEOF ] relationalExpression
+[28:19:3:2:7] State: 332 => To: 339   -- Action: shift      -- Rule: relationalExpression => [ @ relationalExpression (
+'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression
+[28:20:3:2:7] State: 339 => To: 346   -- Action: shift      -- Rule: bitShiftExpression => [ @ bitShiftExpression ( 'T_L
+SHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression
+[28:21:3:2:7] State: 346 => To: 350   -- Action: shift      -- Rule: coalesceExpression => [ @ coalesceExpression 'T_COA
+LESCE' ] additiveExpression
+[28:22:3:2:7] State: 350 => To: 353   -- Action: shift      -- Rule: additiveExpression => [ @ additiveExpression ( 'T_A
+DD' | 'T_SUB' ) ] multiplicativeExpression
+[28:23:3:2:7] State: 353 => To: 356   -- Action: shift      -- Rule: multiplicativeExpression => [ @ multiplicativeExpre
+ssion ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression
+[28:24:3:2:7] State: 356 => To: 359   -- Action: shift      -- Rule: powerExpression => [ @ powerExpression 'T_POWER' ]
+notExpression
+[28:25:3:2:7] State: 359 => To: 363   -- Action: shift      -- Rule: notExpression => @ ( 'T_LOG_NOT' notExpression | bi
+tNotExpression )
+[28:26:3:2:7] State: 363 => To: 370   -- Action: shift      -- Rule: bitNotExpression => @ ( 'T_BIT_NOT' bitNotExpressio
+n | unaryMinusExpression )
+[28:27:3:2:7] State: 370 => To: 376   -- Action: shift      -- Rule: unaryMinusExpression => @ ( 'T_SUB' unaryMinusExpre
+ssion | unaryPlusExpression )
+[28:28:3:2:7] State: 376 => To: 381   -- Action: shift      -- Rule: unaryPlusExpression => @ ( 'T_ADD' unaryPlusExpress
+ion | preDecreaseExpression )
+[28:29:3:2:7] State: 381 => To: 388   -- Action: shift      -- Rule: preDecreaseExpression => @ ( 'T_DEC' preDecreaseExp
+ression | preIncrementExpression )
+[28:30:3:2:7] State: 388 => To: 396   -- Action: shift      -- Rule: preIncrementExpression => @ ( 'T_INC' preIncrementE
+xpression | typeofExpression )
+[28:31:3:2:7] State: 396 => To: 401   -- Action: shift      -- Rule: typeofExpression => @ ( K_TYPEOF typeofExpression |
+ voidExpression )
+[28:32:3:2:7] State: 401 => To: 406   -- Action: shift      -- Rule: voidExpression => @ ( K_VOID voidExpression | delet
+eExpression )
+[28:33:3:2:7] State: 406 => To: 414   -- Action: shift      -- Rule: deleteExpression => @ ( K_DELETE deleteExpression |
+ newExpression )
+[28:34:3:2:7] State: 414 => To: 419   -- Action: shift      -- Rule: newExpression => @ ( K_NEW singleExpression [ argum
+ents ] | postfixExpression )
+[28:35:3:2:7] State: 419 => To: 424   -- Action: shift      -- Rule: postfixExpression => @ ( postfixExpression (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression )
+[28:36:3:2:7] State: 424 => To: 434   -- Action: shift      -- Rule: functionExpression => @ ( anonymousFunction | class
+Expression | thisExpression | identifierExpression | superExpression | literalExpression | arrayLiteralExpression | obje
+ctLiteralExpression | parenthesizedExpression )
+[28:37:3:2:7] State: 434 => To: 448   -- Action: shift      -- Rule: literalExpression => @ literal
+[28:38:3:2:7] State: 448 => To: 458   -- Action: move       -- Rule: literal => @ ( K_NULL | K_TRUE | K_FALSE | #STRING#
+ | #REGEX# | #NUMBER# )
+[29:38:3:2:9] State: 458 => To: 469   -- Action: reduce     -- Rule: literal => ( K_NULL | K_TRUE | K_FALSE | #STRING# |
+ #REGEX# | #NUMBER# @ )
+[29:37:3:2:9] State: 469 => To: 484   -- Action: reduce     -- Rule: literalExpression => literal @
+[29:36:3:2:9] State: 484 => To: 225   -- Action: reduce     -- Rule: functionExpression => ( anonymousFunction | classEx
+pression | thisExpression | identifierExpression | superExpression | literalExpression @ | arrayLiteralExpression | obje
+ctLiteralExpression | parenthesizedExpression )
+[29:35:4:2:9] State: 225 => To: 249   -- Action: recursion  -- Rule: postfixExpression => ( postfixExpression (#RULE_NO_
+LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExpre
+ssion ) | functionExpression @ )
+[29:35:4:2:9] State: 249 => To: 265   -- Action: rule       -- Rule: postfixExpression => ( postfixExpression @ (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression )
+parsing error: postfixExpression => ( postfixExpression (#RULE_NO_LINE#) @ ( memberIndexExpression | memberDotExpression
+ | argumentsExpression | postIncrementExpression | postDecreaseExpression ) | functionExpression )
+[29:35:4:2:9] State: 225 => To: 248   -- Action: reduce     -- Rule: postfixExpression => ( postfixExpression (#RULE_NO_
+LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExpre
+ssion ) | functionExpression @ )
+[29:34:4:2:9] State: 248 => To: 264   -- Action: reduce     -- Rule: newExpression => ( K_NEW singleExpression [ argumen
+ts ] | postfixExpression @ )
+[29:33:4:2:9] State: 264 => To: 301   -- Action: reduce     -- Rule: deleteExpression => ( K_DELETE deleteExpression | n
+ewExpression @ )
+[29:32:4:2:9] State: 301 => To: 312   -- Action: reduce     -- Rule: voidExpression => ( K_VOID voidExpression | deleteE
+xpression @ )
+[29:31:4:2:9] State: 312 => To: 320   -- Action: reduce     -- Rule: typeofExpression => ( K_TYPEOF typeofExpression | v
+oidExpression @ )
+[29:30:4:2:9] State: 320 => To: 328   -- Action: reduce     -- Rule: preIncrementExpression => ( 'T_INC' preIncrementExp
+ression | typeofExpression @ )
+[29:29:4:2:9] State: 328 => To: 334   -- Action: reduce     -- Rule: preDecreaseExpression => ( 'T_DEC' preDecreaseExpre
+ssion | preIncrementExpression @ )
+[29:28:4:2:9] State: 334 => To: 340   -- Action: reduce     -- Rule: unaryPlusExpression => ( 'T_ADD' unaryPlusExpressio
+n | preDecreaseExpression @ )
+[29:27:4:2:9] State: 340 => To: 347   -- Action: reduce     -- Rule: unaryMinusExpression => ( 'T_SUB' unaryMinusExpress
+ion | unaryPlusExpression @ )
+[29:26:4:2:9] State: 347 => To: 352   -- Action: reduce     -- Rule: bitNotExpression => ( 'T_BIT_NOT' bitNotExpression
+| unaryMinusExpression @ )
+[29:25:4:2:9] State: 352 => To: 355   -- Action: reduce     -- Rule: notExpression => ( 'T_LOG_NOT' notExpression | bitN
+otExpression @ )
+[29:24:4:2:9] State: 355 => To: 357   -- Action: reduce     -- Rule: powerExpression => [ powerExpression 'T_POWER' ] no
+tExpression @
+[29:23:4:2:9] State: 357 => To: 360   -- Action: reduce     -- Rule: multiplicativeExpression => [ multiplicativeExpress
+ion ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression @
+[29:22:5:2:9] State: 360 => To: 365   -- Action: recursion  -- Rule: additiveExpression => [ additiveExpression ( 'T_ADD
+' | 'T_SUB' ) ] multiplicativeExpression @
+[29:22:5:2:9] State: 365 => To: 373   -- Action: move       -- Rule: additiveExpression => [ additiveExpression @ ( 'T_A
+DD' | 'T_SUB' ) ] multiplicativeExpression
+[30:22:5:2:11] State: 373 => To: 353   -- Action: shift      -- Rule: additiveExpression => [ additiveExpression ( 'T_AD
+D' @ | 'T_SUB' ) ] multiplicativeExpression
+[30:23:5:2:11] State: 353 => To: 356   -- Action: shift      -- Rule: multiplicativeExpression => [ @ multiplicativeExpr
+ession ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression
+[30:24:5:2:11] State: 356 => To: 359   -- Action: shift      -- Rule: powerExpression => [ @ powerExpression 'T_POWER' ]
+ notExpression
+[30:25:5:2:11] State: 359 => To: 363   -- Action: shift      -- Rule: notExpression => @ ( 'T_LOG_NOT' notExpression | b
+itNotExpression )
+[30:26:5:2:11] State: 363 => To: 370   -- Action: shift      -- Rule: bitNotExpression => @ ( 'T_BIT_NOT' bitNotExpressi
+on | unaryMinusExpression )
+[30:27:5:2:11] State: 370 => To: 376   -- Action: shift      -- Rule: unaryMinusExpression => @ ( 'T_SUB' unaryMinusExpr
+ession | unaryPlusExpression )
+[30:28:5:2:11] State: 376 => To: 381   -- Action: shift      -- Rule: unaryPlusExpression => @ ( 'T_ADD' unaryPlusExpres
+sion | preDecreaseExpression )
+[30:29:5:2:11] State: 381 => To: 388   -- Action: shift      -- Rule: preDecreaseExpression => @ ( 'T_DEC' preDecreaseEx
+pression | preIncrementExpression )
+[30:30:5:2:11] State: 388 => To: 396   -- Action: shift      -- Rule: preIncrementExpression => @ ( 'T_INC' preIncrement
+Expression | typeofExpression )
+[30:31:5:2:11] State: 396 => To: 401   -- Action: shift      -- Rule: typeofExpression => @ ( K_TYPEOF typeofExpression
+| voidExpression )
+[30:32:5:2:11] State: 401 => To: 406   -- Action: shift      -- Rule: voidExpression => @ ( K_VOID voidExpression | dele
+teExpression )
+[30:33:5:2:11] State: 406 => To: 414   -- Action: shift      -- Rule: deleteExpression => @ ( K_DELETE deleteExpression
+| newExpression )
+[30:34:5:2:11] State: 414 => To: 419   -- Action: shift      -- Rule: newExpression => @ ( K_NEW singleExpression [ argu
+ments ] | postfixExpression )
+[30:35:5:2:11] State: 419 => To: 424   -- Action: shift      -- Rule: postfixExpression => @ ( postfixExpression (#RULE_
+NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseEx
+pression ) | functionExpression )
+[30:36:5:2:11] State: 424 => To: 434   -- Action: shift      -- Rule: functionExpression => @ ( anonymousFunction | clas
+sExpression | thisExpression | identifierExpression | superExpression | literalExpression | arrayLiteralExpression | obj
+ectLiteralExpression | parenthesizedExpression )
+[30:37:5:2:11] State: 434 => To: 448   -- Action: shift      -- Rule: literalExpression => @ literal
+[30:38:5:2:11] State: 448 => To: 458   -- Action: move       -- Rule: literal => @ ( K_NULL | K_TRUE | K_FALSE | #STRING
+# | #REGEX# | #NUMBER# )
+[31:38:5:2:13] State: 458 => To: 469   -- Action: reduce     -- Rule: literal => ( K_NULL | K_TRUE | K_FALSE | #STRING#
+| #REGEX# | #NUMBER# @ )
+[31:37:5:2:13] State: 469 => To: 484   -- Action: reduce     -- Rule: literalExpression => literal @
+[31:36:5:2:13] State: 484 => To: 225   -- Action: reduce     -- Rule: functionExpression => ( anonymousFunction | classE
+xpression | thisExpression | identifierExpression | superExpression | literalExpression @ | arrayLiteralExpression | obj
+ectLiteralExpression | parenthesizedExpression )
+[31:35:6:2:13] State: 225 => To: 249   -- Action: recursion  -- Rule: postfixExpression => ( postfixExpression (#RULE_NO
+_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExpr
+ession ) | functionExpression @ )
+[31:35:6:2:13] State: 249 => To: 265   -- Action: rule       -- Rule: postfixExpression => ( postfixExpression @ (#RULE_
+NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseEx
+pression ) | functionExpression )
+parsing error: postfixExpression => ( postfixExpression (#RULE_NO_LINE#) @ ( memberIndexExpression | memberDotExpression
+ | argumentsExpression | postIncrementExpression | postDecreaseExpression ) | functionExpression )
+[31:35:6:2:13] State: 225 => To: 248   -- Action: reduce     -- Rule: postfixExpression => ( postfixExpression (#RULE_NO
+_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExpr
+ession ) | functionExpression @ )
+[31:34:6:2:13] State: 248 => To: 264   -- Action: reduce     -- Rule: newExpression => ( K_NEW singleExpression [ argume
+nts ] | postfixExpression @ )
+[31:33:6:2:13] State: 264 => To: 301   -- Action: reduce     -- Rule: deleteExpression => ( K_DELETE deleteExpression |
+newExpression @ )
+[31:32:6:2:13] State: 301 => To: 312   -- Action: reduce     -- Rule: voidExpression => ( K_VOID voidExpression | delete
+Expression @ )
+[31:31:6:2:13] State: 312 => To: 320   -- Action: reduce     -- Rule: typeofExpression => ( K_TYPEOF typeofExpression |
+voidExpression @ )
+[31:30:6:2:13] State: 320 => To: 328   -- Action: reduce     -- Rule: preIncrementExpression => ( 'T_INC' preIncrementEx
+pression | typeofExpression @ )
+[31:29:6:2:13] State: 328 => To: 334   -- Action: reduce     -- Rule: preDecreaseExpression => ( 'T_DEC' preDecreaseExpr
+ession | preIncrementExpression @ )
+[31:28:6:2:13] State: 334 => To: 340   -- Action: reduce     -- Rule: unaryPlusExpression => ( 'T_ADD' unaryPlusExpressi
+on | preDecreaseExpression @ )
+[31:27:6:2:13] State: 340 => To: 347   -- Action: reduce     -- Rule: unaryMinusExpression => ( 'T_SUB' unaryMinusExpres
+sion | unaryPlusExpression @ )
+[31:26:6:2:13] State: 347 => To: 352   -- Action: reduce     -- Rule: bitNotExpression => ( 'T_BIT_NOT' bitNotExpression
+ | unaryMinusExpression @ )
+[31:25:6:2:13] State: 352 => To: 355   -- Action: reduce     -- Rule: notExpression => ( 'T_LOG_NOT' notExpression | bit
+NotExpression @ )
+[31:24:6:2:13] State: 355 => To: 357   -- Action: reduce     -- Rule: powerExpression => [ powerExpression 'T_POWER' ] n
+otExpression @
+[31:23:6:2:13] State: 357 => To: 360   -- Action: reduce     -- Rule: multiplicativeExpression => [ multiplicativeExpres
+sion ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression @
+[31:22:6:2:13] State: 360 => To: 366   -- Action: reduce     -- Rule: additiveExpression => [ additiveExpression ( 'T_AD
+D' | 'T_SUB' ) ] multiplicativeExpression @
+[31:21:6:2:13] State: 366 => To: 374   -- Action: reduce     -- Rule: coalesceExpression => [ coalesceExpression 'T_COAL
+ESCE' ] additiveExpression @
+[31:20:6:2:13] State: 374 => To: 379   -- Action: reduce     -- Rule: bitShiftExpression => [ bitShiftExpression ( 'T_LS
+HIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression @
+[31:19:6:2:13] State: 379 => To: 386   -- Action: reduce     -- Rule: relationalExpression => [ relationalExpression ( '
+T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression @
+[31:18:6:2:13] State: 386 => To: 390   -- Action: reduce     -- Rule: instanceofExpression => [ instanceofExpression K_I
+NSTANCEOF ] relationalExpression @
+[31:17:6:2:13] State: 390 => To: 398   -- Action: reduce     -- Rule: inExpression => [ inExpression K_IN ] instanceofEx
+pression @
+[31:16:6:2:13] State: 398 => To: 403   -- Action: reduce     -- Rule: equalityExpression => [ equalityExpression ( 'T_EQ
+UAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression @
+[31:15:6:2:13] State: 403 => To: 409   -- Action: reduce     -- Rule: bitAndExpression => [ bitAndExpression 'T_BIT_AND'
+ ] equalityExpression @
+[31:14:6:2:13] State: 409 => To: 417   -- Action: reduce     -- Rule: bitXOrExpression => [ bitXOrExpression 'T_BIT_XOR'
+ ] bitAndExpression @
+[31:13:6:2:13] State: 417 => To: 422   -- Action: reduce     -- Rule: bitOrExpression => [ bitOrExpression 'T_BIT_OR' ]
+bitXOrExpression @
+[31:12:6:2:13] State: 422 => To: 427   -- Action: reduce     -- Rule: logicalAndExpression => [ logicalAndExpression 'T_
+LOG_AND' ] bitOrExpression @
+[31:11:6:2:13] State: 427 => To: 439   -- Action: reduce     -- Rule: logicalOrExpression => [ logicalOrExpression 'T_LO
+G_OR' ] logicalAndExpression @
+[31:10:6:2:13] State: 439 => To: 451   -- Action: reduce     -- Rule: ternaryExpression => logicalOrExpression @ [ 'T_QU
+ERY' singleExpression 'T_COLON' singleExpression ]
+[31:9:6:2:13] State: 451 => To: 464   -- Action: reduce     -- Rule: assignmentOperatorExpression => [ assignmentOperato
+rExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' | '
+T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternaryEx
+pression @
+[31:8:6:2:13] State: 464 => To: 471   -- Action: reduce     -- Rule: assignmentExpression => [ assignmentExpression 'T_A
+SSIGN' ] assignmentOperatorExpression @
+[31:7:6:2:13] State: 471 => To: 501   -- Action: reduce     -- Rule: singleExpression => [ singleExpression ('T_COMMA')
+] assignmentExpression @
+[31:6:6:2:13] State: 501 => To: 190   -- Action: reduce     -- Rule: variableDeclaration => assignable [ 'T_ASSIGN' sing
+leExpression @ ]
+[31:5:6:2:13] State: 190 => To: 216   -- Action: reduce     -- Rule: variableDeclarationList => [ variableDeclarationLis
+t ('T_COMMA') ] variableDeclaration @
+[31:4:7:2:13] State: 216 => To:  53   -- Action: shift      -- Rule: variableStatement => K_VAR variableDeclarationList
+@ [ eos ]
+[31:5:1:2:13] State:  53 => To:  89   -- Action: pass       -- Rule: eos => @ ( ('T_SEMI') | #END# )
+[32:5:1:2:14] State:  89 => To: 130   -- Action: reduce     -- Rule: eos => ( ('T_SEMI') @ | #END# )
+[32:4:1:2:14] State: 130 => To: 155   -- Action: reduce     -- Rule: variableStatement => K_VAR variableDeclarationList
+[ eos @ ]
+[32:3:1:2:14] State: 155 => To:  79   -- Action: reduce     -- Rule: statement => ( block | variableStatement @ | emptyS
+tatement | classDeclaration | expressionStatement | ifStatement | iterationStatement | continueStatement | breakStatemen
+t | returnStatement | withStatement | labelledStatement | switchStatement | throwStatement | tryStatement | debuggerStat
+ement | functionDeclaration )
+[32:2:2:2:14] State:  79 => To: 110   -- Action: recursion  -- Rule: sourceElements => [ sourceElements ] statement @
+[32:2:2:2:14] State: 110 => To:   2   -- Action: shift      -- Rule: sourceElements => [ sourceElements @ ] statement
+[32:3:3:2:14] State:   2 => To:   8   -- Action: shift      -- Rule: statement => @ ( block | variableStatement | emptyS
+tatement | classDeclaration | expressionStatement | ifStatement | iterationStatement | continueStatement | breakStatemen
+t | returnStatement | withStatement | labelledStatement | switchStatement | throwStatement | tryStatement | debuggerStat
+ement | functionDeclaration )
+[32:4:3:2:14] State:   8 => To:  25   -- Action: shift      -- Rule: expressionStatement => @ expressionSequence [ eos ]
+
+[32:5:3:2:14] State:  25 => To:  47   -- Action: shift      -- Rule: expressionSequence => [ @ expressionSequence ('T_CO
+MMA') ] singleExpression
+[32:6:3:2:14] State:  47 => To:  84   -- Action: shift      -- Rule: singleExpression => [ @ singleExpression ('T_COMMA'
+) ] assignmentExpression
+[32:7:3:2:14] State:  84 => To: 118   -- Action: shift      -- Rule: assignmentExpression => [ @ assignmentExpression 'T
+_ASSIGN' ] assignmentOperatorExpression
+[32:8:3:2:14] State: 118 => To: 150   -- Action: shift      -- Rule: assignmentOperatorExpression => [ @ assignmentOpera
+torExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' |
+ 'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternary
+Expression
+[32:9:3:2:14] State: 150 => To: 176   -- Action: shift      -- Rule: ternaryExpression => @ logicalOrExpression [ 'T_QUE
+RY' singleExpression 'T_COLON' singleExpression ]
+[32:10:3:2:14] State: 176 => To: 204   -- Action: shift      -- Rule: logicalOrExpression => [ @ logicalOrExpression 'T_
+LOG_OR' ] logicalAndExpression
+[32:11:3:2:14] State: 204 => To: 231   -- Action: shift      -- Rule: logicalAndExpression => [ @ logicalAndExpression '
+T_LOG_AND' ] bitOrExpression
+[32:12:3:2:14] State: 231 => To: 251   -- Action: shift      -- Rule: bitOrExpression => [ @ bitOrExpression 'T_BIT_OR'
+] bitXOrExpression
+[32:13:3:2:14] State: 251 => To: 266   -- Action: shift      -- Rule: bitXOrExpression => [ @ bitXOrExpression 'T_BIT_XO
+R' ] bitAndExpression
+[32:14:3:2:14] State: 266 => To: 307   -- Action: shift      -- Rule: bitAndExpression => [ @ bitAndExpression 'T_BIT_AN
+D' ] equalityExpression
+[32:15:3:2:14] State: 307 => To: 318   -- Action: shift      -- Rule: equalityExpression => [ @ equalityExpression ( 'T_
+EQUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression
+[32:16:3:2:14] State: 318 => To: 327   -- Action: shift      -- Rule: inExpression => [ @ inExpression K_IN ] instanceof
+Expression
+[32:17:3:2:14] State: 327 => To: 332   -- Action: shift      -- Rule: instanceofExpression => [ @ instanceofExpression K
+_INSTANCEOF ] relationalExpression
+[32:18:3:2:14] State: 332 => To: 339   -- Action: shift      -- Rule: relationalExpression => [ @ relationalExpression (
+ 'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression
+[32:19:3:2:14] State: 339 => To: 346   -- Action: shift      -- Rule: bitShiftExpression => [ @ bitShiftExpression ( 'T_
+LSHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression
+[32:20:3:2:14] State: 346 => To: 350   -- Action: shift      -- Rule: coalesceExpression => [ @ coalesceExpression 'T_CO
+ALESCE' ] additiveExpression
+[32:21:3:2:14] State: 350 => To: 353   -- Action: shift      -- Rule: additiveExpression => [ @ additiveExpression ( 'T_
+ADD' | 'T_SUB' ) ] multiplicativeExpression
+[32:22:3:2:14] State: 353 => To: 356   -- Action: shift      -- Rule: multiplicativeExpression => [ @ multiplicativeExpr
+ession ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression
+[32:23:3:2:14] State: 356 => To: 359   -- Action: shift      -- Rule: powerExpression => [ @ powerExpression 'T_POWER' ]
+ notExpression
+[32:24:3:2:14] State: 359 => To: 363   -- Action: shift      -- Rule: notExpression => @ ( 'T_LOG_NOT' notExpression | b
+itNotExpression )
+[32:25:3:2:14] State: 363 => To: 370   -- Action: shift      -- Rule: bitNotExpression => @ ( 'T_BIT_NOT' bitNotExpressi
+on | unaryMinusExpression )
+[32:26:3:2:14] State: 370 => To: 376   -- Action: shift      -- Rule: unaryMinusExpression => @ ( 'T_SUB' unaryMinusExpr
+ession | unaryPlusExpression )
+[32:27:3:2:14] State: 376 => To: 381   -- Action: shift      -- Rule: unaryPlusExpression => @ ( 'T_ADD' unaryPlusExpres
+sion | preDecreaseExpression )
+[32:28:3:2:14] State: 381 => To: 388   -- Action: shift      -- Rule: preDecreaseExpression => @ ( 'T_DEC' preDecreaseEx
+pression | preIncrementExpression )
+[32:29:3:2:14] State: 388 => To: 396   -- Action: shift      -- Rule: preIncrementExpression => @ ( 'T_INC' preIncrement
+Expression | typeofExpression )
+[32:30:3:2:14] State: 396 => To: 401   -- Action: shift      -- Rule: typeofExpression => @ ( K_TYPEOF typeofExpression
+| voidExpression )
+[32:31:3:2:14] State: 401 => To: 406   -- Action: shift      -- Rule: voidExpression => @ ( K_VOID voidExpression | dele
+teExpression )
+[32:32:3:2:14] State: 406 => To: 414   -- Action: shift      -- Rule: deleteExpression => @ ( K_DELETE deleteExpression
+| newExpression )
+[32:33:3:2:14] State: 414 => To: 419   -- Action: shift      -- Rule: newExpression => @ ( K_NEW singleExpression [ argu
+ments ] | postfixExpression )
+[32:34:3:2:14] State: 419 => To: 424   -- Action: shift      -- Rule: postfixExpression => @ ( postfixExpression (#RULE_
+NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseEx
+pression ) | functionExpression )
+[32:35:4:2:14] State: 424 => To: 432   -- Action: shift      -- Rule: functionExpression => @ ( anonymousFunction | clas
+sExpression | thisExpression | identifierExpression | superExpression | literalExpression | arrayLiteralExpression | obj
+ectLiteralExpression | parenthesizedExpression )
+[32:36:4:2:14] State: 432 => To: 446   -- Action: move       -- Rule: identifierExpression => @ #ID#
+[33:36:4:3:1] State: 446 => To: 456   -- Action: reduce     -- Rule: identifierExpression => #ID# @
+[33:35:4:3:1] State: 456 => To: 225   -- Action: reduce     -- Rule: functionExpression => ( anonymousFunction | classEx
+pression | thisExpression | identifierExpression @ | superExpression | literalExpression | arrayLiteralExpression | obje
+ctLiteralExpression | parenthesizedExpression )
+[33:34:5:3:1] State: 225 => To: 249   -- Action: recursion  -- Rule: postfixExpression => ( postfixExpression (#RULE_NO_
+LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExpre
+ssion ) | functionExpression @ )
+[33:34:5:3:1] State: 249 => To: 265   -- Action: rule       -- Rule: postfixExpression => ( postfixExpression @ (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression )
+[33:34:5:3:1] State: 265 => To: 304   -- Action: shift      -- Rule: postfixExpression => ( postfixExpression (#RULE_NO_
+LINE#) @ ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression )
+[33:35:5:3:1] State: 304 => To: 310   -- Action: move       -- Rule: memberDotExpression => [ @ memberDotExpression ] [
+'T_QUERY' ] 'T_DOT' [ 'T_SHARP' ] identifierName
+[34:35:5:3:8] State: 310 => To: 221   -- Action: shift      -- Rule: memberDotExpression => [ memberDotExpression ] [ 'T
+_QUERY' ] 'T_DOT' @ [ 'T_SHARP' ] identifierName
+[34:36:5:3:8] State: 221 => To: 243   -- Action: move       -- Rule: identifierName => @ ( #ID# | reservedWord )
+[35:36:5:3:9] State: 243 => To: 258   -- Action: reduce     -- Rule: identifierName => ( #ID# @ | reservedWord )
+[35:35:5:3:9] State: 258 => To: 299   -- Action: reduce     -- Rule: memberDotExpression => [ memberDotExpression ] [ 'T
+_QUERY' ] 'T_DOT' [ 'T_SHARP' ] identifierName @
+[35:34:6:3:9] State: 299 => To: 249   -- Action: recursion  -- Rule: postfixExpression => ( postfixExpression (#RULE_NO_
+LINE#) ( memberIndexExpression | memberDotExpression @ | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression )
+[35:34:6:3:9] State: 249 => To: 265   -- Action: rule       -- Rule: postfixExpression => ( postfixExpression @ (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression )
+[35:34:6:3:9] State: 265 => To: 305   -- Action: shift      -- Rule: postfixExpression => ( postfixExpression (#RULE_NO_
+LINE#) @ ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression )
+[35:35:6:3:9] State: 305 => To: 316   -- Action: shift      -- Rule: argumentsExpression => [ @ argumentsExpression ] ar
+guments
+[35:36:6:3:9] State: 316 => To: 324   -- Action: pass       -- Rule: arguments => @ ('T_LPARAN') [ argument ] ('T_RPARAN
+')
+[36:36:6:3:12] State: 324 => To: 331   -- Action: shift      -- Rule: arguments => ('T_LPARAN') @ [ argument ] ('T_RPARA
+N')
+[36:37:7:3:12] State: 331 => To: 338   -- Action: move       -- Rule: argument => [ @ argument ('T_COMMA') ] [ ('T_ELLIP
+SIS') ] ( singleExpression | #ID# )
+[37:37:7:3:13] State: 338 => To: 345   -- Action: reduce     -- Rule: argument => [ argument ('T_COMMA') ] [ ('T_ELLIPSI
+S') ] ( singleExpression | #ID# @ )
+[37:36:7:3:13] State: 345 => To: 330   -- Action: pass       -- Rule: arguments => ('T_LPARAN') [ argument @ ] ('T_RPARA
+N')
+[38:36:7:3:14] State: 330 => To: 335   -- Action: reduce     -- Rule: arguments => ('T_LPARAN') [ argument ] ('T_RPARAN'
+) @
+[38:35:7:3:14] State: 335 => To: 343   -- Action: reduce     -- Rule: argumentsExpression => [ argumentsExpression ] arg
+uments @
+[38:34:8:3:14] State: 343 => To: 249   -- Action: recursion  -- Rule: postfixExpression => ( postfixExpression (#RULE_NO
+_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression @ | postIncrementExpression | postDecreaseEx
+pression ) | functionExpression )
+[38:34:8:3:14] State: 249 => To: 265   -- Action: rule       -- Rule: postfixExpression => ( postfixExpression @ (#RULE_
+NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseEx
+pression ) | functionExpression )
+parsing error: postfixExpression => ( postfixExpression (#RULE_NO_LINE#) @ ( memberIndexExpression | memberDotExpression
+ | argumentsExpression | postIncrementExpression | postDecreaseExpression ) | functionExpression )
+[38:34:8:3:14] State: 343 => To: 248   -- Action: reduce     -- Rule: postfixExpression => ( postfixExpression (#RULE_NO
+_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression @ | postIncrementExpression | postDecreaseEx
+pression ) | functionExpression )
+[38:33:8:3:14] State: 248 => To: 264   -- Action: reduce     -- Rule: newExpression => ( K_NEW singleExpression [ argume
+nts ] | postfixExpression @ )
+[38:32:8:3:14] State: 264 => To: 301   -- Action: reduce     -- Rule: deleteExpression => ( K_DELETE deleteExpression |
+newExpression @ )
+[38:31:8:3:14] State: 301 => To: 312   -- Action: reduce     -- Rule: voidExpression => ( K_VOID voidExpression | delete
+Expression @ )
+[38:30:8:3:14] State: 312 => To: 320   -- Action: reduce     -- Rule: typeofExpression => ( K_TYPEOF typeofExpression |
+voidExpression @ )
+[38:29:8:3:14] State: 320 => To: 328   -- Action: reduce     -- Rule: preIncrementExpression => ( 'T_INC' preIncrementEx
+pression | typeofExpression @ )
+[38:28:8:3:14] State: 328 => To: 334   -- Action: reduce     -- Rule: preDecreaseExpression => ( 'T_DEC' preDecreaseExpr
+ession | preIncrementExpression @ )
+[38:27:8:3:14] State: 334 => To: 340   -- Action: reduce     -- Rule: unaryPlusExpression => ( 'T_ADD' unaryPlusExpressi
+on | preDecreaseExpression @ )
+[38:26:8:3:14] State: 340 => To: 347   -- Action: reduce     -- Rule: unaryMinusExpression => ( 'T_SUB' unaryMinusExpres
+sion | unaryPlusExpression @ )
+[38:25:8:3:14] State: 347 => To: 352   -- Action: reduce     -- Rule: bitNotExpression => ( 'T_BIT_NOT' bitNotExpression
+ | unaryMinusExpression @ )
+[38:24:8:3:14] State: 352 => To: 355   -- Action: reduce     -- Rule: notExpression => ( 'T_LOG_NOT' notExpression | bit
+NotExpression @ )
+[38:23:8:3:14] State: 355 => To: 357   -- Action: reduce     -- Rule: powerExpression => [ powerExpression 'T_POWER' ] n
+otExpression @
+[38:22:8:3:14] State: 357 => To: 360   -- Action: reduce     -- Rule: multiplicativeExpression => [ multiplicativeExpres
+sion ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression @
+[38:21:8:3:14] State: 360 => To: 366   -- Action: reduce     -- Rule: additiveExpression => [ additiveExpression ( 'T_AD
+D' | 'T_SUB' ) ] multiplicativeExpression @
+[38:20:8:3:14] State: 366 => To: 374   -- Action: reduce     -- Rule: coalesceExpression => [ coalesceExpression 'T_COAL
+ESCE' ] additiveExpression @
+[38:19:8:3:14] State: 374 => To: 379   -- Action: reduce     -- Rule: bitShiftExpression => [ bitShiftExpression ( 'T_LS
+HIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression @
+[38:18:8:3:14] State: 379 => To: 386   -- Action: reduce     -- Rule: relationalExpression => [ relationalExpression ( '
+T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression @
+[38:17:8:3:14] State: 386 => To: 390   -- Action: reduce     -- Rule: instanceofExpression => [ instanceofExpression K_I
+NSTANCEOF ] relationalExpression @
+[38:16:8:3:14] State: 390 => To: 398   -- Action: reduce     -- Rule: inExpression => [ inExpression K_IN ] instanceofEx
+pression @
+[38:15:8:3:14] State: 398 => To: 403   -- Action: reduce     -- Rule: equalityExpression => [ equalityExpression ( 'T_EQ
+UAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression @
+[38:14:8:3:14] State: 403 => To: 409   -- Action: reduce     -- Rule: bitAndExpression => [ bitAndExpression 'T_BIT_AND'
+ ] equalityExpression @
+[38:13:8:3:14] State: 409 => To: 417   -- Action: reduce     -- Rule: bitXOrExpression => [ bitXOrExpression 'T_BIT_XOR'
+ ] bitAndExpression @
+[38:12:8:3:14] State: 417 => To: 422   -- Action: reduce     -- Rule: bitOrExpression => [ bitOrExpression 'T_BIT_OR' ]
+bitXOrExpression @
+[38:11:8:3:14] State: 422 => To: 427   -- Action: reduce     -- Rule: logicalAndExpression => [ logicalAndExpression 'T_
+LOG_AND' ] bitOrExpression @
+[38:10:8:3:14] State: 427 => To: 439   -- Action: reduce     -- Rule: logicalOrExpression => [ logicalOrExpression 'T_LO
+G_OR' ] logicalAndExpression @
+[38:9:8:3:14] State: 439 => To: 451   -- Action: reduce     -- Rule: ternaryExpression => logicalOrExpression @ [ 'T_QUE
+RY' singleExpression 'T_COLON' singleExpression ]
+[38:8:8:3:14] State: 451 => To: 464   -- Action: reduce     -- Rule: assignmentOperatorExpression => [ assignmentOperato
+rExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' | '
+T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternaryEx
+pression @
+[38:7:8:3:14] State: 464 => To: 471   -- Action: reduce     -- Rule: assignmentExpression => [ assignmentExpression 'T_A
+SSIGN' ] assignmentOperatorExpression @
+[38:6:8:3:14] State: 471 => To: 492   -- Action: reduce     -- Rule: singleExpression => [ singleExpression ('T_COMMA')
+] assignmentExpression @
+[38:5:8:3:14] State: 492 => To: 508   -- Action: reduce     -- Rule: expressionSequence => [ expressionSequence ('T_COMM
+A') ] singleExpression @
+[38:4:9:3:14] State: 508 => To:  53   -- Action: shift      -- Rule: expressionStatement => expressionSequence @ [ eos ]
+
+[38:5:1:3:14] State:  53 => To:  89   -- Action: pass       -- Rule: eos => @ ( ('T_SEMI') | #END# )
+[39:5:1:3:15] State:  89 => To: 127   -- Action: reduce     -- Rule: eos => ( ('T_SEMI') @ | #END# )
+[39:4:1:3:15] State: 127 => To: 153   -- Action: reduce     -- Rule: expressionStatement => expressionSequence [ eos @ ]
+
+[39:3:1:3:15] State: 153 => To:  79   -- Action: reduce     -- Rule: statement => ( block | variableStatement | emptySta
+tement | classDeclaration | expressionStatement @ | ifStatement | iterationStatement | continueStatement | breakStatemen
+t | returnStatement | withStatement | labelledStatement | switchStatement | throwStatement | tryStatement | debuggerStat
+ement | functionDeclaration )
+[39:2:2:3:15] State:  79 => To: 110   -- Action: recursion  -- Rule: sourceElements => [ sourceElements ] statement @
+[39:2:2:3:15] State: 110 => To:   2   -- Action: shift      -- Rule: sourceElements => [ sourceElements @ ] statement
+[39:3:2:3:15] State:   2 => To:  13   -- Action: shift      -- Rule: statement => @ ( block | variableStatement | emptyS
+tatement | classDeclaration | expressionStatement | ifStatement | iterationStatement | continueStatement | breakStatemen
+t | returnStatement | withStatement | labelledStatement | switchStatement | throwStatement | tryStatement | debuggerStat
+ement | functionDeclaration )
+[39:4:2:3:15] State:  13 => To:  33   -- Action: move       -- Rule: returnStatement => @ K_RETURN [ (#RULE_NO_LINE#) ex
+pressionSequence ] [ eos ]
+[40:4:2:4:1] State:  33 => To:  59   -- Action: reduce     -- Rule: returnStatement => K_RETURN @ [ (#RULE_NO_LINE#) exp
+ressionSequence ] [ eos ]
+[40:3:2:4:1] State:  59 => To:  79   -- Action: reduce     -- Rule: statement => ( block | variableStatement | emptyStat
+ement | classDeclaration | expressionStatement | ifStatement | iterationStatement | continueStatement | breakStatement |
+ returnStatement @ | withStatement | labelledStatement | switchStatement | throwStatement | tryStatement | debuggerState
+ment | functionDeclaration )
+[40:2:3:4:1] State:  79 => To: 110   -- Action: recursion  -- Rule: sourceElements => [ sourceElements ] statement @
+[40:2:3:4:1] State: 110 => To:   2   -- Action: shift      -- Rule: sourceElements => [ sourceElements @ ] statement
+[40:3:4:4:1] State:   2 => To:   8   -- Action: shift      -- Rule: statement => @ ( block | variableStatement | emptySt
+atement | classDeclaration | expressionStatement | ifStatement | iterationStatement | continueStatement | breakStatement
+ | returnStatement | withStatement | labelledStatement | switchStatement | throwStatement | tryStatement | debuggerState
+ment | functionDeclaration )
+[40:4:4:4:1] State:   8 => To:  25   -- Action: shift      -- Rule: expressionStatement => @ expressionSequence [ eos ]
+[40:5:4:4:1] State:  25 => To:  47   -- Action: shift      -- Rule: expressionSequence => [ @ expressionSequence ('T_COM
+MA') ] singleExpression
+[40:6:4:4:1] State:  47 => To:  84   -- Action: shift      -- Rule: singleExpression => [ @ singleExpression ('T_COMMA')
+ ] assignmentExpression
+[40:7:4:4:1] State:  84 => To: 118   -- Action: shift      -- Rule: assignmentExpression => [ @ assignmentExpression 'T_
+ASSIGN' ] assignmentOperatorExpression
+[40:8:4:4:1] State: 118 => To: 150   -- Action: shift      -- Rule: assignmentOperatorExpression => [ @ assignmentOperat
+orExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' |
+'T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternaryE
+xpression
+[40:9:4:4:1] State: 150 => To: 176   -- Action: shift      -- Rule: ternaryExpression => @ logicalOrExpression [ 'T_QUER
+Y' singleExpression 'T_COLON' singleExpression ]
+[40:10:4:4:1] State: 176 => To: 204   -- Action: shift      -- Rule: logicalOrExpression => [ @ logicalOrExpression 'T_L
+OG_OR' ] logicalAndExpression
+[40:11:4:4:1] State: 204 => To: 231   -- Action: shift      -- Rule: logicalAndExpression => [ @ logicalAndExpression 'T
+_LOG_AND' ] bitOrExpression
+[40:12:4:4:1] State: 231 => To: 251   -- Action: shift      -- Rule: bitOrExpression => [ @ bitOrExpression 'T_BIT_OR' ]
+ bitXOrExpression
+[40:13:4:4:1] State: 251 => To: 266   -- Action: shift      -- Rule: bitXOrExpression => [ @ bitXOrExpression 'T_BIT_XOR
+' ] bitAndExpression
+[40:14:4:4:1] State: 266 => To: 307   -- Action: shift      -- Rule: bitAndExpression => [ @ bitAndExpression 'T_BIT_AND
+' ] equalityExpression
+[40:15:4:4:1] State: 307 => To: 318   -- Action: shift      -- Rule: equalityExpression => [ @ equalityExpression ( 'T_E
+QUAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression
+[40:16:4:4:1] State: 318 => To: 327   -- Action: shift      -- Rule: inExpression => [ @ inExpression K_IN ] instanceofE
+xpression
+[40:17:4:4:1] State: 327 => To: 332   -- Action: shift      -- Rule: instanceofExpression => [ @ instanceofExpression K_
+INSTANCEOF ] relationalExpression
+[40:18:4:4:1] State: 332 => To: 339   -- Action: shift      -- Rule: relationalExpression => [ @ relationalExpression (
+'T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression
+[40:19:4:4:1] State: 339 => To: 346   -- Action: shift      -- Rule: bitShiftExpression => [ @ bitShiftExpression ( 'T_L
+SHIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression
+[40:20:4:4:1] State: 346 => To: 350   -- Action: shift      -- Rule: coalesceExpression => [ @ coalesceExpression 'T_COA
+LESCE' ] additiveExpression
+[40:21:4:4:1] State: 350 => To: 353   -- Action: shift      -- Rule: additiveExpression => [ @ additiveExpression ( 'T_A
+DD' | 'T_SUB' ) ] multiplicativeExpression
+[40:22:4:4:1] State: 353 => To: 356   -- Action: shift      -- Rule: multiplicativeExpression => [ @ multiplicativeExpre
+ssion ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression
+[40:23:4:4:1] State: 356 => To: 359   -- Action: shift      -- Rule: powerExpression => [ @ powerExpression 'T_POWER' ]
+notExpression
+[40:24:4:4:1] State: 359 => To: 363   -- Action: shift      -- Rule: notExpression => @ ( 'T_LOG_NOT' notExpression | bi
+tNotExpression )
+[40:25:4:4:1] State: 363 => To: 370   -- Action: shift      -- Rule: bitNotExpression => @ ( 'T_BIT_NOT' bitNotExpressio
+n | unaryMinusExpression )
+[40:26:4:4:1] State: 370 => To: 376   -- Action: shift      -- Rule: unaryMinusExpression => @ ( 'T_SUB' unaryMinusExpre
+ssion | unaryPlusExpression )
+[40:27:4:4:1] State: 376 => To: 381   -- Action: shift      -- Rule: unaryPlusExpression => @ ( 'T_ADD' unaryPlusExpress
+ion | preDecreaseExpression )
+[40:28:4:4:1] State: 381 => To: 388   -- Action: shift      -- Rule: preDecreaseExpression => @ ( 'T_DEC' preDecreaseExp
+ression | preIncrementExpression )
+[40:29:4:4:1] State: 388 => To: 396   -- Action: shift      -- Rule: preIncrementExpression => @ ( 'T_INC' preIncrementE
+xpression | typeofExpression )
+[40:30:4:4:1] State: 396 => To: 401   -- Action: shift      -- Rule: typeofExpression => @ ( K_TYPEOF typeofExpression |
+ voidExpression )
+[40:31:4:4:1] State: 401 => To: 406   -- Action: shift      -- Rule: voidExpression => @ ( K_VOID voidExpression | delet
+eExpression )
+[40:32:4:4:1] State: 406 => To: 414   -- Action: shift      -- Rule: deleteExpression => @ ( K_DELETE deleteExpression |
+ newExpression )
+[40:33:4:4:1] State: 414 => To: 419   -- Action: shift      -- Rule: newExpression => @ ( K_NEW singleExpression [ argum
+ents ] | postfixExpression )
+[40:34:4:4:1] State: 419 => To: 424   -- Action: shift      -- Rule: postfixExpression => @ ( postfixExpression (#RULE_N
+O_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExp
+ression ) | functionExpression )
+[40:35:5:4:1] State: 424 => To: 432   -- Action: shift      -- Rule: functionExpression => @ ( anonymousFunction | class
+Expression | thisExpression | identifierExpression | superExpression | literalExpression | arrayLiteralExpression | obje
+ctLiteralExpression | parenthesizedExpression )
+[40:36:5:4:1] State: 432 => To: 446   -- Action: move       -- Rule: identifierExpression => @ #ID#
+[41:36:5:5:1]* State: 446 => To: 456   -- Action: reduce     -- Rule: identifierExpression => #ID# @
+[41:35:5:5:1]* State: 456 => To: 225   -- Action: reduce     -- Rule: functionExpression => ( anonymousFunction | classE
+xpression | thisExpression | identifierExpression @ | superExpression | literalExpression | arrayLiteralExpression | obj
+ectLiteralExpression | parenthesizedExpression )
+[41:34:6:5:1]* State: 225 => To: 249   -- Action: recursion  -- Rule: postfixExpression => ( postfixExpression (#RULE_NO
+_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExpr
+ession ) | functionExpression @ )
+[41:34:6:5:1]* State: 249 => To: 265   -- Action: rule       -- Rule: postfixExpression => ( postfixExpression @ (#RULE_
+NO_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseEx
+pression ) | functionExpression )
+parsing error: postfixExpression => ( postfixExpression (#RULE_NO_LINE#) @ ( memberIndexExpression | memberDotExpression
+ | argumentsExpression | postIncrementExpression | postDecreaseExpression ) | functionExpression )
+[41:34:6:5:1]* State: 225 => To: 248   -- Action: reduce     -- Rule: postfixExpression => ( postfixExpression (#RULE_NO
+_LINE#) ( memberIndexExpression | memberDotExpression | argumentsExpression | postIncrementExpression | postDecreaseExpr
+ession ) | functionExpression @ )
+[41:33:6:5:1]* State: 248 => To: 264   -- Action: reduce     -- Rule: newExpression => ( K_NEW singleExpression [ argume
+nts ] | postfixExpression @ )
+[41:32:6:5:1]* State: 264 => To: 301   -- Action: reduce     -- Rule: deleteExpression => ( K_DELETE deleteExpression |
+newExpression @ )
+[41:31:6:5:1]* State: 301 => To: 312   -- Action: reduce     -- Rule: voidExpression => ( K_VOID voidExpression | delete
+Expression @ )
+[41:30:6:5:1]* State: 312 => To: 320   -- Action: reduce     -- Rule: typeofExpression => ( K_TYPEOF typeofExpression |
+voidExpression @ )
+[41:29:6:5:1]* State: 320 => To: 328   -- Action: reduce     -- Rule: preIncrementExpression => ( 'T_INC' preIncrementEx
+pression | typeofExpression @ )
+[41:28:6:5:1]* State: 328 => To: 334   -- Action: reduce     -- Rule: preDecreaseExpression => ( 'T_DEC' preDecreaseExpr
+ession | preIncrementExpression @ )
+[41:27:6:5:1]* State: 334 => To: 340   -- Action: reduce     -- Rule: unaryPlusExpression => ( 'T_ADD' unaryPlusExpressi
+on | preDecreaseExpression @ )
+[41:26:6:5:1]* State: 340 => To: 347   -- Action: reduce     -- Rule: unaryMinusExpression => ( 'T_SUB' unaryMinusExpres
+sion | unaryPlusExpression @ )
+[41:25:6:5:1]* State: 347 => To: 352   -- Action: reduce     -- Rule: bitNotExpression => ( 'T_BIT_NOT' bitNotExpression
+ | unaryMinusExpression @ )
+[41:24:6:5:1]* State: 352 => To: 355   -- Action: reduce     -- Rule: notExpression => ( 'T_LOG_NOT' notExpression | bit
+NotExpression @ )
+[41:23:6:5:1]* State: 355 => To: 357   -- Action: reduce     -- Rule: powerExpression => [ powerExpression 'T_POWER' ] n
+otExpression @
+[41:22:6:5:1]* State: 357 => To: 360   -- Action: reduce     -- Rule: multiplicativeExpression => [ multiplicativeExpres
+sion ( 'T_MUL' | 'T_DIV' | 'T_MOD' ) ] powerExpression @
+[41:21:6:5:1]* State: 360 => To: 366   -- Action: reduce     -- Rule: additiveExpression => [ additiveExpression ( 'T_AD
+D' | 'T_SUB' ) ] multiplicativeExpression @
+[41:20:6:5:1]* State: 366 => To: 374   -- Action: reduce     -- Rule: coalesceExpression => [ coalesceExpression 'T_COAL
+ESCE' ] additiveExpression @
+[41:19:6:5:1]* State: 374 => To: 379   -- Action: reduce     -- Rule: bitShiftExpression => [ bitShiftExpression ( 'T_LS
+HIFT' | 'T_RSHIFT' | 'T_URSHIFT' ) ] coalesceExpression @
+[41:18:6:5:1]* State: 379 => To: 386   -- Action: reduce     -- Rule: relationalExpression => [ relationalExpression ( '
+T_LESS' | 'T_LESS_EQUAL' | 'T_GREATER' | 'T_GREATER_EQUAL' ) ] bitShiftExpression @
+[41:17:6:5:1]* State: 386 => To: 390   -- Action: reduce     -- Rule: instanceofExpression => [ instanceofExpression K_I
+NSTANCEOF ] relationalExpression @
+[41:16:6:5:1]* State: 390 => To: 398   -- Action: reduce     -- Rule: inExpression => [ inExpression K_IN ] instanceofEx
+pression @
+[41:15:6:5:1]* State: 398 => To: 403   -- Action: reduce     -- Rule: equalityExpression => [ equalityExpression ( 'T_EQ
+UAL' | 'T_NOT_EQUAL' | 'T_FEQUAL' | 'T_FNOT_EQUAL' ) ] inExpression @
+[41:14:6:5:1]* State: 403 => To: 409   -- Action: reduce     -- Rule: bitAndExpression => [ bitAndExpression 'T_BIT_AND'
+ ] equalityExpression @
+[41:13:6:5:1]* State: 409 => To: 417   -- Action: reduce     -- Rule: bitXOrExpression => [ bitXOrExpression 'T_BIT_XOR'
+ ] bitAndExpression @
+[41:12:6:5:1]* State: 417 => To: 422   -- Action: reduce     -- Rule: bitOrExpression => [ bitOrExpression 'T_BIT_OR' ]
+bitXOrExpression @
+[41:11:6:5:1]* State: 422 => To: 427   -- Action: reduce     -- Rule: logicalAndExpression => [ logicalAndExpression 'T_
+LOG_AND' ] bitOrExpression @
+[41:10:6:5:1]* State: 427 => To: 439   -- Action: reduce     -- Rule: logicalOrExpression => [ logicalOrExpression 'T_LO
+G_OR' ] logicalAndExpression @
+[41:9:6:5:1]* State: 439 => To: 451   -- Action: reduce     -- Rule: ternaryExpression => logicalOrExpression @ [ 'T_QUE
+RY' singleExpression 'T_COLON' singleExpression ]
+[41:8:6:5:1]* State: 451 => To: 464   -- Action: reduce     -- Rule: assignmentOperatorExpression => [ assignmentOperato
+rExpression ( 'T_ASSIGN_ADD' | 'T_ASSIGN_SUB' | 'T_ASSIGN_MUL' | 'T_ASSIGN_DIV' | 'T_ASSIGN_MOD' | 'T_ASSIGN_LSHIFT' | '
+T_ASSIGN_RSHIFT' | 'T_ASSIGN_URSHIFT' | 'T_ASSIGN_AND' | 'T_ASSIGN_OR' | 'T_ASSIGN_XOR' | 'T_ASSIGN_POWER' ) ] ternaryEx
+pression @
+[41:7:6:5:1]* State: 464 => To: 471   -- Action: reduce     -- Rule: assignmentExpression => [ assignmentExpression 'T_A
+SSIGN' ] assignmentOperatorExpression @
+[41:6:6:5:1]* State: 471 => To: 492   -- Action: reduce     -- Rule: singleExpression => [ singleExpression ('T_COMMA')
+] assignmentExpression @
+[41:5:6:5:1]* State: 492 => To: 508   -- Action: reduce     -- Rule: expressionSequence => [ expressionSequence ('T_COMM
+A') ] singleExpression @
+[41:4:7:5:1]* State: 508 => To:  53   -- Action: shift      -- Rule: expressionStatement => expressionSequence @ [ eos ]
+
+parsing error: eos => @ ( ('T_SEMI') | #END# )
+[41:4:7:5:1]* State: 508 => To: 153   -- Action: reduce     -- Rule: expressionStatement => expressionSequence @ [ eos ]
+
+[41:3:7:5:1]* State: 153 => To:  79   -- Action: reduce     -- Rule: statement => ( block | variableStatement | emptySta
+tement | classDeclaration | expressionStatement @ | ifStatement | iterationStatement | continueStatement | breakStatemen
+t | returnStatement | withStatement | labelledStatement | switchStatement | throwStatement | tryStatement | debuggerStat
+ement | functionDeclaration )
+[41:2:7:5:1]* State:  79 => To: 109   -- Action: reduce     -- Rule: sourceElements => [ sourceElements ] statement @
+[41:1:7:5:1]* State: 109 => To: 109   -- Action: finish     -- Rule: program => sourceElements @
 Program
  SourceElements
   Statement
@@ -42,7 +2250,6 @@ Program
         Literal
          regex: /regex/g
     Eos
-     operator: T_SEMI
   Statement
    VariableStatement
     keyword: K_VAR
@@ -58,7 +2265,6 @@ Program
        Literal
         number: 1
     Eos
-     operator: T_SEMI
   Statement
    ExpressionStatement
     ExpressionSequence
@@ -73,4 +2279,11 @@ Program
        Argument
         id: a
     Eos
-     operator: T_SEMI
+  Statement
+   ReturnStatement
+    keyword: K_RETURN
+  Statement
+   ExpressionStatement
+    ExpressionSequence
+     IdentifierExpression
+      id: b
