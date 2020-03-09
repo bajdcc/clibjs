@@ -16,6 +16,7 @@
 #define REPORT_ERROR_FILE "parsing.log"
 
 #define TRACE_PARSING 1
+#define TRACE_PARSING_LOG 0
 #define DUMP_LEXER 0
 #define DUMP_PDA 0
 #define DUMP_PDA_FILE "PDA.txt"
@@ -60,12 +61,15 @@ namespace clib {
         // REFER: antlr/grammars-v4
         // URL: https://github.com/antlr/grammars-v4/blob/master/javascript/javascript/JavaScriptParser.g4
 #define DEF_LEXER(name) auto &_##name = unit.token(name);
-        DEF_LEXER(END)
         DEF_LEXER(NUMBER)
         DEF_LEXER(ID)
         DEF_LEXER(REGEX)
         DEF_LEXER(STRING)
+        // ---
         DEF_LEXER(RULE_NO_LINE)
+        DEF_LEXER(RULE_LINE)
+        DEF_LEXER(RULE_RBRACE)
+        DEF_LEXER(RULE_EOF)
         // ---
         DEF_LEXER(K_NEW)
         DEF_LEXER(K_VAR)
@@ -273,22 +277,22 @@ namespace clib {
 #undef DEF_RULE_NOT_GREED
 #undef DEF_RULE_EXP
         program = sourceElements;
-        variableStatement = _K_VAR + variableDeclarationList + *eos;
+        variableStatement = _K_VAR + variableDeclarationList + eos;
         variableDeclarationList = *(variableDeclarationList + ~_T_COMMA) + variableDeclaration;
         variableDeclaration = assignable + *(_T_ASSIGN + singleExpression);
         emptyStatement = _T_SEMI;
-        expressionStatement = expressionSequence + *eos;
+        expressionStatement = expressionSequence + eos;
         ifStatement = _K_IF + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement + *(_K_ELSE + statement);
         iterationStatement = doStatement | whileStatement | forStatement | forInStatement;
-        doStatement = _K_DO + statement + _K_WHILE + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + *eos;
+        doStatement = _K_DO + statement + _K_WHILE + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + eos;
         whileStatement = _K_WHILE + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement;
         forStatement = _K_FOR + ~_T_LPARAN + *(expressionSequence | _K_VAR + variableDeclarationList) +
                        _T_SEMI + *expressionSequence + _T_SEMI + *expressionSequence + ~_T_RPARAN + statement;
         forInStatement = _K_FOR + ~_T_LPARAN + *(singleExpression | _K_VAR + variableDeclarationList) +
                          _K_IN + expressionSequence + ~_T_RPARAN + statement;
-        continueStatement = _K_CONTINUE + *(~_RULE_NO_LINE + _ID) + *eos;
-        breakStatement = _K_BREAK + *(~_RULE_NO_LINE + _ID) + *eos;
-        returnStatement = _K_RETURN + *(~_RULE_NO_LINE + expressionSequence) + *eos;
+        continueStatement = _K_CONTINUE + *(_RULE_NO_LINE + _ID) + eos;
+        breakStatement = _K_BREAK + *(_RULE_NO_LINE + _ID) + eos;
+        returnStatement = _K_RETURN + *(_RULE_NO_LINE + expressionSequence) + eos;
         withStatement = _K_WITH + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement;
         switchStatement = _K_SWITCH + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + caseBlock;
         caseBlock = ~_T_LBRACE + *caseClauses + *(defaultClause + *caseClauses) + ~_T_RBRACE;
@@ -296,11 +300,11 @@ namespace clib {
         caseClause = _K_CASE + expressionSequence + _T_COLON + *statementList;
         defaultClause = _K_DEFAULT + _T_COLON + *statementList;
         labelledStatement = _ID + _T_COLON + statement;
-        throwStatement = _K_THROW + ~_RULE_NO_LINE + expressionSequence + *eos;
+        throwStatement = _K_THROW + _RULE_NO_LINE + expressionSequence + eos;
         tryStatement = _K_TRY + block + (catchProduction + *finallyProduction | finallyProduction);
         catchProduction = _K_CATCH + *(~_T_LPARAN + *assignable + ~_T_RPARAN) + block;
         finallyProduction = _K_FINALLY + block;
-        debuggerStatement = _K_DEBUGGER + *eos;
+        debuggerStatement = _K_DEBUGGER + eos;
         functionDeclaration = _K_FUNCTION + _ID + ~_T_LPARAN + *formalParameterList + ~_T_RPARAN +
                               ~_T_LBRACE + *functionBody + ~_T_RBRACE;
         classDeclaration = _K_CLASS + _ID + classTail;
@@ -335,7 +339,7 @@ namespace clib {
                     | functionDeclaration;
         block = ~_T_LBRACE + *statementList + ~_T_RBRACE;
         statementList = *statementList + statement;
-        expressionStatement = expressionSequence + *eos;
+        expressionStatement = expressionSequence + eos;
         expressionSequence = *(expressionSequence + ~_T_COMMA) + singleExpression;
         thisExpression = _K_THIS;
         identifierExpression = _ID;
@@ -359,12 +363,12 @@ namespace clib {
         argumentsExpression = *argumentsExpression + arguments;
         postIncrementExpression = *postIncrementExpression + _T_INC;
         postDecreaseExpression = *postDecreaseExpression + _T_DEC;
-        postfixExpression = postfixExpression + ~_RULE_NO_LINE +
-                            (memberIndexExpression
+        postfixExpression = postfixExpression +
+                            (_RULE_NO_LINE + memberIndexExpression
                              | memberDotExpression
                              | argumentsExpression
-                             | postIncrementExpression
-                             | postDecreaseExpression)
+                             | _RULE_NO_LINE + postIncrementExpression
+                             | _RULE_NO_LINE + postDecreaseExpression)
                             | functionExpression;
         newExpression = _K_NEW + singleExpression + *arguments | postfixExpression;
         deleteExpression = _K_DELETE + deleteExpression | newExpression;
@@ -432,7 +436,7 @@ namespace clib {
         arrowFunction = arrowFunctionParameters + ~_T_ARROW + arrowFunctionBody;
         arrowFunctionParameters = _ID | ~_T_LPARAN + *formalParameterList + ~_T_RPARAN;
         arrowFunctionBody = singleExpression | _T_LBRACE + *functionBody + _T_RBRACE;
-        eos = (~~_T_SEMI)((void *) &clear_bk) | _END;
+        eos = (~~_T_SEMI)((void *) &clear_bk) | _RULE_EOF | _RULE_LINE | _RULE_RBRACE;
         keyword = _K_BREAK
                   | _K_DO
                   | _K_INSTANCEOF
@@ -530,7 +534,6 @@ namespace clib {
         bks.push_back(bk_tmp);
         auto trans_id = -1;
         auto prev_idx = 0;
-        auto jump_state = -1;
         while (!bks.empty()) {
             auto bk = &bks.back();
             if (bk->direction == b_success || bk->direction == b_fail) {
@@ -556,6 +559,20 @@ namespace clib {
             state_stack = bk->state_stack;
             ast_stack = bk->ast_stack;
             auto state = bk->current_state;
+
+#if TRACE_PARSING && !TRACE_PARSING_LOG
+            {
+                auto line = 0;
+                auto column = 0;
+                if (!ast_cache.empty() && ast_cache_index > 0 && ast_cache_index <= ast_cache.size()) {
+                    line = ast_cache[ast_cache_index - 1]->line;
+                    column = ast_cache[ast_cache_index - 1]->column;
+                }
+                fprintf(stdout, "[%d:%d:%d:%d:%d] State: %3d\n",
+                        ast_cache_index, ast_stack.size(), bks.size(),
+                        line, column, state);
+            };
+#endif
             if (bk->direction != b_error)
                 for (;;) {
                     auto is_end = current->t == END && ast_cache_index >= ast_cache.size();
@@ -578,14 +595,14 @@ namespace clib {
                             for (size_t i = 0; i < trans.size(); ++i) {
                                 auto &cs = trans[i];
                                 if (valid_trans(cs) && (cs.type != e_move && cs.type != e_pass)) {
-                                    trans_ids.push_back(i | pda_edge_priority(cs.type) << 16);
+                                    trans_ids.push_back(i);
                                 }
                             }
                         } else {
                             for (size_t i = 0; i < trans.size(); ++i) {
                                 auto &cs = trans[i];
                                 if (valid_trans(cs)) {
-                                    trans_ids.push_back(i | pda_edge_priority(cs.type) << 16);
+                                    trans_ids.push_back(i);
                                 }
                             }
                             if (trans.size() == 1 && !trans_ids.empty() &&
@@ -599,10 +616,9 @@ namespace clib {
                             if (current_state.pred) {
                                 std::vector<int> then;
                                 std::vector<int> add;
-                                for (int t : trans_ids) {
-                                    auto id = t & ((1 << 16) - 1);
-                                    if (trans[id].pred) {
-                                        auto cb = (pda_coll_pred_cb) trans[id].pred;
+                                for (const auto t : trans_ids) {
+                                    if (trans[t].pred) {
+                                        auto cb = (pda_coll_pred_cb) trans[t].pred;
                                         auto r = cb(lexer.get(), current->id);
                                         if (r == p_ALLOW) {
                                             add.push_back(t);
@@ -649,7 +665,7 @@ namespace clib {
                                 bk->direction = b_next;
                                 break;
                             } else {
-                                trans_id = trans_ids.back() & ((1 << 16) - 1);
+                                trans_id = trans_ids.back();
                                 trans_ids.pop_back();
                             }
                         } else {
@@ -682,7 +698,7 @@ namespace clib {
                         ((terminal_cb) (t.cb))(lexer.get(), current->id, bks, bk);
                     }
                     auto jump = trans[trans_id].jump;
-#if TRACE_PARSING
+#if TRACE_PARSING && TRACE_PARSING_LOG
                     {
                         auto line = 0;
                         auto column = 0;
@@ -871,14 +887,14 @@ namespace clib {
             ast_cache_index++;
             return node;
         }
-        if (current->t == RULE_NO_LINE) {
+        if (current->t > RULE_START && current->t < RULE_END) {
             auto node = ast->new_node(a_rule);
             node->line = current->line;
             node->column = current->column;
             node->start = current->start;
             node->end = current->end;
             node->data._ins._1 = current->t;
-            node->data._ins._2 = current->id;
+            node->data._ins._2 = (uint32_t) current->id;
             match_type(current->t);
             ast_cache.push_back(node);
             ast_cache_index++;
@@ -995,17 +1011,15 @@ namespace clib {
         if (u->t != u_token)
             return false;
         auto token = to_token(u);
-        if (token->type == RULE_NO_LINE) {
+        if (token->type > RULE_START && token->type < RULE_END) {
             if (ast_cache_index < ast_cache.size()) {
                 auto &cache = ast_cache[ast_cache_index];
                 if (cache->flag == a_rule) {
-                    if (cache->data._ins._1 == RULE_NO_LINE) {
-                        return lexer->get_no_line(cache->data._ins._2);
-                    }
+                    return lexer->valid_rule(cache->data._ins._2, (lexer_t) cache->data._ins._1);
                 }
                 return false;
             }
-            return lexer->get_no_line(current->id);
+            return lexer->valid_rule(current->id, token->type);
         }
         if (ast_cache_index < ast_cache.size()) {
             auto &cache = ast_cache[ast_cache_index];

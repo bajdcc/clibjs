@@ -8,6 +8,7 @@
 #include <sstream>
 #include <codecvt>
 #include <locale>
+#include <cassert>
 #include "cjslexer.h"
 
 namespace clib {
@@ -567,14 +568,10 @@ namespace clib {
                         }
                         j++;
                         // postfix: /i /g /gi /ig /m
-                        if (text[j] == 'g') {
-                            if (text[j] == 'i')j++;
-                            j++;
-                        } else if (text[j] == 'i') {
-                            if (text[j] == 'g')j++;
-                            j++;
-                        } else if (text[j] == 'm') {
-                            j++;
+                        for (auto k = 0; k < 3;k++) {
+                            if (text[j] == 'g' || text[j] == 'i' || text[j] == 'm') {
+                                j++;
+                            }
                         }
                         auto u = alloc_unit(line, column, i, j);
                         u.t = REGEX;
@@ -872,10 +869,11 @@ namespace clib {
                         break;
                 }
             }
+            auto u = alloc_unit(line, column, i, i);
+            u.t = END;
+            u.id = id;
+            units.push_back(u);
         }
-        auto u = alloc_unit(line, column, i, i);
-        u.t = END;
-        units.push_back(u);
     }
 
 #define js_mem_align(d, a) (((d) + (a - 1)) & ~(a - 1))
@@ -981,11 +979,24 @@ namespace clib {
         return &data[idx];
     }
 
-    bool cjslexer::get_no_line(int idx) const {
-        if (idx < 0 || idx >= (int) data.size()) {
+    bool cjslexer::valid_rule(int idx, lexer_t rule) const {
+        if (idx < 0 || idx >= (int) units.size()) {
             return false;
         }
-        return no_line[idx];
+        switch (rule){
+            case RULE_NO_LINE:
+                return no_line[idx];
+            case RULE_LINE:
+                return !no_line[idx];
+            case RULE_RBRACE:
+                return units[idx].t == T_RBRACE;
+            case RULE_EOF:
+                return idx + 1 == (int) units.size();
+            default:
+                break;
+        }
+        assert(!"invalid rule type");
+        return false;
     }
 
     int cjslexer::get_unit_size() const {

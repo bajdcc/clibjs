@@ -101,22 +101,22 @@ See [grammars-v4/javascript](https://github.com/antlr/grammars-v4/blob/master/ja
 
 ```cpp
 program = sourceElements;
-variableStatement = _K_VAR + variableDeclarationList + *eos;
+variableStatement = _K_VAR + variableDeclarationList + eos;
 variableDeclarationList = *(variableDeclarationList + ~_T_COMMA) + variableDeclaration;
 variableDeclaration = assignable + *(_T_ASSIGN + singleExpression);
 emptyStatement = _T_SEMI;
-expressionStatement = expressionSequence + *eos;
+expressionStatement = expressionSequence + eos;
 ifStatement = _K_IF + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement + *(_K_ELSE + statement);
 iterationStatement = doStatement | whileStatement | forStatement | forInStatement;
-doStatement = _K_DO + statement + _K_WHILE + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + *eos;
+doStatement = _K_DO + statement + _K_WHILE + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + eos;
 whileStatement = _K_WHILE + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement;
 forStatement = _K_FOR + ~_T_LPARAN + *(expressionSequence | _K_VAR + variableDeclarationList) +
                _T_SEMI + *expressionSequence + _T_SEMI + *expressionSequence + ~_T_RPARAN + statement;
 forInStatement = _K_FOR + ~_T_LPARAN + *(singleExpression | _K_VAR + variableDeclarationList) +
                  _K_IN + expressionSequence + ~_T_RPARAN + statement;
-continueStatement = _K_CONTINUE + *(~_RULE_NO_LINE + _ID) + *eos;
-breakStatement = _K_BREAK + *(~_RULE_NO_LINE + _ID) + *eos;
-returnStatement = _K_RETURN + *(~_RULE_NO_LINE + expressionSequence) + *eos;
+continueStatement = _K_CONTINUE + *(_RULE_NO_LINE + _ID) + eos;
+breakStatement = _K_BREAK + *(_RULE_NO_LINE + _ID) + eos;
+returnStatement = _K_RETURN + *(_RULE_NO_LINE + expressionSequence) + eos;
 withStatement = _K_WITH + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement;
 switchStatement = _K_SWITCH + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + caseBlock;
 caseBlock = ~_T_LBRACE + *caseClauses + *(defaultClause + *caseClauses) + ~_T_RBRACE;
@@ -124,11 +124,11 @@ caseClauses = caseClause + *caseClauses;
 caseClause = _K_CASE + expressionSequence + _T_COLON + *statementList;
 defaultClause = _K_DEFAULT + _T_COLON + *statementList;
 labelledStatement = _ID + _T_COLON + statement;
-throwStatement = _K_THROW + ~_RULE_NO_LINE + expressionSequence + *eos;
+throwStatement = _K_THROW + _RULE_NO_LINE + expressionSequence + eos;
 tryStatement = _K_TRY + block + (catchProduction + *finallyProduction | finallyProduction);
 catchProduction = _K_CATCH + *(~_T_LPARAN + *assignable + ~_T_RPARAN) + block;
 finallyProduction = _K_FINALLY + block;
-debuggerStatement = _K_DEBUGGER + *eos;
+debuggerStatement = _K_DEBUGGER + eos;
 functionDeclaration = _K_FUNCTION + _ID + ~_T_LPARAN + *formalParameterList + ~_T_RPARAN +
                       ~_T_LBRACE + *functionBody + ~_T_RBRACE;
 classDeclaration = _K_CLASS + _ID + classTail;
@@ -163,7 +163,7 @@ statement = block
             | functionDeclaration;
 block = ~_T_LBRACE + *statementList + ~_T_RBRACE;
 statementList = *statementList + statement;
-expressionStatement = expressionSequence + *eos;
+expressionStatement = expressionSequence + eos;
 expressionSequence = *(expressionSequence + ~_T_COMMA) + singleExpression;
 thisExpression = _K_THIS;
 identifierExpression = _ID;
@@ -187,12 +187,12 @@ memberDotExpression = *memberDotExpression + *_T_QUERY + _T_DOT + *_T_SHARP + id
 argumentsExpression = *argumentsExpression + arguments;
 postIncrementExpression = *postIncrementExpression + _T_INC;
 postDecreaseExpression = *postDecreaseExpression + _T_DEC;
-postfixExpression = postfixExpression + ~_RULE_NO_LINE +
-                    (memberIndexExpression
+postfixExpression = postfixExpression +
+                    (_RULE_NO_LINE + memberIndexExpression
                      | memberDotExpression
                      | argumentsExpression
-                     | postIncrementExpression
-                     | postDecreaseExpression)
+                     | _RULE_NO_LINE + postIncrementExpression
+                     | _RULE_NO_LINE + postDecreaseExpression)
                     | functionExpression;
 newExpression = _K_NEW + singleExpression + *arguments | postfixExpression;
 deleteExpression = _K_DELETE + deleteExpression | newExpression;
@@ -260,7 +260,7 @@ anoymousFunctionDecl = _K_FUNCTION + ~_T_LPARAN + *formalParameterList + ~_T_RPA
 arrowFunction = arrowFunctionParameters + ~_T_ARROW + arrowFunctionBody;
 arrowFunctionParameters = _ID | ~_T_LPARAN + *formalParameterList + ~_T_RPARAN;
 arrowFunctionBody = singleExpression | _T_LBRACE + *functionBody + _T_RBRACE;
-eos = (~~_T_SEMI)((void *) &clear_bk) | _END;
+eos = (~~_T_SEMI)((void *) &clear_bk) | _RULE_EOF | _RULE_LINE | _RULE_RBRACE;
 keyword = _K_BREAK
           | _K_DO
           | _K_INSTANCEOF

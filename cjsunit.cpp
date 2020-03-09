@@ -1035,7 +1035,8 @@ namespace clib {
                         edge.data = node;
                         auto n = to_ref(node);
                         edge.type = n->skip ? e_pass : e_move;
-                        if (to_token(n->child)->type == RULE_NO_LINE)
+                        auto t = to_token(n->child)->type;
+                        if (t > RULE_START && t < RULE_END)
                             edge.type = e_rule;
                         edge.marked = n->marked;
                         edge.cb = n->callback;
@@ -1147,11 +1148,22 @@ namespace clib {
                     std::copy(std::begin(LA[edge]), std::end(LA[edge]), std::back_inserter(trans.LA));
                     p.trans.push_back(trans);
                 }
+                std::sort(p.trans.begin(), p.trans.end(), [](const auto &a, const auto &b) {
+                    if (pda_edge_priority(a.type) < pda_edge_priority(b.type))
+                        return true;
+                    if (pda_edge_priority(a.type) > pda_edge_priority(b.type))
+                        return false;
+                    if (a.jump < b.jump)
+                        return true;
+                    if (a.jump > b.jump)
+                        return false;
+                    return a.status < b.status;
+                });
             }
             for (const auto &adjust : adjusts) {
                 if (adjust.ea == e_shift) {
                     auto r = get_closure(rules[to_rule(adjust.r)->s].status, [](auto it) { return true; });
-                    auto &_r = pdas.at(mapLabelsToPda.at(r.front()->label));
+                    auto &_r = pdas.at((size_t) mapLabelsToPda.at(r.front()->label));
                     auto a = get_closure(rules[to_rule(adjust.a)->s].status, [](auto it) { return true; });
                     const auto &_a = mapLabelsToPda.at(a.front()->label);
                     auto &t = _r.trans;
@@ -1164,9 +1176,17 @@ namespace clib {
                             std::sort(_r.trans.begin(), _r.trans.end(), [](const auto &a, const auto &b) {
                                 if (a.cost > b.cost)
                                     return true;
-                                if (a.type < b.type)
+                                if (a.cost < b.cost)
+                                    return false;
+                                if (pda_edge_priority(a.type) < pda_edge_priority(b.type))
                                     return true;
-                                return a.jump < b.jump;
+                                if (pda_edge_priority(a.type) > pda_edge_priority(b.type))
+                                    return false;
+                                if (a.jump < b.jump)
+                                    return true;
+                                if (a.jump > b.jump)
+                                    return false;
+                                return a.status < b.status;
                             });
                         }
                         if (adjust.pred) {
@@ -1180,7 +1200,7 @@ namespace clib {
                             r.begin(), r.end(),
                             [](auto it) { return it->final; });
                     if (f != r.end()) {
-                        auto &_r = pdas.at(mapLabelsToPda.at((*f)->label));
+                        auto &_r = pdas.at((size_t) mapLabelsToPda.at((*f)->label));
                         auto &t = _r.trans;
                         auto sa = std::find_if(
                                 t.begin(), t.end(),
@@ -1191,9 +1211,17 @@ namespace clib {
                                 std::sort(_r.trans.begin(), _r.trans.end(), [](const auto &a, const auto &b) {
                                     if (a.cost > b.cost)
                                         return true;
-                                    if (a.type < b.type)
+                                    if (a.cost < b.cost)
+                                        return false;
+                                    if (pda_edge_priority(a.type) < pda_edge_priority(b.type))
                                         return true;
-                                    return a.jump < b.jump;
+                                    if (pda_edge_priority(a.type) > pda_edge_priority(b.type))
+                                        return false;
+                                    if (a.jump < b.jump)
+                                        return true;
+                                    if (a.jump > b.jump)
+                                        return false;
+                                    return a.status < b.status;
                                 });
                             }
                             if (adjust.pred) {

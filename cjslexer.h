@@ -41,7 +41,7 @@ namespace clib {
         int get_unit_size() const;
         std::string get_unit_desc(int idx) const;
         const char *get_data(int idx) const;
-        bool get_no_line(int idx) const;
+        bool valid_rule(int idx, lexer_t rule) const;
 
         int get_index() const;
         void inc_index();
