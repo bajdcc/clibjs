@@ -989,7 +989,6 @@ namespace clib {
                 state_stack.pop_back();
                 ast_stack.pop_back();
                 assert(!ast_stack.empty());
-                ast_reduce_cache.push_back(new_ast);
 #if DEBUG_AST
                 fprintf(stdout, "[DEBUG] Reduce: parent=%p, child=%p, CS=%d, AS=%d, RI=%d\n",
                         ast_stack.back(), new_ast, cjsast::children_size(ast_stack.back()),
@@ -997,12 +996,20 @@ namespace clib {
 #endif
                 if (trans.type == e_reduce_exp)
                     ast_stack.back()->attr |= a_exp;
-                cjsast::set_child(ast_stack.back(), new_ast);
-                check_ast(ast_stack.back());
+                if (new_ast->flag != a_collection || new_ast->child != nullptr) {
+                    ast_reduce_cache.push_back(new_ast);
+                    cjsast::set_child(ast_stack.back(), new_ast);
+                    check_ast(ast_stack.back());
+                } else {
+                    cjsast::unlink(new_ast);
+                    ast->remove(new_ast);
+                }
             }
                 break;
             case e_finish:
                 state_stack.pop_back();
+                break;
+            default:
                 break;
         }
     }
