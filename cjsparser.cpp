@@ -279,7 +279,7 @@ namespace clib {
         program = sourceElements;
         variableStatement = _K_VAR + variableDeclarationList + eos;
         variableDeclarationList = *(variableDeclarationList + ~_T_COMMA) + variableDeclaration;
-        variableDeclaration = assignable + *(_T_ASSIGN + singleExpression);
+        variableDeclaration = assignable + *(~_T_ASSIGN + singleExpression);
         emptyStatement = _T_SEMI;
         expressionStatement = expressionSequence + eos;
         ifStatement = _K_IF + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement + *(_K_ELSE + statement);
@@ -403,7 +403,7 @@ namespace clib {
                                           _T_ASSIGN_AND | _T_ASSIGN_OR | _T_ASSIGN_XOR | _T_ASSIGN_POWER)) +
                                        ternaryExpression;
         assignmentExpression = *(assignmentExpression + _T_ASSIGN) + assignmentOperatorExpression;
-        singleExpression = *(singleExpression + ~_T_COMMA) + assignmentExpression;
+        singleExpression = assignmentExpression;
         literal = _K_NULL | _K_TRUE | _K_FALSE | _STRING | _REGEX | _NUMBER;
         arrayLiteral = ~_T_LSQUARE + *elementList + ~_T_RSQUARE;
         elementList = *(elementList + ~_T_COMMA) + arrayElement;

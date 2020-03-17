@@ -7,6 +7,7 @@
 #include <fstream>
 #include "cjs.h"
 #include "cjsparser.h"
+#include "cjsgen.h"
 
 #define LOG_FILE 1
 
@@ -23,6 +24,8 @@ namespace clib {
         cjsparser p;
         p.parse(input, this);
         cjsast::print(p.root(), 0, std::cout);
+        cjsgen g;
+        g.gen_code(p.root());
 #if LOG_FILE
         std::ofstream ofs(filename);
         if (ofs)
