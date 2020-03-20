@@ -273,14 +273,18 @@ namespace clib {
         const char *lexer_string(lexer_t t);
         const char *ast_string(lexer_t t);
         const char *coll_string(coll_t t);
+
+        enum ins_t {
+            NOP
+        };
     }
 
     class cexception : public std::exception {
     public:
-        explicit cexception(const std::string& msg) noexcept;
+        explicit cexception(const std::string &msg) noexcept;
 
-        cexception(const cexception& e) = default;
-        cexception& operator = (const cexception& e) = default;
+        cexception(const cexception &e) = default;
+        cexception &operator=(const cexception &e) = default;
 
         std::string message() const;
 

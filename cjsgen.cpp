@@ -3,8 +3,26 @@
 // Created by bajdcc
 //
 
+#include <sstream>
+#include <algorithm>
+#include <iomanip>
+#include <iostream>
+#include <cassert>
 #include "cjsgen.h"
 #include "cjsast.h"
+
+#define PRINT_AST 1
+
+#define AST_IS_KEYWORD(node) ((node)->flag == a_keyword)
+#define AST_IS_KEYWORD_K(node, k) ((node)->data._keyword == (k))
+#define AST_IS_KEYWORD_N(node, k) (AST_IS_KEYWORD(node) && AST_IS_KEYWORD_K(node, k))
+#define AST_IS_OP(node) ((node)->flag == a_operator)
+#define AST_IS_OP_K(node, k) ((node)->data._op == (k))
+#define AST_IS_OP_N(node, k) (AST_IS_OP(node) && AST_IS_OP_K(node, k))
+#define AST_IS_ID(node) ((node)->flag == ast_literal)
+#define AST_IS_COLL(node) ((node)->flag == a_collection)
+#define AST_IS_COLL_K(node, k) ((node)->data._coll == (k))
+#define AST_IS_COLL_N(node, k) (AST_IS_COLL(node) && AST_IS_COLL_K(node, k))
 
 namespace clib {
 
@@ -13,8 +31,25 @@ namespace clib {
         ast.emplace_back();
     }
 
+    static void copy_info(sym_t::ref dst, ast_node *src) {
+        dst->line = src->line;
+        dst->column = src->column;
+        dst->start = src->start;
+        dst->end = src->end;
+    }
+
+    static void copy_info(sym_t::ref dst, sym_t::ref src) {
+        dst->line = src->line;
+        dst->column = src->column;
+        dst->start = src->start;
+        dst->end = src->end;
+    }
+
     bool cjsgen::gen_code(ast_node *node) {
         gen_rec(node, 0);
+#if PRINT_AST
+        print(tmp.front().front(), 0, std::cout);
+#endif
         return false;
     }
 
@@ -88,10 +123,11 @@ namespace clib {
             default:
                 break;
         }
-        if (!tmp.back().empty()) {
-            //assert(tmp.back().size() == 1);
+        auto &tmps = tmp.back();
+        if (!tmps.empty()) {
+            //assert(tmps.size() == 1);
             auto &top = tmp[tmp.size() - 2];
-            for (auto &t : tmp.back()) {
+            for (auto &t : tmps) {
                 top.push_back(t);
             }
         }
@@ -342,6 +378,8 @@ namespace clib {
     }
 
     void cjsgen::gen_after(const std::vector<ast_node *> &nodes, int level, ast_node *node) {
+        auto &asts = ast.back();
+        auto &tmps = tmp.back();
         switch (node->data._coll) {
             case c_program:
                 break;
@@ -355,9 +393,34 @@ namespace clib {
                 break;
             case c_variableStatement:
                 break;
-            case c_variableDeclarationList:
+            case c_variableDeclarationList: {
+                auto stmt = std::make_shared<sym_stmt_var_t>();
+                copy_info(stmt, tmps.front());
+                for (const auto &s : tmps) {
+                    assert(s->get_type() == s_id);
+                    stmt->vars.push_back(std::dynamic_pointer_cast<sym_id_t>(s));
+                    stmt->end = s->end;
+                }
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(stmt);
+            }
                 break;
-            case c_variableDeclaration:
+            case c_variableDeclaration: {
+                auto r = std::make_shared<sym_var_t>(asts.front());
+                copy_info(r, asts.front());
+                auto id = std::make_shared<sym_id_t>(r);
+                copy_info(id, r);
+                if (!tmps.empty()) {
+                    assert(tmps.front()->get_base_type() == s_expression);
+                    id->init = std::dynamic_pointer_cast<sym_exp_t>(tmps.front());
+                    copy_info(id->init, tmps.front());
+                    id->end = id->init->end;
+                }
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(id);
+            }
                 break;
             case c_emptyStatement:
                 break;
@@ -423,7 +486,20 @@ namespace clib {
                 break;
             case c_functionBody:
                 break;
-            case c_sourceElements:
+            case c_sourceElements: {
+                auto block = std::make_shared<sym_block_t>();
+                if (!tmps.empty()) {
+                    copy_info(block, tmps.front());
+                }
+                for (const auto &s : tmps) {
+                    assert(s->get_base_type() == s_statement);
+                    block->stmts.push_back(std::dynamic_pointer_cast<sym_stmt_t>(s));
+                    block->end = s->end;
+                }
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(block);
+            }
                 break;
             case c_arrayLiteral:
                 break;
@@ -454,8 +530,6 @@ namespace clib {
             case c_arrowFunctionParameters:
                 break;
             case c_arrowFunctionBody:
-                break;
-            case c_literal:
                 break;
             case c_numericLiteral:
                 break;
@@ -489,79 +563,303 @@ namespace clib {
                 break;
             case c_argumentsExpression:
                 break;
-            case c_newExpression:
-                break;
-            case c_postIncrementExpression:
-                break;
-            case c_postDecreaseExpression:
-                break;
             case c_postfixExpression:
                 break;
+            case c_postIncrementExpression:
+            case c_postDecreaseExpression: {
+                auto exp = to_exp(tmps.front());
+                for (auto &a: nodes) {
+                    auto t = std::make_shared<sym_sinop_t>(exp, a);
+                    copy_info(t, exp);
+                    t->end = a->end;
+                    exp = t;
+                }
+                tmps.clear();
+                tmps.push_back(exp);
+                asts.clear();
+            }
+                break;
+            case c_newExpression:
             case c_deleteExpression:
-                break;
             case c_voidExpression:
-                break;
             case c_typeofExpression:
-                break;
             case c_preIncrementExpression:
-                break;
             case c_preDecreaseExpression:
-                break;
             case c_unaryPlusExpression:
-                break;
             case c_unaryMinusExpression:
-                break;
             case c_bitNotExpression:
-                break;
-            case c_notExpression:
-                break;
-            case c_powerExpression:
-                break;
-            case c_multiplicativeExpression:
-                break;
-            case c_additiveExpression:
+            case c_notExpression: {
+                auto &op = asts[0];
+                auto &_exp = tmps.back();
+                auto exp = to_exp(_exp);
+                tmps.clear();
+                auto unop = std::make_shared<sym_unop_t>(exp, op);
+                copy_info(unop, op);
+                unop->end = exp->end;
+                tmps.push_back(unop);
+                asts.clear();
+            }
                 break;
             case c_coalesceExpression:
-                break;
-            case c_bitShiftExpression:
-                break;
-            case c_relationalExpression:
                 break;
             case c_instanceofExpression:
                 break;
             case c_inExpression:
                 break;
+            case c_powerExpression:
+            case c_multiplicativeExpression:
+            case c_additiveExpression:
+            case c_bitShiftExpression:
+            case c_relationalExpression:
             case c_equalityExpression:
-                break;
             case c_bitAndExpression:
-                break;
             case c_bitXOrExpression:
-                break;
             case c_bitOrExpression:
-                break;
             case c_logicalAndExpression:
-                break;
-            case c_logicalOrExpression:
-                break;
-            case c_ternaryExpression:
+            case c_logicalOrExpression: {
+                size_t tmp_i = 0;
+                auto exp1 = to_exp(tmps[tmp_i++]);
+                auto exp2 = to_exp(tmps[tmp_i++]);
+                for (size_t i = 0; i < asts.size(); ++i) {
+                    auto &a = asts[i];
+                    if (AST_IS_OP(a)) {
+                        if (node->data._coll == c_ternaryExpression &&
+                            AST_IS_OP_K(a, T_QUERY)) { // triop
+                            auto exp3 = to_exp(tmps[tmp_i++]);
+                            auto t = std::make_shared<sym_triop_t>(exp1, exp2, exp3, a, asts[i + 1]);
+                            copy_info(t, exp1);
+                            t->end = exp3->end;
+                            exp1 = t;
+                            if (tmp_i < tmps.size())
+                                exp2 = to_exp(tmps[tmp_i++]);
+                            i++;
+                        } else { // binop
+                            auto t = std::make_shared<sym_binop_t>(exp1, exp2, a);
+                            copy_info(t, exp1);
+                            t->end = exp2->end;
+                            exp1 = t;
+                            if (tmp_i < tmps.size())
+                                exp2 = to_exp(tmps[tmp_i++]);
+                        }
+                    } else {
+                        error(a, "invalid binop: coll");
+                    }
+                }
+                tmps.clear();
+                tmps.push_back(exp1);
+                asts.clear();
+            }
                 break;
             case c_assignmentExpression:
-                break;
-            case c_assignmentOperatorExpression:
+            case c_assignmentOperatorExpression: {
+                size_t tmp_i = 0;
+                std::reverse(asts.begin(), asts.end());
+                std::reverse(tmps.begin(), tmps.end());
+                auto exp1 = to_exp(tmps[tmp_i++]);
+                auto exp2 = to_exp(tmps[tmp_i++]);
+                for (auto &a : asts) {
+                    if (AST_IS_OP(a)) {
+                        auto t = std::make_shared<sym_binop_t>(exp2, exp1, a);
+                        copy_info(t, exp2);
+                        t->end = exp1->end;
+                        exp1 = t;
+                        if (tmp_i < tmps.size())
+                            exp2 = to_exp(tmps[tmp_i++]);
+                    } else {
+                        error(a, "invalid binop: coll");
+                    }
+                }
+                tmps.clear();
+                tmps.push_back(exp1);
+                asts.clear();
+            }
                 break;
             case c_thisExpression:
                 break;
-            case c_identifierExpression:
+            case c_literal:
+            case c_literalExpression:
+            case c_identifierExpression: {
+                if (tmps.empty()) {
+                    auto pri = primary_node(asts[0]);
+                    copy_info(pri, asts[0]);
+                    tmps.push_back(pri);
+                    asts.clear();
+                }
+            }
                 break;
             case c_superExpression:
-                break;
-            case c_literalExpression:
                 break;
             case c_arrayLiteralExpression:
                 break;
             case c_objectLiteralExpression:
                 break;
             case c_parenthesizedExpression:
+                break;
+            default:
+                break;
+        }
+    }
+
+    void cjsgen::error(ast_node *node, const std::string &str, bool info) const {
+        std::stringstream ss;
+        ss << "[" << node->line << ":" << node->column << ":" << node->start << ":" << node->end << "] ";
+        ss << str;
+        if (info) {
+            cjsast::print(node, 0, ss);
+        }
+        throw cexception(ss.str());
+    }
+
+    void cjsgen::error(sym_t::ref s, const std::string &str) const {
+        std::stringstream ss;
+        ss << "[" << s->line << ":" << s->column << ":" << s->start << ":" << s->end << "] ";
+        ss << str;
+        throw cexception(ss.str());
+    }
+
+    sym_exp_t::ref cjsgen::to_exp(sym_t::ref s) {
+        if (s->get_base_type() != s_expression)
+            error(s, "need expression: " + s->to_string());
+        return std::dynamic_pointer_cast<sym_exp_t>(s);
+    }
+
+    sym_t::ref cjsgen::find_symbol(ast_node *node) {
+        return nullptr;
+    }
+
+    sym_var_t::ref cjsgen::primary_node(ast_node *node) {
+        switch (node->flag) {
+            case a_literal: {
+                auto sym = find_symbol(node);
+                return std::make_shared<sym_var_id_t>(node, sym);
+            }
+            case a_string:
+            case a_regex:
+            case a_number:
+                return std::make_shared<sym_var_t>(node);
+            case a_keyword: {
+                if (AST_IS_KEYWORD_K(node, K_TRUE) || AST_IS_KEYWORD_K(node, K_FALSE))
+                    return std::make_shared<sym_var_t>(node);
+                else
+                    error(node, "invalid var keyword type: ", true);
+            }
+                break;
+            default:
+                break;
+        }
+        return std::make_shared<sym_var_t>(node);
+    }
+
+    void cjsgen::print(const sym_t::ref &node, int level, std::ostream &os) {
+        if (node == nullptr)
+            return;
+        auto type = node->get_type();
+        os << std::setfill(' ') << std::setw(level) << "";
+        switch (type) {
+            case s_sym:
+                break;
+            case s_id:
+                os << "id"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_id_t>(node);
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << "id" << std::endl;
+                    print(n->id, level + 2, os);
+                    if (n->init) {
+                        os << std::setfill(' ') << std::setw(level + 1) << "";
+                        os << "init" << std::endl;
+                        print(n->init, level + 2, os);
+                    }
+                }
+                break;
+            case s_function:
+                break;
+            case s_var:
+                os << "var"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_var_t>(node);
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << cjsast::to_string(n->node) << std::endl;
+                }
+                break;
+            case s_var_id:
+                os << "var_id"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_var_t>(node);
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << n->node->data._string << std::endl;
+                }
+                break;
+            case s_expression:
+                break;
+            case s_unop:
+                break;
+            case s_sinop:
+                break;
+            case s_binop:
+                os << "binop"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_binop_t>(node);
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << "exp1" << std::endl;
+                    print(n->exp1, level + 2, os);
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << "op: " << lexer_string(n->op->data._op)
+                       << " " << "[" << node->line << ":"
+                       << node->column << ":"
+                       << node->start << ":"
+                       << node->end << "]" << std::endl;
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << "exp2" << std::endl;
+                    print(n->exp2, level + 2, os);
+                }
+                break;
+            case s_triop:
+                break;
+            case s_list:
+                break;
+            case s_ctrl:
+                break;
+            case s_statement:
+                break;
+            case s_statement_var:
+                os << "statement_var"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_stmt_var_t>(node);
+                    for (const auto &s : n->vars) {
+                        print(s, level + 1, os);
+                    }
+                }
+                break;
+            case s_block:
+                os << "block"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                for (const auto &s : std::dynamic_pointer_cast<sym_block_t>(node)->stmts) {
+                    print(s, level + 1, os);
+                }
                 break;
             default:
                 break;

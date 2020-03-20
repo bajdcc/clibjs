@@ -8,7 +8,8 @@ int main() {
     //std::ifstream file("..\\test\\jquery.min.js");
     //std::ifstream file("..\\test\\vue.js");
     //std::ifstream file("..\\test\\vue.min.js");
-    std::ifstream file("..\\test\\test_1.js");
+    //std::ifstream file("..\\test\\test_1.js");
+    std::ifstream file("..\\test\\test_2.js");
     if (file) {
         std::stringstream buffer;
         buffer << file.rdbuf();

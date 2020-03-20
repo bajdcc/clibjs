@@ -15,7 +15,7 @@ JS-like script engine implemented by C++.
 - [x] Lexer\(scanned js files in `test` dir\)
 - [x] Parser\(Use LALR1 Parser with backtrace, see [clibparser](https://github.com/bajdcc/clibparser), Grammar: antlr/grammars-v4/javascript\)
 - [x] Ast\(**Auto-generation** by LALR1 Parser\)
-- [ ] Gen
+- [ ] Gen\(On progress\)
 - [ ] GC
 - [ ] Env
 - [ ] Interface
@@ -94,6 +94,58 @@ pda_coll_pred cjsparser::pred_in(const cjslexer *lexer, int idx) {
  Grammar: `returnStatement = _K_RETURN + *(~_RULE_NO_LINE + expressionSequence) + *eos;`
  
  `RULE_NO_LINE` eats no lexer words but looks ahead for NO LINE WHITESPACE.
+
+## AST
+
+Input:
+
+```javascript
+var a = b = c = 1;
+```
+
+Output:
+
+```
+Program
+ SourceElements
+  Statement
+   VariableStatement
+    keyword: K_VAR
+    VariableDeclarationList
+     VariableDeclaration
+      Assignable
+       id: a
+      AssignmentExpression
+       IdentifierExpression
+        id: b
+       operator: T_ASSIGN
+       IdentifierExpression
+        id: c
+       operator: T_ASSIGN
+       Literal
+        number: 1
+block [1:5:4:17]
+ statement_var [1:5:4:17]
+  id [1:5:4:17]
+   id
+    var [1:5:4:5]
+     id: a
+   init
+    binop [1:9:8:17]
+     exp1
+      var_id [1:9:8:9]
+       b
+     op: T_ASSIGN [1:9:8:17]
+     exp2
+      binop [1:13:12:17]
+       exp1
+        var_id [1:13:12:13]
+         c
+       op: T_ASSIGN [1:13:12:17]
+       exp2
+        var [1:17:16:17]
+         number: 1
+```
 
 ## Grammar
 
