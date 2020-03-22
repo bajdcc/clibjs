@@ -32,15 +32,16 @@ namespace clib {
         s_block,
     };
 
-    class igen {
+    class ijsgen {
     public:
-        virtual void emit(ins_t) = 0;
-        virtual void emit(ins_t, int) = 0;
-        virtual void emit(ins_t, int, int) = 0;
-        virtual void emit(int, int, lexer_t) = 0;
+        virtual void emit(int, int, int, int, ins_t) = 0;
+        virtual void emit(int, int, int, int, ins_t, int) = 0;
+        virtual void emit(int, int, int, int, ins_t, int, int) = 0;
+        virtual void emit(int, int, int, int, lexer_t) = 0;
         virtual int current() const = 0;
         virtual void edit(int, int) = 0;
-        virtual int load_string(const std::string &) = 0;
+        virtual int load_number(double d) = 0;
+        virtual int load_string(const std::string &, bool) = 0;
         virtual void add_label(int, int, int, const std::string &) = 0;
         virtual void error(int, int, const std::string &) const = 0;
     };
@@ -52,9 +53,9 @@ namespace clib {
         virtual symbol_t get_type() const;
         virtual symbol_t get_base_type() const;
         virtual std::string to_string() const;
-        virtual int gen_lvalue(igen &gen);
-        virtual int gen_rvalue(igen &gen);
-        virtual int gen_invoke(igen &gen, ref &list);
+        virtual int gen_lvalue(ijsgen &gen);
+        virtual int gen_rvalue(ijsgen &gen);
+        virtual int gen_invoke(ijsgen &gen, ref &list);
         int line{0}, column{0}, start{0}, end{0};
     };
 
@@ -79,8 +80,8 @@ namespace clib {
         explicit sym_var_t(ast_node *node);
         symbol_t get_type() const override;
         std::string to_string() const override;
-        int gen_lvalue(igen &gen) override;
-        int gen_rvalue(igen &gen) override;
+        int gen_lvalue(ijsgen &gen) override;
+        int gen_rvalue(ijsgen &gen) override;
         ast_node *node{nullptr};
     };
 
@@ -90,22 +91,22 @@ namespace clib {
         explicit sym_var_id_t(ast_node *node, const sym_t::ref &symbol);
         symbol_t get_type() const override;
         std::string to_string() const override;
-        int gen_lvalue(igen &gen) override;
-        int gen_rvalue(igen &gen) override;
-        int gen_invoke(igen &gen, sym_t::ref &list) override;
+        int gen_lvalue(ijsgen &gen) override;
+        int gen_rvalue(ijsgen &gen) override;
+        int gen_invoke(ijsgen &gen, sym_t::ref &list) override;
         sym_t::weak_ref id;
     };
 
     class sym_id_t : public sym_t {
     public:
         using ref = std::shared_ptr<sym_id_t>;
-        explicit sym_id_t(sym_var_t::ref id);
         symbol_t get_type() const override;
         symbol_t get_base_type() const override;
         std::string to_string() const override;
-        int gen_lvalue(igen &gen) override;
-        int gen_rvalue(igen &gen) override;
-        sym_var_t::ref id;
+        int gen_lvalue(ijsgen &gen) override;
+        int gen_rvalue(ijsgen &gen) override;
+        void parse();
+        std::vector<sym_var_t::ref> ids;
         sym_exp_t::ref init;
         sym_class_t clazz{z_undefined};
     };
@@ -116,8 +117,8 @@ namespace clib {
         explicit sym_unop_t(sym_exp_t::ref exp, ast_node *op);
         symbol_t get_type() const override;
         std::string to_string() const override;
-        int gen_lvalue(igen &gen) override;
-        int gen_rvalue(igen &gen) override;
+        int gen_lvalue(ijsgen &gen) override;
+        int gen_rvalue(ijsgen &gen) override;
         sym_exp_t::ref exp;
         ast_node *op{nullptr};
     };
@@ -128,8 +129,8 @@ namespace clib {
         explicit sym_sinop_t(sym_exp_t::ref exp, ast_node *op);
         symbol_t get_type() const override;
         std::string to_string() const override;
-        int gen_lvalue(igen &gen) override;
-        int gen_rvalue(igen &gen) override;
+        int gen_lvalue(ijsgen &gen) override;
+        int gen_rvalue(ijsgen &gen) override;
         sym_exp_t::ref exp;
         ast_node *op{nullptr};
     };
@@ -140,8 +141,8 @@ namespace clib {
         explicit sym_binop_t(sym_exp_t::ref exp1, sym_exp_t::ref exp2, ast_node *op);
         symbol_t get_type() const override;
         std::string to_string() const override;
-        int gen_lvalue(igen &gen) override;
-        int gen_rvalue(igen &gen) override;
+        int gen_lvalue(ijsgen &gen) override;
+        int gen_rvalue(ijsgen &gen) override;
         sym_exp_t::ref exp1, exp2;
         ast_node *op{nullptr};
     };
@@ -153,8 +154,8 @@ namespace clib {
                              sym_exp_t::ref exp3, ast_node *op1, ast_node *op2);
         symbol_t get_type() const override;
         std::string to_string() const override;
-        int gen_lvalue(igen &gen) override;
-        int gen_rvalue(igen &gen) override;
+        int gen_lvalue(ijsgen &gen) override;
+        int gen_rvalue(ijsgen &gen) override;
         sym_exp_t::ref exp1, exp2, exp3;
         ast_node *op1{nullptr}, *op2{nullptr};
     };
@@ -165,7 +166,7 @@ namespace clib {
         symbol_t get_type() const override;
         symbol_t get_base_type() const override;
         std::string to_string() const override;
-        int gen_rvalue(igen &gen) override;
+        int gen_rvalue(ijsgen &gen) override;
         sym_t::ref r;
     };
 
@@ -174,7 +175,7 @@ namespace clib {
         using ref = std::shared_ptr<sym_stmt_t>;
         symbol_t get_type() const override;
         std::string to_string() const override;
-        int gen_rvalue(igen &gen) override;
+        int gen_rvalue(ijsgen &gen) override;
         std::vector<sym_id_t::ref> vars;
     };
 
@@ -184,19 +185,25 @@ namespace clib {
         symbol_t get_type() const override;
         symbol_t get_base_type() const override;
         std::string to_string() const override;
-        int gen_rvalue(igen &gen) override;
+        int gen_rvalue(ijsgen &gen) override;
         std::vector<sym_stmt_t::ref> stmts;
     };
 
     class cjs_consts {
     public:
         int get_number(double n);
-        int get_string(const std::string &str);
+        int get_string(const std::string &str, bool name);
+        void dump() const;
         std::unordered_map<double, int> numbers;
         std::unordered_map<std::string, int> strings;
+        std::unordered_map<std::string, int> names;
     };
 
+    void copy_info(sym_t::ref dst, sym_t::ref src);
+    void copy_info(sym_t::ref dst, ast_node *src);
+
     enum cjs_scope_t {
+        sp_none,
         sp_function,
         sp_block,
         sp_for,
@@ -205,11 +212,17 @@ namespace clib {
         sp_do_while,
         sp_switch,
     };
+
     struct cjs_scope {
         cjs_scope_t type;
     };
 
-    class cjsgen {
+    struct cjs_code {
+        int line, column, start, end;
+        int code, opnum, op1, op2;
+    };
+
+    class cjsgen : public ijsgen {
     public:
         cjsgen();
         ~cjsgen() = default;
@@ -217,9 +230,20 @@ namespace clib {
         cjsgen(const cjsgen &) = delete;
         cjsgen &operator=(const cjsgen &) = delete;
 
-        bool gen_code(ast_node *node);
+        bool gen_code(ast_node *node, const std::string *str);
 
         static void print(const sym_t::ref &node, int level, std::ostream &os);
+
+        void emit(int, int, int, int, ins_t) override;
+        void emit(int, int, int, int, ins_t, int) override;
+        void emit(int, int, int, int, ins_t, int, int) override;
+        void emit(int, int, int, int, lexer_t) override;
+        int current() const override;
+        void edit(int, int) override;
+        int load_number(double d) override;
+        int load_string(const std::string &, bool) override;
+        void add_label(int, int, int, const std::string &) override;
+        void error(int, int, const std::string &) const override;
 
     private:
         void gen_rec(ast_node *node, int level);
@@ -235,13 +259,16 @@ namespace clib {
         sym_t::ref find_symbol(ast_node *node);
         sym_var_t::ref primary_node(ast_node *node);
 
+        void dump() const;
+
     private:
+        const std::string *text{nullptr};
         std::vector<std::string> err;
-        std::vector<char> data;
-        std::vector<char> consts;
+        cjs_consts consts;
         std::vector<std::vector<ast_node *>> ast;
         std::vector<std::vector<sym_t::ref>> tmp;
         std::vector<cjs_scope> scopes;
+        std::vector<cjs_code> codes;
     };
 }
 

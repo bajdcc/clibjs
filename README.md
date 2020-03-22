@@ -5,16 +5,20 @@ JS-like script engine implemented by C++.
 ## Features
 
 - [x] Parsing `jquery.js` and `Vue.js` in 1s.
+- [ ] Translate javascript file into **Python Bytecode** temporarily.
 
 ## Environment
 
 - CLion, MinGW on Win7x64
+- C++14
 
 ## TODO
 
 - [x] Lexer\(scanned js files in `test` dir\)
 - [x] Parser\(Use LALR1 Parser with backtrace, see [clibparser](https://github.com/bajdcc/clibparser), Grammar: antlr/grammars-v4/javascript\)
-- [x] Ast\(**Auto-generation** by LALR1 Parser\)
+- [x] Syntax Tree\(**Auto-generation** by LALR1 Parser\)
+- [ ] AST\(On progress\)
+- [x] IL Design\(**Use [Python Bytecode](https://github.com/python/cpython/blob/master/Include/opcode.h)** temporarily\)
 - [ ] Gen\(On progress\)
 - [ ] GC
 - [ ] Env
@@ -95,12 +99,13 @@ pda_coll_pred cjsparser::pred_in(const cjslexer *lexer, int idx) {
  
  `RULE_NO_LINE` eats no lexer words but looks ahead for NO LINE WHITESPACE.
 
-## AST
+## AST and IL
 
-Input:
+Input: (**test/test_2.js**)
 
 ```javascript
 var a = b = c = 1;
+var d = a + b * c;
 ```
 
 Output:
@@ -110,7 +115,7 @@ Program
  SourceElements
   Statement
    VariableStatement
-    keyword: K_VAR
+    keyword: K_VAR var
     VariableDeclarationList
      VariableDeclaration
       Assignable
@@ -118,33 +123,79 @@ Program
       AssignmentExpression
        IdentifierExpression
         id: b
-       operator: T_ASSIGN
+       operator: T_ASSIGN =
        IdentifierExpression
         id: c
-       operator: T_ASSIGN
+       operator: T_ASSIGN =
        Literal
-        number: 1
-block [1:5:4:17]
+        number: 1 or 1
+  Statement
+   VariableStatement
+    keyword: K_VAR var
+    VariableDeclarationList
+     VariableDeclaration
+      Assignable
+       id: d
+      AdditiveExpression
+       IdentifierExpression
+        id: a
+       operator: T_ADD +
+       MultiplicativeExpression
+        IdentifierExpression
+         id: b
+        operator: T_MUL *
+        IdentifierExpression
+         id: c
+block [1:5:4:36]
  statement_var [1:5:4:17]
   id [1:5:4:17]
    id
     var [1:5:4:5]
      id: a
+    var [1:9:8:9]
+     id: b
+    var [1:13:12:13]
+     id: c
    init
-    binop [1:9:8:17]
+    var [1:17:16:17]
+     number: 1
+ statement_var [2:5:23:36]
+  id [2:5:23:36]
+   id
+    var [2:5:23:24]
+     id: d
+   init
+    binop [2:9:27:36]
      exp1
-      var_id [1:9:8:9]
-       b
-     op: T_ASSIGN [1:9:8:17]
+      var_id [2:9:27:28]
+       a
+     op: T_ADD [2:9:27:36]
      exp2
-      binop [1:13:12:17]
+      binop [2:13:31:36]
        exp1
-        var_id [1:13:12:13]
-         c
-       op: T_ASSIGN [1:13:12:17]
+        var_id [2:13:31:32]
+         b
+       op: T_MUL [2:13:31:36]
        exp2
-        var [1:17:16:17]
-         number: 1
+        var_id [2:17:35:36]
+         c
+C [#000] [NAME  ] a
+C [#000] [NAME  ] b
+C [#000] [NAME  ] c
+C [#000] [NAME  ] d
+C [#000] [NUMBER] 1.000000
+C [0001:017] LOAD_CONST           00000000          (1)
+C [0001:005] DUP_TOP                                (a)
+C [0001:005] STORE_NAME           00000000          (a)
+C [0001:009] DUP_TOP                                (b)
+C [0001:009] STORE_NAME           00000001          (b)
+C [0001:013] STORE_NAME           00000002          (c)
+C [0002:009] LOAD_NAME            00000000          (a)
+C [0002:013] LOAD_NAME            00000001          (b)
+C [0002:017] LOAD_NAME            00000002          (c)
+C [0002:013] BINARY_MULTIPLY                        (b * c)
+C [0002:009] BINARY_ADD                             (a + b * c)
+C [0002:005] STORE_NAME           00000003          (d)
 ```
 
 ## Grammar

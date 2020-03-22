@@ -168,47 +168,49 @@ namespace clib {
     }
 
     template<class T>
-    static void ast_recursion(ast_node *node, int level, std::ostream &os, T f) {
+    static void ast_recursion(ast_node *node, int level, const std::string &text, std::ostream &os, T f) {
         if (node == nullptr)
             return;
         auto i = node;
         if (i->next == i) {
-            f(i, level, os);
+            f(i, level, text, os);
             return;
         }
-        f(i, level, os);
+        f(i, level, text, os);
         i = i->next;
         while (i != node) {
-            f(i, level, os);
+            f(i, level, text, os);
             i = i->next;
         }
     }
 
-    void cjsast::print(ast_node *node, int level, std::ostream &os) {
+    void cjsast::print(ast_node *node, int level, const std::string &text, std::ostream &os) {
         if (node == nullptr)
             return;
-        auto rec = [&](auto n, auto l, auto &os) { cjsast::print(n, l, os); };
+        auto rec = [&](auto n, auto l, const auto &t, auto &os) { cjsast::print(n, l, t, os); };
         auto type = (ast_t) node->flag;
         if (type != a_collection)
             os << std::setfill(' ') << std::setw(level) << "";
         switch (type) {
             case a_root: // 根结点，全局声明
-                ast_recursion(node->child, level, os, rec);
+                ast_recursion(node->child, level, text, os, rec);
                 break;
             case a_collection:
                 if ((node->attr & a_exp) && node->child == node->child->next) {
-                    ast_recursion(node->child, level, os, rec);
+                    ast_recursion(node->child, level, text, os, rec);
                 } else {
                     os << std::setfill(' ') << std::setw(level) << "";
                     os << coll_string(node->data._coll) << std::endl;
-                    ast_recursion(node->child, level + 1, os, rec);
+                    ast_recursion(node->child, level + 1, text, os, rec);
                 }
                 break;
             case a_keyword:
-                os << "keyword: " << lexer_string(node->data._keyword) << std::endl;
+                os << "keyword: " << lexer_string(node->data._keyword)
+                   << " " << text.substr(node->start, node->end - node->start) << std::endl;
                 break;
             case a_operator:
-                os << "operator: " << lexer_string(node->data._op) << std::endl;
+                os << "operator: " << lexer_string(node->data._op)
+                   << " " << text.substr(node->start, node->end - node->start) << std::endl;
                 break;
             case a_literal:
                 os << "id: " << node->data._identifier << std::endl;
@@ -220,10 +222,13 @@ namespace clib {
                 os << "regex: " << display_str(node->data._regex) << std::endl;
                 break;
             case a_number:
-                os << "number: " << node->data._number << std::endl;
+                os << "number: " << node->data._number
+                   << " or " << text.substr(node->start, node->end - node->start) << std::endl;
                 break;
             case a_rule:
                 os << "rule: " << lexer_string(node->data._op) << std::endl;
+                break;
+            default:
                 break;
         }
     }

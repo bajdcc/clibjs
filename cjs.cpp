@@ -23,13 +23,13 @@ namespace clib {
     void cjs::exec(const std::string &filename, const std::string &input) {
         cjsparser p;
         p.parse(input, this);
-        cjsast::print(p.root(), 0, std::cout);
+        cjsast::print(p.root(), 0, input, std::cout);
         cjsgen g;
-        g.gen_code(p.root());
+        g.gen_code(p.root(), &input);
 #if LOG_FILE
         std::ofstream ofs(filename);
         if (ofs)
-            cjsast::print(p.root(), 0, ofs);
+            cjsast::print(p.root(), 0, input, ofs);
 #endif
     }
 }

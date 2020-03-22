@@ -11,6 +11,7 @@
 #include "cjsgen.h"
 #include "cjsast.h"
 
+#define DUMP_CODE 1
 #define PRINT_AST 1
 
 #define AST_IS_KEYWORD(node) ((node)->flag == a_keyword)
@@ -31,24 +32,88 @@ namespace clib {
         ast.emplace_back();
     }
 
-    static void copy_info(sym_t::ref dst, ast_node *src) {
+    void copy_info(sym_t::ref dst, ast_node *src) {
         dst->line = src->line;
         dst->column = src->column;
         dst->start = src->start;
         dst->end = src->end;
     }
 
-    static void copy_info(sym_t::ref dst, sym_t::ref src) {
+    void copy_info(sym_t::ref dst, sym_t::ref src) {
         dst->line = src->line;
         dst->column = src->column;
         dst->start = src->start;
         dst->end = src->end;
     }
 
-    bool cjsgen::gen_code(ast_node *node) {
+    int cjs_consts::get_number(double n) {
+        auto f = numbers.find(n);
+        if (f == numbers.end()) {
+            auto idx = (int) (numbers.size() + strings.size());
+            numbers.insert({n, idx});
+            return idx;
+        }
+        return f->second;
+    }
+
+    int cjs_consts::get_string(const std::string &str, bool name) {
+        if (name) {
+            auto f = names.find(str);
+            if (f == names.end()) {
+                auto idx = (int) names.size();
+                names.insert({str, idx});
+                return idx;
+            }
+            return f->second;
+        }
+        auto f = strings.find(str);
+        if (f == strings.end()) {
+            auto idx = (int) (numbers.size() + strings.size());
+            strings.insert({str, idx});
+            return idx;
+        }
+        return f->second;
+    }
+
+    void cjs_consts::dump() const {
+        auto i = 0;
+        std::vector<const char *> linksa(names.size());
+        for (const auto &x : names) {
+            linksa[x.second] = x.first.c_str();
+        }
+        for (const auto &x : linksa) {
+            fprintf(stdout, "C [#%03d] [NAME  ] %s\n", i, x);
+        }
+        std::vector<std::tuple<int, void *>> links(numbers.size() + strings.size());
+        for (const auto &x : strings) {
+            links[x.second] = {0, (void *) &x.first};
+        }
+        for (const auto &x : numbers) {
+            links[x.second] = {1, (void *) &x.first};
+        }
+        for (const auto &x : links) {
+            switch (std::get<0>(x)) {
+                case 0:
+                    fprintf(stdout, "C [#%03d] [STRING] %s\n", i, ((std::string *) std::get<1>(x))->c_str());
+                    break;
+                case 1:
+                    fprintf(stdout, "C [#%03d] [NUMBER] %lf\n", i, *(double *) std::get<1>(x));
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    bool cjsgen::gen_code(ast_node *node, const std::string *str) {
+        text = str;
         gen_rec(node, 0);
 #if PRINT_AST
         print(tmp.front().front(), 0, std::cout);
+#endif
+        tmp.front().front()->gen_rvalue(*this);
+#if DUMP_CODE
+        dump();
 #endif
         return false;
     }
@@ -409,13 +474,15 @@ namespace clib {
             case c_variableDeclaration: {
                 auto r = std::make_shared<sym_var_t>(asts.front());
                 copy_info(r, asts.front());
-                auto id = std::make_shared<sym_id_t>(r);
+                auto id = std::make_shared<sym_id_t>();
+                id->ids.push_back(r);
                 copy_info(id, r);
                 if (!tmps.empty()) {
                     assert(tmps.front()->get_base_type() == s_expression);
                     id->init = std::dynamic_pointer_cast<sym_exp_t>(tmps.front());
                     copy_info(id->init, tmps.front());
                     id->end = id->init->end;
+                    id->parse();
                 }
                 asts.clear();
                 tmps.clear();
@@ -705,7 +772,7 @@ namespace clib {
         ss << "[" << node->line << ":" << node->column << ":" << node->start << ":" << node->end << "] ";
         ss << str;
         if (info) {
-            cjsast::print(node, 0, ss);
+            cjsast::print(node, 0, *text, ss);
         }
         throw cexception(ss.str());
     }
@@ -768,7 +835,9 @@ namespace clib {
                     auto n = std::dynamic_pointer_cast<sym_id_t>(node);
                     os << std::setfill(' ') << std::setw(level + 1) << "";
                     os << "id" << std::endl;
-                    print(n->id, level + 2, os);
+                    for (const auto &s : n->ids) {
+                        print(s, level + 2, os);
+                    }
                     if (n->init) {
                         os << std::setfill(' ') << std::setw(level + 1) << "";
                         os << "init" << std::endl;
@@ -863,6 +932,68 @@ namespace clib {
                 break;
             default:
                 break;
+        }
+    }
+
+    void cjsgen::emit(int line, int column, int start, int end, ins_t i) {
+        codes.push_back({line, column, start, end, i, 0, 0, 0});
+    }
+
+    void cjsgen::emit(int line, int column, int start, int end, ins_t i, int a) {
+        codes.push_back({line, column, start, end, i, 1, a, 0});
+    }
+
+    void cjsgen::emit(int line, int column, int start, int end, ins_t i, int a, int b) {
+        codes.push_back({line, column, start, end, i, 2, a, b});
+    }
+
+    void cjsgen::emit(int line, int column, int start, int end, lexer_t) {
+
+    }
+
+    int cjsgen::current() const {
+        return 0;
+    }
+
+    void cjsgen::edit(int, int) {
+
+    }
+
+    int cjsgen::load_number(double d) {
+        return consts.get_number(d);
+    }
+
+    int cjsgen::load_string(const std::string &s, bool name) {
+        return consts.get_string(s, name);
+    }
+
+    void cjsgen::add_label(int line, int column, int, const std::string &) {
+
+    }
+
+    void cjsgen::error(int line, int column, const std::string &str) const {
+        std::stringstream ss;
+        ss << "[" << line << ":" << column << "] ";
+        ss << str;
+        throw cexception(ss.str());
+    }
+
+    void cjsgen::dump() const {
+        consts.dump();
+        for (const auto &c : codes) {
+            auto alt = text->substr(c.start, c.end - c.start);
+            if (c.opnum == 0)
+                fprintf(stdout, "C [%04d:%03d] %-20s                   (%s)\n",
+                        c.line, c.column, ins_string(ins_t(c.code)),
+                        text->substr(c.start, c.end - c.start).c_str());
+            else if (c.opnum == 1)
+                fprintf(stdout, "C [%04d:%03d] %-20s %08x          (%s)\n",
+                        c.line, c.column, ins_string(ins_t(c.code)), c.op1,
+                        text->substr(c.start, c.end - c.start).c_str());
+            else if (c.opnum == 2)
+                fprintf(stdout, "C [%04d:%03d] %-20s %08x %08x (%s)\n",
+                        c.line, c.column, ins_string(ins_t(c.code)), c.op1, c.op2,
+                        text->substr(c.start, c.end - c.start).c_str());
         }
     }
 }

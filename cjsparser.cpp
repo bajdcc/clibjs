@@ -15,7 +15,7 @@
 #define REPORT_ERROR 0
 #define REPORT_ERROR_FILE "parsing.log"
 
-#define TRACE_PARSING 1
+#define TRACE_PARSING 0
 #define TRACE_PARSING_LOG 0
 #define DUMP_LEXER 0
 #define DUMP_PDA 0
