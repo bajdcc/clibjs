@@ -317,6 +317,7 @@ namespace clib {
             DELETE_SUBSCR,
             BINARY_LSHIFT,
             BINARY_RSHIFT,
+            BINARY_URSHIFT,
             BINARY_AND,
             BINARY_XOR,
             BINARY_OR,

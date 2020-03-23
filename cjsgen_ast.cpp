@@ -217,7 +217,7 @@ namespace clib {
     // ----
 
     sym_binop_t::sym_binop_t(sym_exp_t::ref exp1, sym_exp_t::ref exp2, ast_node *op)
-        : exp1(std::move(exp1)), exp2(std::move(exp2)), op(op) {
+            : exp1(std::move(exp1)), exp2(std::move(exp2)), op(op) {
 
     }
 
@@ -235,6 +235,24 @@ namespace clib {
 
     int sym_binop_t::gen_rvalue(ijsgen &gen) {
         exp1->gen_rvalue(gen);
+        switch (op->data._op) {
+            case T_LOG_AND: {
+                auto idx = gen.code_length();
+                gen.emit(line, column, start, end, JUMP_IF_TRUE_OR_POP, 0);
+                exp2->gen_rvalue(gen);
+                gen.edit(idx, 1, gen.current());
+            }
+                return 0;
+            case T_LOG_OR: {
+                auto idx = gen.code_length();
+                gen.emit(line, column, start, end, JUMP_IF_FALSE_OR_POP, 0);
+                exp2->gen_rvalue(gen);
+                gen.edit(idx, 1, gen.current());
+            }
+                return 0;
+            default:
+                break;
+        }
         exp2->gen_rvalue(gen);
         switch (op->data._op) {
             case T_ADD:
@@ -249,6 +267,54 @@ namespace clib {
             case T_DIV:
                 gen.emit(line, column, start, end, BINARY_TRUE_DIVIDE);
                 break;
+            case T_MOD:
+                gen.emit(line, column, start, end, BINARY_MODULO);
+                break;
+            case T_POWER:
+                gen.emit(line, column, start, end, BINARY_POWER);
+                break;
+            case T_LESS:
+                gen.emit(line, column, start, end, COMPARE_OP, 0);
+                break;
+            case T_LESS_EQUAL:
+                gen.emit(line, column, start, end, COMPARE_OP, 1);
+                break;
+            case T_EQUAL:
+                gen.emit(line, column, start, end, COMPARE_OP, 2);
+                break;
+            case T_NOT_EQUAL:
+                gen.emit(line, column, start, end, COMPARE_OP, 3);
+                break;
+            case T_GREATER:
+                gen.emit(line, column, start, end, COMPARE_OP, 4);
+                break;
+            case T_GREATER_EQUAL:
+                gen.emit(line, column, start, end, COMPARE_OP, 5);
+                break;
+            case T_FEQUAL:
+                gen.emit(line, column, start, end, COMPARE_OP, 6);
+                break;
+            case T_FNOT_EQUAL:
+                gen.emit(line, column, start, end, COMPARE_OP, 7);
+                break;
+            case T_BIT_AND:
+                gen.emit(line, column, start, end, BINARY_AND);
+                break;
+            case T_BIT_OR:
+                gen.emit(line, column, start, end, BINARY_OR);
+                break;
+            case T_BIT_XOR:
+                gen.emit(line, column, start, end, BINARY_XOR);
+                break;
+            case T_LSHIFT:
+                gen.emit(line, column, start, end, BINARY_LSHIFT);
+                break;
+            case T_RSHIFT:
+                gen.emit(line, column, start, end, BINARY_RSHIFT);
+                break;
+            case T_URSHIFT:
+                gen.emit(line, column, start, end, BINARY_URSHIFT);
+                break;
             default:
                 gen.error(line, column, "unsupported binop");
                 break;
@@ -260,7 +326,7 @@ namespace clib {
 
     sym_triop_t::sym_triop_t(sym_exp_t::ref exp1, sym_exp_t::ref exp2,
                              sym_exp_t::ref exp3, ast_node *op1, ast_node *op2)
-        : exp1(std::move(exp1)), exp2(std::move(exp2)), exp3(std::move(exp3)), op1(op1), op2(op2) {
+            : exp1(std::move(exp1)), exp2(std::move(exp2)), exp3(std::move(exp3)), op1(op1), op2(op2) {
 
     }
 

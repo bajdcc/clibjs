@@ -37,9 +37,9 @@ namespace clib {
         virtual void emit(int, int, int, int, ins_t) = 0;
         virtual void emit(int, int, int, int, ins_t, int) = 0;
         virtual void emit(int, int, int, int, ins_t, int, int) = 0;
-        virtual void emit(int, int, int, int, lexer_t) = 0;
         virtual int current() const = 0;
-        virtual void edit(int, int) = 0;
+        virtual int code_length() const = 0;
+        virtual void edit(int, int, int) = 0;
         virtual int load_number(double d) = 0;
         virtual int load_string(const std::string &, bool) = 0;
         virtual void add_label(int, int, int, const std::string &) = 0;
@@ -237,9 +237,9 @@ namespace clib {
         void emit(int, int, int, int, ins_t) override;
         void emit(int, int, int, int, ins_t, int) override;
         void emit(int, int, int, int, ins_t, int, int) override;
-        void emit(int, int, int, int, lexer_t) override;
         int current() const override;
-        void edit(int, int) override;
+        int code_length() const override;
+        void edit(int, int, int) override;
         int load_number(double d) override;
         int load_string(const std::string &, bool) override;
         void add_label(int, int, int, const std::string &) override;
@@ -269,6 +269,7 @@ namespace clib {
         std::vector<std::vector<sym_t::ref>> tmp;
         std::vector<cjs_scope> scopes;
         std::vector<cjs_code> codes;
+        int codes_idx{0};
     };
 }
 

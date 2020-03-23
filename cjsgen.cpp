@@ -760,7 +760,12 @@ namespace clib {
                 break;
             case c_objectLiteralExpression:
                 break;
-            case c_parenthesizedExpression:
+            case c_parenthesizedExpression: {
+                auto exp = tmps.front();
+                exp->start = asts.front()->start;
+                exp->end = asts.back()->end;
+                asts.clear();
+            }
                 break;
             default:
                 break;
@@ -937,26 +942,41 @@ namespace clib {
 
     void cjsgen::emit(int line, int column, int start, int end, ins_t i) {
         codes.push_back({line, column, start, end, i, 0, 0, 0});
+        codes_idx++;
     }
 
     void cjsgen::emit(int line, int column, int start, int end, ins_t i, int a) {
         codes.push_back({line, column, start, end, i, 1, a, 0});
+        codes_idx += 2;
     }
 
     void cjsgen::emit(int line, int column, int start, int end, ins_t i, int a, int b) {
         codes.push_back({line, column, start, end, i, 2, a, b});
-    }
-
-    void cjsgen::emit(int line, int column, int start, int end, lexer_t) {
-
+        codes_idx += 3;
     }
 
     int cjsgen::current() const {
-        return 0;
+        return codes_idx;
     }
 
-    void cjsgen::edit(int, int) {
+    int cjsgen::code_length() const {
+        return (int) codes.size();
+    }
 
+    void cjsgen::edit(int code, int idx, int value) {
+        switch (idx) {
+            case 0:
+                codes.at(code).code = value;
+                break;
+            case 1:
+                codes.at(code).op1 = value;
+                break;
+            case 2:
+                codes.at(code).op2 = value;
+                break;
+            default:
+                break;
+        }
     }
 
     int cjsgen::load_number(double d) {
@@ -980,20 +1000,43 @@ namespace clib {
 
     void cjsgen::dump() const {
         consts.dump();
+        auto idx = 0;
+        std::vector<int> jumps;
+        {
+            std::set<int, std::greater<>> jumps_set;
+            for (const auto &c : codes) {
+                switch (c.code) {
+                    case JUMP_IF_TRUE_OR_POP:
+                    case JUMP_IF_FALSE_OR_POP:
+                    case JUMP_ABSOLUTE:
+                    case JUMP_FORWARD:
+                        jumps_set.insert(c.op1);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            std::copy(jumps_set.begin(), jumps_set.end(), std::back_inserter(jumps));
+        }
         for (const auto &c : codes) {
             auto alt = text->substr(c.start, c.end - c.start);
+            auto jmp = "  ";
+            if (!jumps.empty() && jumps.back() == idx) {
+                jmp = ">>";
+            }
             if (c.opnum == 0)
-                fprintf(stdout, "C [%04d:%03d] %-20s                   (%s)\n",
-                        c.line, c.column, ins_string(ins_t(c.code)),
+                fprintf(stdout, "C [%04d:%03d]  %s   %4d %-20s                   (%s)\n",
+                        c.line, c.column, jmp, idx, ins_string(ins_t(c.code)),
                         text->substr(c.start, c.end - c.start).c_str());
             else if (c.opnum == 1)
-                fprintf(stdout, "C [%04d:%03d] %-20s %08x          (%s)\n",
-                        c.line, c.column, ins_string(ins_t(c.code)), c.op1,
+                fprintf(stdout, "C [%04d:%03d]  %s   %4d %-20s %8d          (%s)\n",
+                        c.line, c.column, jmp, idx, ins_string(ins_t(c.code)), c.op1,
                         text->substr(c.start, c.end - c.start).c_str());
             else if (c.opnum == 2)
-                fprintf(stdout, "C [%04d:%03d] %-20s %08x %08x (%s)\n",
-                        c.line, c.column, ins_string(ins_t(c.code)), c.op1, c.op2,
+                fprintf(stdout, "C [%04d:%03d]  %s   %4d %-20s %8d %8d (%s)\n",
+                        c.line, c.column, jmp, idx, ins_string(ins_t(c.code)), c.op1, c.op2,
                         text->substr(c.start, c.end - c.start).c_str());
+            idx += c.opnum + 1;
         }
     }
 }

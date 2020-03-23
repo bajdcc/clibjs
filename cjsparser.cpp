@@ -347,7 +347,7 @@ namespace clib {
         literalExpression = literal;
         arrayLiteralExpression = arrayLiteral;
         objectLiteralExpression = objectLiteral;
-        parenthesizedExpression = ~_T_LPARAN + expressionSequence + ~_T_RPARAN;
+        parenthesizedExpression = _T_LPARAN + expressionSequence + _T_RPARAN;
         functionExpression = anonymousFunction
                              | classExpression
                              | thisExpression
