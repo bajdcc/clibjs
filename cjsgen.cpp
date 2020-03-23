@@ -82,8 +82,9 @@ namespace clib {
             linksa[x.second] = x.first.c_str();
         }
         for (const auto &x : linksa) {
-            fprintf(stdout, "C [#%03d] [NAME  ] %s\n", i, x);
+            fprintf(stdout, "C [#%03d] [NAME  ] %s\n", i++, x);
         }
+        i = 0;
         std::vector<std::tuple<int, void *>> links(numbers.size() + strings.size());
         for (const auto &x : strings) {
             links[x.second] = {0, (void *) &x.first};
@@ -102,6 +103,7 @@ namespace clib {
                 default:
                     break;
             }
+            i++;
         }
     }
 

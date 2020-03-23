@@ -105,97 +105,39 @@ Input: (**test/test_2.js**)
 
 ```javascript
 var a = b = c = 1;
-var d = a + b * c;
+var d = a + (b * c);
+var e = 1 && 2 > 3;
 ```
 
 Output:
 
 ```
-Program
- SourceElements
-  Statement
-   VariableStatement
-    keyword: K_VAR var
-    VariableDeclarationList
-     VariableDeclaration
-      Assignable
-       id: a
-      AssignmentExpression
-       IdentifierExpression
-        id: b
-       operator: T_ASSIGN =
-       IdentifierExpression
-        id: c
-       operator: T_ASSIGN =
-       Literal
-        number: 1 or 1
-  Statement
-   VariableStatement
-    keyword: K_VAR var
-    VariableDeclarationList
-     VariableDeclaration
-      Assignable
-       id: d
-      AdditiveExpression
-       IdentifierExpression
-        id: a
-       operator: T_ADD +
-       MultiplicativeExpression
-        IdentifierExpression
-         id: b
-        operator: T_MUL *
-        IdentifierExpression
-         id: c
-block [1:5:4:36]
- statement_var [1:5:4:17]
-  id [1:5:4:17]
-   id
-    var [1:5:4:5]
-     id: a
-    var [1:9:8:9]
-     id: b
-    var [1:13:12:13]
-     id: c
-   init
-    var [1:17:16:17]
-     number: 1
- statement_var [2:5:23:36]
-  id [2:5:23:36]
-   id
-    var [2:5:23:24]
-     id: d
-   init
-    binop [2:9:27:36]
-     exp1
-      var_id [2:9:27:28]
-       a
-     op: T_ADD [2:9:27:36]
-     exp2
-      binop [2:13:31:36]
-       exp1
-        var_id [2:13:31:32]
-         b
-       op: T_MUL [2:13:31:36]
-       exp2
-        var_id [2:17:35:36]
-         c
 C [#000] [NAME  ] a
-C [#000] [NAME  ] b
-C [#000] [NAME  ] c
-C [#000] [NAME  ] d
+C [#001] [NAME  ] b
+C [#002] [NAME  ] c
+C [#003] [NAME  ] d
+C [#004] [NAME  ] e
 C [#000] [NUMBER] 1.000000
-C [0001:017] LOAD_CONST           00000000          (1)
-C [0001:005] DUP_TOP                                (a)
-C [0001:005] STORE_NAME           00000000          (a)
-C [0001:009] DUP_TOP                                (b)
-C [0001:009] STORE_NAME           00000001          (b)
-C [0001:013] STORE_NAME           00000002          (c)
-C [0002:009] LOAD_NAME            00000000          (a)
-C [0002:013] LOAD_NAME            00000001          (b)
-C [0002:017] LOAD_NAME            00000002          (c)
-C [0002:013] BINARY_MULTIPLY                        (b * c)
-C [0002:009] BINARY_ADD                             (a + b * c)
-C [0002:005] STORE_NAME           00000003          (d)
+C [#001] [NUMBER] 2.000000
+C [#002] [NUMBER] 3.000000
+C [0001:017]          0 LOAD_CONST                  0          (1)
+C [0001:005]          2 DUP_TOP                                (a)
+C [0001:005]          3 STORE_NAME                  0          (a)
+C [0001:009]          5 DUP_TOP                                (b)
+C [0001:009]          6 STORE_NAME                  1          (b)
+C [0001:013]          8 STORE_NAME                  2          (c)
+C [0002:009]         10 LOAD_NAME                   0          (a)
+C [0002:014]         12 LOAD_NAME                   1          (b)
+C [0002:018]         14 LOAD_NAME                   2          (c)
+C [0002:014]         16 BINARY_MULTIPLY                        ((b * c))
+C [0002:009]         17 BINARY_ADD                             (a + (b * c))
+C [0002:005]         18 STORE_NAME                  3          (d)
+C [0003:009]         20 LOAD_CONST                  0          (1)
+C [0003:009]         22 JUMP_IF_TRUE_OR_POP        30          (1 && 2 > 3)
+C [0003:014]         24 LOAD_CONST                  1          (2)
+C [0003:018]         26 LOAD_CONST                  2          (3)
+C [0003:014]         28 COMPARE_OP                  4          (2 > 3)
+C [0003:005]  >>     30 STORE_NAME                  4          (e)
 ```
 
 ## Grammar
