@@ -142,7 +142,8 @@ namespace clib {
 
         enum ast_attr_t {
             a_none,
-            a_exp,
+            a_exp = 1,
+            a_reverse = 2,
         };
 
         enum coll_t {
@@ -220,6 +221,8 @@ namespace clib {
             c_memberDotExpression,
             c_argumentsExpression,
             c_newExpression,
+            c_primaryExpression,
+            c_prefixExpression,
             c_postIncrementExpression,
             c_postDecreaseExpression,
             c_postfixExpression,
@@ -301,6 +304,8 @@ namespace clib {
             BINARY_SUBSCR,
             BINARY_FLOOR_DIVIDE,
             BINARY_TRUE_DIVIDE,
+            BINARY_INC,
+            BINARY_DEC,
             INPLACE_FLOOR_DIVIDE,
             INPLACE_TRUE_DIVIDE,
             RERAISE,

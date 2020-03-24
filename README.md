@@ -107,6 +107,8 @@ Input: (**test/test_2.js**)
 var a = b = c = 1;
 var d = a + (b * c);
 var e = 1 && 2 > 3;
+a + b, a - b;
+1 + ++--a--++;
 ```
 
 Output:
@@ -138,6 +140,27 @@ C [0003:014]         24 LOAD_CONST                  1          (2)
 C [0003:018]         26 LOAD_CONST                  2          (3)
 C [0003:014]         28 COMPARE_OP                  4          (2 > 3)
 C [0003:005]  >>     30 STORE_NAME                  4          (e)
+C [0004:001]         32 LOAD_NAME                   0          (a)
+C [0004:005]         34 LOAD_NAME                   1          (b)
+C [0004:001]         36 BINARY_ADD                             (a + b)
+C [0004:001]         37 POP_TOP                                (a + b)
+C [0004:008]         38 LOAD_NAME                   0          (a)
+C [0004:012]         40 LOAD_NAME                   1          (b)
+C [0004:008]         42 BINARY_SUBTRACT                        (a - b)
+C [0004:001]         43 POP_TOP                                (a + b, a - b)
+C [0005:001]         44 LOAD_CONST                  0          (1)
+C [0005:009]         46 LOAD_NAME                   0          (a)
+C [0005:009]         48 BINARY_DEC                             (--a)
+C [0005:009]         49 DUP_TOP                                (--a)
+C [0005:009]         50 STORE_NAME                  0          (a)
+C [0005:009]         52 DUP_TOP                                (--a--)
+C [0005:009]         53 BINARY_DEC                             (--a--)
+C [0005:009]         54 STORE_NAME                  0          (a)
+C [0005:009]         56 DUP_TOP                                (--a--++)
+C [0005:009]         57 BINARY_INC                             (--a--++)
+C [0005:009]         58 STORE_NAME                  0          (a)
+C [0005:001]         60 BINARY_ADD                             (1 + ++--a--++)
+C [0005:001]         61 POP_TOP                                (1 + ++--a--++)
 ```
 
 ## Grammar

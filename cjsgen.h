@@ -25,10 +25,12 @@ namespace clib {
         s_sinop,
         s_binop,
         s_triop,
+        s_expression_seq,
         s_list,
         s_ctrl,
         s_statement,
         s_statement_var,
+        s_statement_exp,
         s_block,
     };
 
@@ -160,6 +162,15 @@ namespace clib {
         ast_node *op1{nullptr}, *op2{nullptr};
     };
 
+    class sym_exp_seq_t : public sym_exp_t {
+    public:
+        using ref = std::shared_ptr<sym_exp_seq_t>;
+        symbol_t get_type() const override;
+        std::string to_string() const override;
+        int gen_rvalue(ijsgen &gen) override;
+        std::vector<sym_exp_t::ref> exps;
+    };
+
     class sym_stmt_t : public sym_t {
     public:
         using ref = std::shared_ptr<sym_stmt_t>;
@@ -177,6 +188,15 @@ namespace clib {
         std::string to_string() const override;
         int gen_rvalue(ijsgen &gen) override;
         std::vector<sym_id_t::ref> vars;
+    };
+
+    class sym_stmt_exp_t : public sym_stmt_t {
+    public:
+        using ref = std::shared_ptr<sym_stmt_exp_t>;
+        symbol_t get_type() const override;
+        std::string to_string() const override;
+        int gen_rvalue(ijsgen &gen) override;
+        sym_exp_seq_t::ref seq;
     };
 
     class sym_block_t : public sym_t {

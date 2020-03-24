@@ -185,10 +185,27 @@ namespace clib {
     }
 
     int sym_unop_t::gen_lvalue(ijsgen &gen) {
+        exp->gen_lvalue(gen);
         return sym_t::gen_lvalue(gen);
     }
 
     int sym_unop_t::gen_rvalue(ijsgen &gen) {
+        exp->gen_rvalue(gen);
+        switch (op->data._op) {
+            case T_INC:
+                gen.emit(line, column, start, end, BINARY_INC);
+                gen.emit(line, column, start, end, DUP_TOP);
+                exp->gen_lvalue(gen);
+                break;
+            case T_DEC:
+                gen.emit(line, column, start, end, BINARY_DEC);
+                gen.emit(line, column, start, end, DUP_TOP);
+                exp->gen_lvalue(gen);
+                break;
+            default:
+                gen.error(line, column, "unsupported unop");
+                break;
+        }
         return sym_t::gen_rvalue(gen);
     }
 
@@ -207,17 +224,34 @@ namespace clib {
     }
 
     int sym_sinop_t::gen_lvalue(ijsgen &gen) {
+        exp->gen_lvalue(gen);
         return sym_t::gen_lvalue(gen);
     }
 
     int sym_sinop_t::gen_rvalue(ijsgen &gen) {
+        exp->gen_rvalue(gen);
+        switch (op->data._op) {
+            case T_INC:
+                gen.emit(line, column, start, end, DUP_TOP);
+                gen.emit(line, column, start, end, BINARY_INC);
+                exp->gen_lvalue(gen);
+                break;
+            case T_DEC:
+                gen.emit(line, column, start, end, DUP_TOP);
+                gen.emit(line, column, start, end, BINARY_DEC);
+                exp->gen_lvalue(gen);
+                break;
+            default:
+                gen.error(line, column, "unsupported sinop");
+                break;
+        }
         return sym_t::gen_rvalue(gen);
     }
 
     // ----
 
     sym_binop_t::sym_binop_t(sym_exp_t::ref exp1, sym_exp_t::ref exp2, ast_node *op)
-            : exp1(std::move(exp1)), exp2(std::move(exp2)), op(op) {
+        : exp1(std::move(exp1)), exp2(std::move(exp2)), op(op) {
 
     }
 
@@ -326,7 +360,7 @@ namespace clib {
 
     sym_triop_t::sym_triop_t(sym_exp_t::ref exp1, sym_exp_t::ref exp2,
                              sym_exp_t::ref exp3, ast_node *op1, ast_node *op2)
-            : exp1(std::move(exp1)), exp2(std::move(exp2)), exp3(std::move(exp3)), op1(op1), op2(op2) {
+        : exp1(std::move(exp1)), exp2(std::move(exp2)), exp3(std::move(exp3)), op1(op1), op2(op2) {
 
     }
 
@@ -343,6 +377,27 @@ namespace clib {
     }
 
     int sym_triop_t::gen_rvalue(ijsgen &gen) {
+        return sym_t::gen_rvalue(gen);
+    }
+
+    // ----
+
+    symbol_t sym_exp_seq_t::get_type() const {
+        return s_expression_seq;
+    }
+
+    std::string sym_exp_seq_t::to_string() const {
+        return sym_t::to_string();
+    }
+
+    int sym_exp_seq_t::gen_rvalue(ijsgen &gen) {
+        size_t i = 0;
+        for (const auto &s : exps) {
+            s->gen_rvalue(gen);
+            if (i + 1 < exps.size())
+                gen.emit(s->line, s->column, s->start, s->end, POP_TOP);
+            i++;
+        }
         return sym_t::gen_rvalue(gen);
     }
 
@@ -378,6 +433,22 @@ namespace clib {
         for (const auto &s : vars) {
             s->gen_rvalue(gen);
         }
+        return sym_stmt_t::gen_rvalue(gen);
+    }
+
+    // ----
+
+    symbol_t sym_stmt_exp_t::get_type() const {
+        return s_statement_exp;
+    }
+
+    std::string sym_stmt_exp_t::to_string() const {
+        return sym_stmt_t::to_string();
+    }
+
+    int sym_stmt_exp_t::gen_rvalue(ijsgen &gen) {
+        seq->gen_rvalue(gen);
+        gen.emit(line, column, start, end, POP_TOP);
         return sym_stmt_t::gen_rvalue(gen);
     }
 

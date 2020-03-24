@@ -237,6 +237,8 @@ namespace clib {
         DEF_RULE_EXP(memberDotExpression)
         DEF_RULE_EXP(argumentsExpression)
         DEF_RULE_EXP(newExpression)
+        DEF_RULE_EXP(primaryExpression)
+        DEF_RULE_EXP(prefixExpression)
         DEF_RULE_EXP(postIncrementExpression)
         DEF_RULE_EXP(postDecreaseExpression)
         DEF_RULE_EXP(postfixExpression)
@@ -358,29 +360,40 @@ namespace clib {
                              | objectLiteralExpression
                              | parenthesizedExpression;
         classExpression = _K_CLASS + ~_ID + classTail;
-        memberIndexExpression = *memberIndexExpression + _T_LSQUARE + expressionSequence + _T_RSQUARE;
-        memberDotExpression = *memberDotExpression + *_T_QUERY + _T_DOT + *_T_SHARP + identifierName;
-        argumentsExpression = *argumentsExpression + arguments;
-        postIncrementExpression = *postIncrementExpression + _T_INC;
-        postDecreaseExpression = *postDecreaseExpression + _T_DEC;
-        postfixExpression = postfixExpression +
+        memberIndexExpression = _T_LSQUARE + expressionSequence + _T_RSQUARE;
+        memberDotExpression = *_T_QUERY + _T_DOT + *_T_SHARP + identifierName;
+        argumentsExpression = arguments;
+        postIncrementExpression = _T_INC;
+        postDecreaseExpression = _T_DEC;
+        postfixExpression = *postfixExpression +
                             (_RULE_NO_LINE + memberIndexExpression
                              | memberDotExpression
                              | argumentsExpression
                              | _RULE_NO_LINE + postIncrementExpression
-                             | _RULE_NO_LINE + postDecreaseExpression)
-                            | functionExpression;
-        newExpression = _K_NEW + singleExpression + *arguments | postfixExpression;
-        deleteExpression = _K_DELETE + deleteExpression | newExpression;
-        voidExpression = _K_VOID + voidExpression | deleteExpression;
-        typeofExpression = _K_TYPEOF + typeofExpression | voidExpression;
-        preIncrementExpression = _T_INC + preIncrementExpression | typeofExpression;
-        preDecreaseExpression = _T_DEC + preDecreaseExpression | preIncrementExpression;
-        unaryPlusExpression = _T_ADD + unaryPlusExpression | preDecreaseExpression;
-        unaryMinusExpression = _T_SUB + unaryMinusExpression | unaryPlusExpression;
-        bitNotExpression = _T_BIT_NOT + bitNotExpression | unaryMinusExpression;
-        notExpression = _T_LOG_NOT + notExpression | bitNotExpression;
-        powerExpression = *(powerExpression + _T_POWER) + notExpression;
+                             | _RULE_NO_LINE + postDecreaseExpression);
+        newExpression = _K_NEW + singleExpression + *arguments;
+        deleteExpression = _K_DELETE;
+        voidExpression = _K_VOID;
+        typeofExpression = _K_TYPEOF;
+        preIncrementExpression = _T_INC;
+        preDecreaseExpression = _T_DEC;
+        unaryPlusExpression = _T_ADD + *unaryPlusExpression;
+        unaryMinusExpression = _T_SUB + *unaryMinusExpression;
+        bitNotExpression = _T_BIT_NOT + *bitNotExpression;
+        notExpression = _T_LOG_NOT + *notExpression;
+        prefixExpression = *prefixExpression +
+                           (newExpression
+                            | deleteExpression
+                            | voidExpression
+                            | typeofExpression
+                            | preIncrementExpression
+                            | preDecreaseExpression
+                            | unaryPlusExpression
+                            | unaryMinusExpression
+                            | bitNotExpression
+                            | notExpression);
+        primaryExpression = *prefixExpression + functionExpression + *postfixExpression;
+        powerExpression = *(powerExpression + _T_POWER) + primaryExpression;
         multiplicativeExpression = *(multiplicativeExpression + (_T_MUL | _T_DIV | _T_MOD)) + powerExpression;
         additiveExpression = *(additiveExpression + (_T_ADD | _T_SUB)) + multiplicativeExpression;
         coalesceExpression = *(coalesceExpression + (_T_COALESCE)) + additiveExpression;

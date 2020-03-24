@@ -110,6 +110,8 @@ namespace clib {
     bool cjsgen::gen_code(ast_node *node, const std::string *str) {
         text = str;
         gen_rec(node, 0);
+        if (tmp.front().empty())
+            return false;
 #if PRINT_AST
         print(tmp.front().front(), 0, std::cout);
 #endif
@@ -156,6 +158,25 @@ namespace clib {
         return v;
     }
 
+    template<class T>
+    static std::vector<T *> gen_get_children_reverse(T *node) {
+        std::vector<T *> v;
+        if (node == nullptr)
+            return v;
+        auto i = node->prev;
+        if (i->next == i) {
+            v.push_back(i);
+            return v;
+        }
+        v.push_back(i);
+        i = i->prev;
+        while (i != node) {
+            v.push_back(i);
+            i = i->prev;
+        }
+        return v;
+    }
+
     void cjsgen::gen_rec(ast_node *node, int level) {
         if (node == nullptr)
             return;
@@ -175,7 +196,9 @@ namespace clib {
             }
                 break;
             case a_collection: {
-                auto children = gen_get_children(node->child);
+                auto children = (node->attr & ((uint16_t) a_reverse)) ?
+                                gen_get_children_reverse(node->child) :
+                                gen_get_children(node->child);
                 gen_coll(children, level + 1, node);
             }
                 break;
@@ -366,6 +389,22 @@ namespace clib {
                 break;
             case c_newExpression:
                 break;
+            case c_primaryExpression: {
+                if (AST_IS_COLL_K(nodes.front(), c_prefixExpression)) {
+                    gen_rec(nodes[1], level); // gen exp first
+                    nodes[0]->attr |= (uint16_t) a_reverse;
+                    gen_rec(nodes[0], level); // then prefix
+                    nodes[0]->attr &= ~(uint16_t) a_reverse;
+                    if (nodes.size() > 2) {
+                        gen_rec(nodes[2], level); // last postfix
+                    }
+                    gen_after(nodes, level, node);
+                    return false;
+                }
+            }
+                break;
+            case c_prefixExpression:
+                break;
             case c_postIncrementExpression:
                 break;
             case c_postDecreaseExpression:
@@ -493,7 +532,26 @@ namespace clib {
                 break;
             case c_emptyStatement:
                 break;
-            case c_expressionStatement:
+            case c_expressionStatement: {
+                if (tmps.front()->get_type() == s_expression_seq) {
+                    auto stmt = std::make_shared<sym_stmt_exp_t>();
+                    copy_info(stmt, tmps.front());
+                    stmt->seq = std::dynamic_pointer_cast<sym_exp_seq_t>(tmps.front());
+                    asts.clear();
+                    tmps.clear();
+                    tmps.push_back(stmt);
+                } else if (tmps.front()->get_base_type() == s_expression) {
+                    auto seq = std::make_shared<sym_exp_seq_t>();
+                    copy_info(seq, tmps.front());
+                    seq->exps.push_back(std::dynamic_pointer_cast<sym_exp_t>(tmps.front()));
+                    auto stmt = std::make_shared<sym_stmt_exp_t>();
+                    copy_info(stmt, tmps.front());
+                    stmt->seq = seq;
+                    asts.clear();
+                    tmps.clear();
+                    tmps.push_back(stmt);
+                }
+            }
                 break;
             case c_ifStatement:
                 break;
@@ -588,7 +646,22 @@ namespace clib {
                 break;
             case c_argument:
                 break;
-            case c_expressionSequence:
+            case c_expressionSequence: {
+                if (tmps.size() > 1) {
+                    auto seq = std::make_shared<sym_exp_seq_t>();
+                    if (!tmps.empty()) {
+                        copy_info(seq, tmps.front());
+                    }
+                    for (const auto &s : tmps) {
+                        assert(s->get_base_type() == s_expression);
+                        seq->exps.push_back(std::dynamic_pointer_cast<sym_exp_t>(s));
+                        seq->end = s->end;
+                    }
+                    asts.clear();
+                    tmps.clear();
+                    tmps.push_back(seq);
+                }
+            }
                 break;
             case c_singleExpression:
                 break;
@@ -632,19 +705,19 @@ namespace clib {
                 break;
             case c_argumentsExpression:
                 break;
+            case c_primaryExpression:
+                break;
+            case c_prefixExpression:
+                break;
             case c_postfixExpression:
                 break;
             case c_postIncrementExpression:
             case c_postDecreaseExpression: {
-                auto exp = to_exp(tmps.front());
-                for (auto &a: nodes) {
-                    auto t = std::make_shared<sym_sinop_t>(exp, a);
-                    copy_info(t, exp);
-                    t->end = a->end;
-                    exp = t;
-                }
-                tmps.clear();
-                tmps.push_back(exp);
+                auto exp = to_exp((tmp.rbegin() + 2)->front());
+                auto t = std::make_shared<sym_sinop_t>(exp, asts.front());
+                copy_info(t, exp);
+                t->end = asts.front()->end;
+                (tmp.rbegin() + 2)->back() = t;
                 asts.clear();
             }
                 break;
@@ -659,13 +732,12 @@ namespace clib {
             case c_bitNotExpression:
             case c_notExpression: {
                 auto &op = asts[0];
-                auto &_exp = tmps.back();
+                auto &_exp = (tmp.rbegin() + 2)->front();
                 auto exp = to_exp(_exp);
-                tmps.clear();
                 auto unop = std::make_shared<sym_unop_t>(exp, op);
-                copy_info(unop, op);
-                unop->end = exp->end;
-                tmps.push_back(unop);
+                copy_info(unop, exp);
+                unop->start = op->start;
+                (tmp.rbegin() + 2)->front() = unop;
                 asts.clear();
             }
                 break;
@@ -881,8 +953,42 @@ namespace clib {
             case s_expression:
                 break;
             case s_unop:
+                os << "unop"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_unop_t>(node);
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << "op: " << lexer_string(n->op->data._op)
+                       << " " << "[" << node->line << ":"
+                       << node->column << ":"
+                       << node->start << ":"
+                       << node->end << "]" << std::endl;
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << "exp" << std::endl;
+                    print(n->exp, level + 2, os);
+                }
                 break;
             case s_sinop:
+                os << "sinop"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_sinop_t>(node);
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << "exp" << std::endl;
+                    print(n->exp, level + 2, os);
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << "op: " << lexer_string(n->op->data._op)
+                       << " " << "[" << node->line << ":"
+                       << node->column << ":"
+                       << node->start << ":"
+                       << node->end << "]" << std::endl;
+                }
                 break;
             case s_binop:
                 os << "binop"
@@ -908,6 +1014,19 @@ namespace clib {
                 break;
             case s_triop:
                 break;
+            case s_expression_seq:
+                os << "exp_seq"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_exp_seq_t>(node);
+                    for (const auto &s : n->exps) {
+                        print(s, level + 1, os);
+                    }
+                }
+                break;
             case s_list:
                 break;
             case s_ctrl:
@@ -925,6 +1044,17 @@ namespace clib {
                     for (const auto &s : n->vars) {
                         print(s, level + 1, os);
                     }
+                }
+                break;
+            case s_statement_exp:
+                os << "statement_exp"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_stmt_exp_t>(node);
+                    print(n->seq, level + 1, os);
                 }
                 break;
             case s_block:
