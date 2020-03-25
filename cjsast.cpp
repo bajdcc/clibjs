@@ -206,24 +206,42 @@ namespace clib {
                 break;
             case a_keyword:
                 os << "keyword: " << lexer_string(node->data._keyword)
-                   << " " << text.substr(node->start, node->end - node->start) << std::endl;
+                   << " " << text.substr(node->start, node->end - node->start)
+                   << " [" << node->line << ":" << node->column
+                   << ":" << node->start << ":" << node->end << "]"
+                   << std::endl;
                 break;
             case a_operator:
                 os << "operator: " << lexer_string(node->data._op)
-                   << " " << text.substr(node->start, node->end - node->start) << std::endl;
+                   << " " << text.substr(node->start, node->end - node->start)
+                   << " [" << node->line << ":" << node->column
+                   << ":" << node->start << ":" << node->end << "]"
+                   << std::endl;
                 break;
             case a_literal:
-                os << "id: " << node->data._identifier << std::endl;
+                os << "id: " << node->data._identifier
+                   << " [" << node->line << ":" << node->column
+                   << ":" << node->start << ":" << node->end << "]"
+                   << std::endl;
                 break;
             case a_string:
-                os << "string: " << display_str(node->data._string) << std::endl;
+                os << "string: " << display_str(node->data._string)
+                   << " [" << node->line << ":" << node->column
+                   << ":" << node->start << ":" << node->end << "]"
+                   << std::endl;
                 break;
             case a_regex:
-                os << "regex: " << display_str(node->data._regex) << std::endl;
+                os << "regex: " << display_str(node->data._regex)
+                   << " [" << node->line << ":" << node->column
+                   << ":" << node->start << ":" << node->end << "]"
+                   << std::endl;
                 break;
             case a_number:
                 os << "number: " << node->data._number
-                   << " or " << text.substr(node->start, node->end - node->start) << std::endl;
+                   << " \"" << text.substr(node->start, node->end - node->start) << "\""
+                   << " [" << node->line << ":" << node->column
+                   << ":" << node->start << ":" << node->end << "]"
+                   << std::endl;
                 break;
             case a_rule:
                 os << "rule: " << lexer_string(node->data._op) << std::endl;

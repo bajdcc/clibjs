@@ -28,7 +28,9 @@ namespace clib {
         s_member_dot,
         s_member_index,
         s_expression_seq,
-        s_list,
+        s_array,
+        s_object,
+        s_object_pair,
         s_ctrl,
         s_statement,
         s_statement_var,
@@ -71,6 +73,11 @@ namespace clib {
         z_param_var,
         z_function,
         z_end,
+    };
+
+    enum sym_lvalue_t {
+        no_lvalue,
+        can_be_lvalue,
     };
 
     class sym_exp_t : public sym_t {
@@ -205,6 +212,37 @@ namespace clib {
         int gen_rvalue(ijsgen &gen) override;
         int set_parent(sym_t::ref node) override;
         std::vector<sym_exp_t::ref> exps;
+    };
+
+    class sym_array_t : public sym_exp_t {
+    public:
+        using ref = std::shared_ptr<sym_array_t>;
+        symbol_t get_type() const override;
+        std::string to_string() const override;
+        int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
+        std::vector<sym_exp_t::ref> exps;
+    };
+
+    class sym_object_pair_t : public sym_t {
+    public:
+        using ref = std::shared_ptr<sym_object_pair_t>;
+        symbol_t get_type() const override;
+        symbol_t get_base_type() const override;
+        std::string to_string() const override;
+        int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
+        sym_exp_t::ref key, value;
+    };
+
+    class sym_object_t : public sym_exp_t {
+    public:
+        using ref = std::shared_ptr<sym_array_t>;
+        symbol_t get_type() const override;
+        std::string to_string() const override;
+        int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
+        std::vector<sym_object_pair_t::ref> pairs;
     };
 
     class sym_stmt_t : public sym_t {

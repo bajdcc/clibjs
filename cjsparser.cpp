@@ -418,10 +418,10 @@ namespace clib {
         assignmentExpression = *(assignmentExpression + _T_ASSIGN) + assignmentOperatorExpression;
         singleExpression = assignmentExpression;
         literal = _K_NULL | _K_TRUE | _K_FALSE | _STRING | _REGEX | _NUMBER;
-        arrayLiteral = ~_T_LSQUARE + *elementList + ~_T_RSQUARE;
+        arrayLiteral = _T_LSQUARE + *elementList + _T_RSQUARE;
         elementList = *(elementList + ~_T_COMMA) + arrayElement;
         arrayElement = *_T_ELLIPSIS + singleExpression;
-        objectLiteral = ~_T_LBRACE + *propertyAssignments + *~_T_COMMA + ~_T_RBRACE;
+        objectLiteral = _T_LBRACE + *propertyAssignments + *~_T_COMMA + _T_RBRACE;
         identifierName = _ID | reservedWord;
         reservedWord = keyword | _K_TRUE | _K_FALSE;
         numericLiteral = _NUMBER;
@@ -870,6 +870,11 @@ namespace clib {
             return node;
         }
         if (current->t == STRING) {
+            auto node = ast->new_node(a_string);
+            node->line = current->line;
+            node->column = current->column;
+            node->start = current->start;
+            node->end = current->end;
             std::stringstream ss;
             ss << lexer->get_data(current->idx);
             match_type(current->t);
@@ -878,11 +883,6 @@ namespace clib {
                 ss << lexer->get_data(current->idx);
                 match_type(current->t);
             }
-            auto node = ast->new_node(a_string);
-            node->line = current->line;
-            node->column = current->column;
-            node->start = current->start;
-            node->end = current->end;
             ast->set_str(node, ss.str());
             ast_cache.push_back(node);
             ast_cache_index++;

@@ -23,7 +23,7 @@ namespace clib {
     }
 
     int sym_t::gen_lvalue(ijsgen &gen) {
-        return 0;
+        return no_lvalue;
     }
 
     int sym_t::gen_rvalue(ijsgen &gen) {
@@ -134,7 +134,7 @@ namespace clib {
                 gen.error(line, column, start, end, "unsupported var type");
                 break;
         }
-        return sym_t::gen_lvalue(gen);
+        return can_be_lvalue;
     }
 
     int sym_var_t::gen_rvalue(ijsgen &gen) {
@@ -197,7 +197,7 @@ namespace clib {
 
     int sym_unop_t::gen_lvalue(ijsgen &gen) {
         exp->gen_lvalue(gen);
-        return 1;
+        return sym_t::gen_lvalue(gen);
     }
 
     int sym_unop_t::gen_rvalue(ijsgen &gen) {
@@ -241,7 +241,7 @@ namespace clib {
 
     int sym_sinop_t::gen_lvalue(ijsgen &gen) {
         exp->gen_lvalue(gen);
-        return 1;
+        return sym_t::gen_lvalue(gen);
     }
 
     int sym_sinop_t::gen_rvalue(ijsgen &gen) {
@@ -292,7 +292,7 @@ namespace clib {
         switch (op->data._op) {
             case T_ASSIGN: {
                 exp2->gen_rvalue(gen);
-                if (exp1->gen_lvalue(gen) != 0) {
+                if (exp1->gen_lvalue(gen) == 0) {
                     gen.error(line, column, start, end, "invalid assignment");
                 }
             }
@@ -351,7 +351,7 @@ namespace clib {
                     default:
                         break;
                 }
-                if (exp1->gen_lvalue(gen) != 0) {
+                if (exp1->gen_lvalue(gen) == 0) {
                     gen.error(line, column, start, end, "invalid assignment");
                 }
             }
@@ -508,7 +508,7 @@ namespace clib {
                 gen.emit(s->line, s->column, s->start, s->end, STORE_ATTR);
             i++;
         }
-        return sym_t::gen_lvalue(gen);
+        return can_be_lvalue;
     }
 
     int sym_member_dot_t::gen_rvalue(ijsgen &gen) {
@@ -552,7 +552,7 @@ namespace clib {
             }
             i++;
         }
-        return sym_t::gen_lvalue(gen);
+        return can_be_lvalue;
     }
 
     int sym_member_index_t::gen_rvalue(ijsgen &gen) {
@@ -596,6 +596,82 @@ namespace clib {
     int sym_exp_seq_t::set_parent(sym_t::ref node) {
         for (const auto &s : exps) {
             s->set_parent(node);
+        }
+        return sym_t::set_parent(node);
+    }
+
+    // ----
+
+    symbol_t sym_array_t::get_type() const {
+        return s_array;
+    }
+
+    std::string sym_array_t::to_string() const {
+        return sym_t::to_string();
+    }
+
+    int sym_array_t::gen_rvalue(ijsgen &gen) {
+        for (const auto &s : exps) {
+            s->gen_rvalue(gen);
+        }
+        gen.emit(line, column, start, end, BUILD_LIST, exps.size());
+        return sym_t::gen_rvalue(gen);
+    }
+
+    int sym_array_t::set_parent(sym_t::ref node) {
+        for (const auto &s : exps) {
+            s->set_parent(shared_from_this());
+        }
+        return sym_t::set_parent(node);
+    }
+
+    // ----
+
+    symbol_t sym_object_pair_t::get_type() const {
+        return s_object_pair;
+    }
+
+    symbol_t sym_object_pair_t::get_base_type() const {
+        return s_object_pair;
+    }
+
+    std::string sym_object_pair_t::to_string() const {
+        return sym_t::to_string();
+    }
+
+    int sym_object_pair_t::gen_rvalue(ijsgen &gen) {
+        key->gen_rvalue(gen);
+        value->gen_rvalue(gen);
+        return sym_t::gen_rvalue(gen);
+    }
+
+    int sym_object_pair_t::set_parent(sym_t::ref node) {
+        key->set_parent(shared_from_this());
+        value->set_parent(shared_from_this());
+        return sym_t::set_parent(node);
+    }
+
+    // ----
+
+    symbol_t sym_object_t::get_type() const {
+        return s_object;
+    }
+
+    std::string sym_object_t::to_string() const {
+        return sym_t::to_string();
+    }
+
+    int sym_object_t::gen_rvalue(ijsgen &gen) {
+        for (const auto &s : pairs) {
+            s->gen_rvalue(gen);
+        }
+        gen.emit(line, column, start, end, BUILD_MAP, pairs.size());
+        return sym_t::gen_rvalue(gen);
+    }
+
+    int sym_object_t::set_parent(sym_t::ref node) {
+        for (const auto &s : pairs) {
+            s->set_parent(shared_from_this());
         }
         return sym_t::set_parent(node);
     }

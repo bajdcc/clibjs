@@ -629,13 +629,35 @@ namespace clib {
                 tmps.push_back(block);
             }
                 break;
-            case c_arrayLiteral:
+            case c_arrayLiteral: {
+                auto array = std::make_shared<sym_array_t>();
+                copy_info(array, asts.front());
+                array->end = asts.back()->end;
+                for (const auto &s : tmps) {
+                    assert(s->get_base_type() == s_expression);
+                    array->exps.push_back(to_exp(s));
+                }
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(array);
+            }
                 break;
             case c_elementList:
                 break;
             case c_arrayElement:
                 break;
-            case c_objectLiteral:
+            case c_objectLiteral: {
+                auto obj = std::make_shared<sym_object_t>();
+                copy_info(obj, asts.front());
+                obj->end = asts.back()->end;
+                for (const auto &s : tmps) {
+                    assert(s->get_type() == s_object_pair);
+                    obj->pairs.push_back(std::dynamic_pointer_cast<sym_object_pair_t>(s));
+                }
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(obj);
+            }
                 break;
             case c_propertyAssignment:
                 break;
@@ -654,8 +676,7 @@ namespace clib {
                         copy_info(seq, tmps.front());
                     }
                     for (const auto &s : tmps) {
-                        assert(s->get_base_type() == s_expression);
-                        seq->exps.push_back(std::dynamic_pointer_cast<sym_exp_t>(s));
+                        seq->exps.push_back(to_exp(s));
                         seq->end = s->end;
                     }
                     asts.clear();
@@ -684,7 +705,31 @@ namespace clib {
                 break;
             case c_eos:
                 break;
-            case c_propertyExpressionAssignment:
+            case c_propertyExpressionAssignment: {
+                auto p = std::make_shared<sym_object_pair_t>();
+                if (tmps.size() == 2) {
+                    copy_info(p, tmps.front());
+                    p->end = tmps.back()->end;
+                    p->key = to_exp(tmps.front());
+                    p->value = to_exp(tmps.back());
+                } else {
+                    if (tmps.front()->get_type() == s_var_id) {
+                        auto id = std::dynamic_pointer_cast<sym_var_id_t>(tmps.front());
+                        id->node->flag = a_string;
+                        auto new_id = std::make_shared<sym_var_t>(id->node);
+                        copy_info(new_id, tmps.front());
+                        tmps.front() = new_id;
+                    }
+                    copy_info(p, asts.front());
+                    p->end = tmps.back()->end;
+                    p->key = to_exp(primary_node(asts.front()));
+                    copy_info(p->key, asts.front());
+                    p->value = to_exp(tmps.back());
+                }
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(p);
+            }
                 break;
             case c_computedPropertyExpressionAssignment:
                 break;
@@ -705,18 +750,16 @@ namespace clib {
                 if (exp->get_type() != s_member_index) {
                     auto t = std::make_shared<sym_member_index_t>(exp);
                     copy_info(t, exp);
-                    assert(tmps.front()->get_base_type() == s_expression);
                     tmps.front()->start = asts.front()->start;
                     tmps.front()->end = asts.back()->end;
-                    t->indexes.push_back(std::dynamic_pointer_cast<sym_exp_t>(tmps.front()));
+                    t->indexes.push_back(to_exp(tmps.front()));
                     t->end = tmps.front()->end;
                     (tmp.rbegin() + 2)->back() = t;
                 } else {
                     auto t = std::dynamic_pointer_cast<sym_member_index_t>(exp);
-                    assert(tmps.front()->get_base_type() == s_expression);
                     tmps.front()->start = asts.front()->start;
                     tmps.front()->end = asts.back()->end;
-                    t->indexes.push_back(std::dynamic_pointer_cast<sym_exp_t>(tmps.front()));
+                    t->indexes.push_back(to_exp(tmps.front()));
                     t->end = tmps.front()->end;
                 }
                 tmps.clear();
@@ -1081,7 +1124,43 @@ namespace clib {
                     }
                 }
                 break;
-            case s_list:
+            case s_array:
+                os << "array"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_array_t>(node);
+                    for (const auto &s : n->exps) {
+                        print(s, level + 1, os);
+                    }
+                }
+                break;
+            case s_object:
+                os << "object"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_object_t>(node);
+                    for (const auto &s : n->pairs) {
+                        print(s, level + 1, os);
+                    }
+                }
+                break;
+            case s_object_pair:
+                os << "pair"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_object_pair_t>(node);
+                    print(n->key, level + 1, os);
+                    print(n->value, level + 1, os);
+                }
                 break;
             case s_ctrl:
                 break;
