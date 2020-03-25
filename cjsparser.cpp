@@ -360,7 +360,7 @@ namespace clib {
                              | objectLiteralExpression
                              | parenthesizedExpression;
         classExpression = _K_CLASS + ~_ID + classTail;
-        memberIndexExpression = ~_T_LSQUARE + expressionSequence + _T_RSQUARE;
+        memberIndexExpression = _T_LSQUARE + expressionSequence + _T_RSQUARE;
         memberDotExpression = *_T_QUERY + ~_T_DOT + *_T_SHARP + identifierName;
         argumentsExpression = arguments;
         postIncrementExpression = _T_INC;

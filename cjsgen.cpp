@@ -700,7 +700,28 @@ namespace clib {
                 break;
             case c_classExpression:
                 break;
-            case c_memberIndexExpression:
+            case c_memberIndexExpression: {
+                auto exp = to_exp((tmp.rbegin() + 2)->front());
+                if (exp->get_type() != s_member_index) {
+                    auto t = std::make_shared<sym_member_index_t>(exp);
+                    copy_info(t, exp);
+                    assert(tmps.front()->get_base_type() == s_expression);
+                    tmps.front()->start = asts.front()->start;
+                    tmps.front()->end = asts.back()->end;
+                    t->indexes.push_back(std::dynamic_pointer_cast<sym_exp_t>(tmps.front()));
+                    t->end = tmps.front()->end;
+                    (tmp.rbegin() + 2)->back() = t;
+                } else {
+                    auto t = std::dynamic_pointer_cast<sym_member_index_t>(exp);
+                    assert(tmps.front()->get_base_type() == s_expression);
+                    tmps.front()->start = asts.front()->start;
+                    tmps.front()->end = asts.back()->end;
+                    t->indexes.push_back(std::dynamic_pointer_cast<sym_exp_t>(tmps.front()));
+                    t->end = tmps.front()->end;
+                }
+                tmps.clear();
+                asts.clear();
+            }
                 break;
             case c_memberDotExpression: {
                 auto exp = to_exp((tmp.rbegin() + 2)->front());

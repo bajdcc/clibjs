@@ -526,6 +526,54 @@ namespace clib {
 
     // ----
 
+    sym_member_index_t::sym_member_index_t(sym_exp_t::ref exp) : exp(std::move(exp)) {
+
+    }
+
+    symbol_t sym_member_index_t::get_type() const {
+        return s_member_index;
+    }
+
+    std::string sym_member_index_t::to_string() const {
+        return sym_t::to_string();
+    }
+
+    int sym_member_index_t::gen_lvalue(ijsgen &gen) {
+        exp->gen_rvalue(gen);
+        size_t i = 0;
+        for (const auto &s : indexes) {
+            if (i + 1 < indexes.size()){
+                s->gen_rvalue(gen);
+                gen.emit(s->line, s->column, s->start, s->end, BINARY_SUBSCR);
+            }
+            else{
+                s->gen_rvalue(gen);
+                gen.emit(s->line, s->column, s->start, s->end, STORE_SUBSCR);
+            }
+            i++;
+        }
+        return sym_t::gen_lvalue(gen);
+    }
+
+    int sym_member_index_t::gen_rvalue(ijsgen &gen) {
+        exp->gen_rvalue(gen);
+        for (const auto &s : indexes) {
+            s->gen_rvalue(gen);
+            gen.emit(s->line, s->column, s->start, s->end, BINARY_SUBSCR);
+        }
+        return sym_t::gen_rvalue(gen);
+    }
+
+    int sym_member_index_t::set_parent(sym_t::ref node) {
+        exp->set_parent(shared_from_this());
+        for (const auto &s : indexes) {
+            s->set_parent(shared_from_this());
+        }
+        return sym_t::set_parent(node);
+    }
+
+    // ----
+
     symbol_t sym_exp_seq_t::get_type() const {
         return s_expression_seq;
     }

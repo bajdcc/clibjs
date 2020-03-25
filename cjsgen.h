@@ -26,6 +26,7 @@ namespace clib {
         s_binop,
         s_triop,
         s_member_dot,
+        s_member_index,
         s_expression_seq,
         s_list,
         s_ctrl,
@@ -181,6 +182,19 @@ namespace clib {
         int set_parent(sym_t::ref node) override;
         sym_exp_t::ref exp;
         std::vector<ast_node *> dots;
+    };
+
+    class sym_member_index_t : public sym_exp_t {
+    public:
+        using ref = std::shared_ptr<sym_member_index_t>;
+        explicit sym_member_index_t(sym_exp_t::ref exp);
+        symbol_t get_type() const override;
+        std::string to_string() const override;
+        int gen_lvalue(ijsgen &gen) override;
+        int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
+        sym_exp_t::ref exp;
+        std::vector<sym_exp_t::ref> indexes;
     };
 
     class sym_exp_seq_t : public sym_exp_t {
