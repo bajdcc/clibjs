@@ -486,6 +486,46 @@ namespace clib {
 
     // ----
 
+    sym_member_dot_t::sym_member_dot_t(sym_exp_t::ref exp) : exp(std::move(exp)) {
+
+    }
+
+    symbol_t sym_member_dot_t::get_type() const {
+        return s_member_dot;
+    }
+
+    std::string sym_member_dot_t::to_string() const {
+        return sym_t::to_string();
+    }
+
+    int sym_member_dot_t::gen_lvalue(ijsgen &gen) {
+        exp->gen_rvalue(gen);
+        size_t i = 0;
+        for (const auto &s : dots) {
+            if (i + 1 < dots.size())
+                gen.emit(s->line, s->column, s->start, s->end, LOAD_ATTR);
+            else
+                gen.emit(s->line, s->column, s->start, s->end, STORE_ATTR);
+            i++;
+        }
+        return sym_t::gen_lvalue(gen);
+    }
+
+    int sym_member_dot_t::gen_rvalue(ijsgen &gen) {
+        exp->gen_rvalue(gen);
+        for (const auto &s : dots) {
+            gen.emit(s->line, s->column, s->start, s->end, LOAD_ATTR);
+        }
+        return sym_t::gen_rvalue(gen);
+    }
+
+    int sym_member_dot_t::set_parent(sym_t::ref node) {
+        exp->set_parent(shared_from_this());
+        return sym_t::set_parent(node);
+    }
+
+    // ----
+
     symbol_t sym_exp_seq_t::get_type() const {
         return s_expression_seq;
     }

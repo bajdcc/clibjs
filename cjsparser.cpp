@@ -233,24 +233,24 @@ namespace clib {
         DEF_RULE(arrowFunction)
         DEF_RULE_EXP(functionExpression)
         DEF_RULE_EXP(classExpression)
-        DEF_RULE_EXP(memberIndexExpression)
-        DEF_RULE_EXP(memberDotExpression)
-        DEF_RULE_EXP(argumentsExpression)
-        DEF_RULE_EXP(newExpression)
+        DEF_RULE(memberIndexExpression)
+        DEF_RULE(memberDotExpression)
+        DEF_RULE(argumentsExpression)
+        DEF_RULE(newExpression)
         DEF_RULE_EXP(primaryExpression)
         DEF_RULE(prefixExpression)
-        DEF_RULE_EXP(postIncrementExpression)
-        DEF_RULE_EXP(postDecreaseExpression)
+        DEF_RULE(postIncrementExpression)
+        DEF_RULE(postDecreaseExpression)
         DEF_RULE(postfixExpression)
-        DEF_RULE_EXP(deleteExpression)
-        DEF_RULE_EXP(voidExpression)
-        DEF_RULE_EXP(typeofExpression)
-        DEF_RULE_EXP(preIncrementExpression)
-        DEF_RULE_EXP(preDecreaseExpression)
-        DEF_RULE_EXP(unaryPlusExpression)
-        DEF_RULE_EXP(unaryMinusExpression)
-        DEF_RULE_EXP(bitNotExpression)
-        DEF_RULE_EXP(notExpression)
+        DEF_RULE(deleteExpression)
+        DEF_RULE(voidExpression)
+        DEF_RULE(typeofExpression)
+        DEF_RULE(preIncrementExpression)
+        DEF_RULE(preDecreaseExpression)
+        DEF_RULE(unaryPlusExpression)
+        DEF_RULE(unaryMinusExpression)
+        DEF_RULE(bitNotExpression)
+        DEF_RULE(notExpression)
         DEF_RULE_EXP(powerExpression)
         DEF_RULE_EXP(multiplicativeExpression)
         DEF_RULE_EXP(additiveExpression)
@@ -360,8 +360,8 @@ namespace clib {
                              | objectLiteralExpression
                              | parenthesizedExpression;
         classExpression = _K_CLASS + ~_ID + classTail;
-        memberIndexExpression = _T_LSQUARE + expressionSequence + _T_RSQUARE;
-        memberDotExpression = *_T_QUERY + _T_DOT + *_T_SHARP + identifierName;
+        memberIndexExpression = ~_T_LSQUARE + expressionSequence + _T_RSQUARE;
+        memberDotExpression = *_T_QUERY + ~_T_DOT + *_T_SHARP + identifierName;
         argumentsExpression = arguments;
         postIncrementExpression = _T_INC;
         postDecreaseExpression = _T_DEC;

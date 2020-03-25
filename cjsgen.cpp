@@ -702,7 +702,21 @@ namespace clib {
                 break;
             case c_memberIndexExpression:
                 break;
-            case c_memberDotExpression:
+            case c_memberDotExpression: {
+                auto exp = to_exp((tmp.rbegin() + 2)->front());
+                if (exp->get_type() != s_member_dot) {
+                    auto t = std::make_shared<sym_member_dot_t>(exp);
+                    copy_info(t, exp);
+                    t->dots.push_back(asts.front());
+                    t->end = asts.front()->end;
+                    (tmp.rbegin() + 2)->back() = t;
+                } else {
+                    auto t = std::dynamic_pointer_cast<sym_member_dot_t>(exp);
+                    t->dots.push_back(asts.front());
+                    t->end = asts.front()->end;
+                }
+                asts.clear();
+            }
                 break;
             case c_argumentsExpression:
                 break;
@@ -963,10 +977,10 @@ namespace clib {
                     auto n = std::dynamic_pointer_cast<sym_unop_t>(node);
                     os << std::setfill(' ') << std::setw(level + 1) << "";
                     os << "op: " << lexer_string(n->op->data._op)
-                       << " " << "[" << node->line << ":"
-                       << node->column << ":"
-                       << node->start << ":"
-                       << node->end << "]" << std::endl;
+                       << " " << "[" << n->op->line << ":"
+                       << n->op->column << ":"
+                       << n->op->start << ":"
+                       << n->op->end << "]" << std::endl;
                     os << std::setfill(' ') << std::setw(level + 1) << "";
                     os << "exp" << std::endl;
                     print(n->exp, level + 2, os);
@@ -985,10 +999,10 @@ namespace clib {
                     print(n->exp, level + 2, os);
                     os << std::setfill(' ') << std::setw(level + 1) << "";
                     os << "op: " << lexer_string(n->op->data._op)
-                       << " " << "[" << node->line << ":"
-                       << node->column << ":"
-                       << node->start << ":"
-                       << node->end << "]" << std::endl;
+                       << " " << "[" << n->op->line << ":"
+                       << n->op->column << ":"
+                       << n->op->start << ":"
+                       << n->op->end << "]" << std::endl;
                 }
                 break;
             case s_binop:
@@ -1004,16 +1018,34 @@ namespace clib {
                     print(n->exp1, level + 2, os);
                     os << std::setfill(' ') << std::setw(level + 1) << "";
                     os << "op: " << lexer_string(n->op->data._op)
-                       << " " << "[" << node->line << ":"
-                       << node->column << ":"
-                       << node->start << ":"
-                       << node->end << "]" << std::endl;
+                       << " " << "[" << n->op->line << ":"
+                       << n->op->column << ":"
+                       << n->op->start << ":"
+                       << n->op->end << "]" << std::endl;
                     os << std::setfill(' ') << std::setw(level + 1) << "";
                     os << "exp2" << std::endl;
                     print(n->exp2, level + 2, os);
                 }
                 break;
             case s_triop:
+                break;
+            case s_member_dot:
+                os << "member_dot"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_member_dot_t>(node);
+                    for (const auto &s : n->dots) {
+                        os << std::setfill(' ') << std::setw(level + 1) << "";
+                        os << "dot: " << s->data._identifier
+                           << " " << "[" << s->line << ":"
+                           << s->column << ":"
+                           << s->start << ":"
+                           << s->end << "]" << std::endl;
+                    }
+                }
                 break;
             case s_expression_seq:
                 os << "exp_seq"
