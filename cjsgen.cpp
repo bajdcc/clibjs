@@ -112,6 +112,7 @@ namespace clib {
         gen_rec(node, 0);
         if (tmp.front().empty())
             return false;
+        tmp.front().front()->set_parent(nullptr);
 #if PRINT_AST
         print(tmp.front().front(), 0, std::cout);
 #endif
@@ -1123,10 +1124,11 @@ namespace clib {
 
     }
 
-    void cjsgen::error(int line, int column, const std::string &str) const {
+    void cjsgen::error(int line, int column, int start, int end, const std::string &str) const {
         std::stringstream ss;
         ss << "[" << line << ":" << column << "] ";
         ss << str;
+        ss << " (" << text->substr(start, end - start) << ")";
         throw cexception(ss.str());
     }
 

@@ -45,10 +45,10 @@ namespace clib {
         virtual int load_number(double d) = 0;
         virtual int load_string(const std::string &, bool) = 0;
         virtual void add_label(int, int, int, const std::string &) = 0;
-        virtual void error(int, int, const std::string &) const = 0;
+        virtual void error(int, int, int, int, const std::string &) const = 0;
     };
 
-    class sym_t {
+    class sym_t : public std::enable_shared_from_this<sym_t> {
     public:
         using ref = std::shared_ptr<sym_t>;
         using weak_ref = std::weak_ptr<sym_t>;
@@ -58,7 +58,9 @@ namespace clib {
         virtual int gen_lvalue(ijsgen &gen);
         virtual int gen_rvalue(ijsgen &gen);
         virtual int gen_invoke(ijsgen &gen, ref &list);
+        virtual int set_parent(ref node);
         int line{0}, column{0}, start{0}, end{0};
+        weak_ref parent;
     };
 
     enum sym_class_t {
@@ -107,6 +109,7 @@ namespace clib {
         std::string to_string() const override;
         int gen_lvalue(ijsgen &gen) override;
         int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
         void parse();
         std::vector<sym_var_t::ref> ids;
         sym_exp_t::ref init;
@@ -121,6 +124,7 @@ namespace clib {
         std::string to_string() const override;
         int gen_lvalue(ijsgen &gen) override;
         int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
         sym_exp_t::ref exp;
         ast_node *op{nullptr};
     };
@@ -133,6 +137,7 @@ namespace clib {
         std::string to_string() const override;
         int gen_lvalue(ijsgen &gen) override;
         int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
         sym_exp_t::ref exp;
         ast_node *op{nullptr};
     };
@@ -145,6 +150,7 @@ namespace clib {
         std::string to_string() const override;
         int gen_lvalue(ijsgen &gen) override;
         int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
         sym_exp_t::ref exp1, exp2;
         ast_node *op{nullptr};
     };
@@ -158,6 +164,7 @@ namespace clib {
         std::string to_string() const override;
         int gen_lvalue(ijsgen &gen) override;
         int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
         sym_exp_t::ref exp1, exp2, exp3;
         ast_node *op1{nullptr}, *op2{nullptr};
     };
@@ -168,6 +175,7 @@ namespace clib {
         symbol_t get_type() const override;
         std::string to_string() const override;
         int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
         std::vector<sym_exp_t::ref> exps;
     };
 
@@ -178,7 +186,6 @@ namespace clib {
         symbol_t get_base_type() const override;
         std::string to_string() const override;
         int gen_rvalue(ijsgen &gen) override;
-        sym_t::ref r;
     };
 
     class sym_stmt_var_t : public sym_stmt_t {
@@ -187,6 +194,7 @@ namespace clib {
         symbol_t get_type() const override;
         std::string to_string() const override;
         int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
         std::vector<sym_id_t::ref> vars;
     };
 
@@ -196,6 +204,7 @@ namespace clib {
         symbol_t get_type() const override;
         std::string to_string() const override;
         int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
         sym_exp_seq_t::ref seq;
     };
 
@@ -206,6 +215,7 @@ namespace clib {
         symbol_t get_base_type() const override;
         std::string to_string() const override;
         int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
         std::vector<sym_stmt_t::ref> stmts;
     };
 
@@ -263,7 +273,7 @@ namespace clib {
         int load_number(double d) override;
         int load_string(const std::string &, bool) override;
         void add_label(int, int, int, const std::string &) override;
-        void error(int, int, const std::string &) const override;
+        void error(int, int, int, int, const std::string &) const override;
 
     private:
         void gen_rec(ast_node *node, int level);

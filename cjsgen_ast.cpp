@@ -34,6 +34,11 @@ namespace clib {
         return 0;
     }
 
+    int sym_t::set_parent(sym_t::ref node) {
+        parent = node;
+        return 0;
+    }
+
     // ----
 
     symbol_t sym_exp_t::get_type() const {
@@ -67,14 +72,19 @@ namespace clib {
             init->gen_rvalue(gen);
         else
             gen.emit(line, column, start, end, LOAD_UNDEFINED);
-        size_t i = 0;
         for (const auto &s : ids) {
-            if (i + 1 < ids.size())
-                gen.emit(s->line, s->column, s->start, s->end, DUP_TOP);
             s->gen_lvalue(gen);
-            i++;
         }
         return sym_t::gen_rvalue(gen);
+    }
+
+    int sym_id_t::set_parent(sym_t::ref node) {
+        for (auto &s : ids) {
+            s->set_parent(shared_from_this());
+        }
+        if (init)
+            init->set_parent(shared_from_this());
+        return sym_t::set_parent(node);
     }
 
     void sym_id_t::parse() {
@@ -117,10 +127,11 @@ namespace clib {
     int sym_var_t::gen_lvalue(ijsgen &gen) {
         switch (node->flag) {
             case a_literal:
+                gen.emit(line, column, start, end, DUP_TOP);
                 gen.emit(line, column, start, end, STORE_NAME, gen.load_string(node->data._string, true));
                 break;
             default:
-                gen.error(line, column, "unsupported var type");
+                gen.error(line, column, start, end, "unsupported var type");
                 break;
         }
         return sym_t::gen_lvalue(gen);
@@ -138,7 +149,7 @@ namespace clib {
                 gen.emit(line, column, start, end, LOAD_CONST, gen.load_number(node->data._number));
                 break;
             default:
-                gen.error(line, column, "unsupported var type");
+                gen.error(line, column, start, end, "unsupported var type");
                 break;
         }
         return sym_t::gen_rvalue(gen);
@@ -186,7 +197,7 @@ namespace clib {
 
     int sym_unop_t::gen_lvalue(ijsgen &gen) {
         exp->gen_lvalue(gen);
-        return sym_t::gen_lvalue(gen);
+        return 1;
     }
 
     int sym_unop_t::gen_rvalue(ijsgen &gen) {
@@ -203,10 +214,15 @@ namespace clib {
                 exp->gen_lvalue(gen);
                 break;
             default:
-                gen.error(line, column, "unsupported unop");
+                gen.error(line, column, start, end, "unsupported unop");
                 break;
         }
         return sym_t::gen_rvalue(gen);
+    }
+
+    int sym_unop_t::set_parent(sym_t::ref node) {
+        exp->set_parent(shared_from_this());
+        return sym_t::set_parent(node);
     }
 
     // ----
@@ -225,7 +241,7 @@ namespace clib {
 
     int sym_sinop_t::gen_lvalue(ijsgen &gen) {
         exp->gen_lvalue(gen);
-        return sym_t::gen_lvalue(gen);
+        return 1;
     }
 
     int sym_sinop_t::gen_rvalue(ijsgen &gen) {
@@ -242,10 +258,15 @@ namespace clib {
                 exp->gen_lvalue(gen);
                 break;
             default:
-                gen.error(line, column, "unsupported sinop");
+                gen.error(line, column, start, end, "unsupported sinop");
                 break;
         }
         return sym_t::gen_rvalue(gen);
+    }
+
+    int sym_sinop_t::set_parent(sym_t::ref node) {
+        exp->set_parent(shared_from_this());
+        return sym_t::set_parent(node);
     }
 
     // ----
@@ -268,6 +289,76 @@ namespace clib {
     }
 
     int sym_binop_t::gen_rvalue(ijsgen &gen) {
+        switch (op->data._op) {
+            case T_ASSIGN: {
+                exp2->gen_rvalue(gen);
+                if (exp1->gen_lvalue(gen) != 0) {
+                    gen.error(line, column, start, end, "invalid assignment");
+                }
+            }
+                return 0;
+            case T_ASSIGN_ADD:
+            case T_ASSIGN_SUB:
+            case T_ASSIGN_MUL:
+            case T_ASSIGN_DIV:
+            case T_ASSIGN_MOD:
+            case T_ASSIGN_LSHIFT:
+            case T_ASSIGN_RSHIFT:
+            case T_ASSIGN_URSHIFT:
+            case T_ASSIGN_AND:
+            case T_ASSIGN_OR:
+            case T_ASSIGN_XOR:
+            case T_ASSIGN_POWER: {
+                exp1->gen_rvalue(gen);
+                exp2->gen_rvalue(gen);
+                switch (op->data._op) {
+                    case T_ASSIGN_ADD:
+                        gen.emit(line, column, start, end, BINARY_ADD);
+                        break;
+                    case T_ASSIGN_SUB:
+                        gen.emit(line, column, start, end, BINARY_SUBTRACT);
+                        break;
+                    case T_ASSIGN_MUL:
+                        gen.emit(line, column, start, end, BINARY_MULTIPLY);
+                        break;
+                    case T_ASSIGN_DIV:
+                        gen.emit(line, column, start, end, BINARY_TRUE_DIVIDE);
+                        break;
+                    case T_ASSIGN_MOD:
+                        gen.emit(line, column, start, end, BINARY_MODULO);
+                        break;
+                    case T_ASSIGN_LSHIFT:
+                        gen.emit(line, column, start, end, BINARY_LSHIFT);
+                        break;
+                    case T_ASSIGN_RSHIFT:
+                        gen.emit(line, column, start, end, BINARY_RSHIFT);
+                        break;
+                    case T_ASSIGN_URSHIFT:
+                        gen.emit(line, column, start, end, BINARY_URSHIFT);
+                        break;
+                    case T_ASSIGN_AND:
+                        gen.emit(line, column, start, end, BINARY_AND);
+                        break;
+                    case T_ASSIGN_OR:
+                        gen.emit(line, column, start, end, BINARY_OR);
+                        break;
+                    case T_ASSIGN_XOR:
+                        gen.emit(line, column, start, end, BINARY_XOR);
+                        break;
+                    case T_ASSIGN_POWER:
+                        gen.emit(line, column, start, end, BINARY_POWER);
+                        break;
+                    default:
+                        break;
+                }
+                if (exp1->gen_lvalue(gen) != 0) {
+                    gen.error(line, column, start, end, "invalid assignment");
+                }
+            }
+                return 0;
+            default:
+                break;
+        }
         exp1->gen_rvalue(gen);
         switch (op->data._op) {
             case T_LOG_AND: {
@@ -350,10 +441,16 @@ namespace clib {
                 gen.emit(line, column, start, end, BINARY_URSHIFT);
                 break;
             default:
-                gen.error(line, column, "unsupported binop");
+                gen.error(line, column, start, end, "unsupported binop");
                 break;
         }
         return sym_t::gen_rvalue(gen);
+    }
+
+    int sym_binop_t::set_parent(sym_t::ref node) {
+        exp1->set_parent(shared_from_this());
+        exp2->set_parent(shared_from_this());
+        return sym_t::set_parent(node);
     }
 
     // ----
@@ -380,6 +477,13 @@ namespace clib {
         return sym_t::gen_rvalue(gen);
     }
 
+    int sym_triop_t::set_parent(sym_t::ref node) {
+        exp1->set_parent(shared_from_this());
+        exp2->set_parent(shared_from_this());
+        exp3->set_parent(shared_from_this());
+        return sym_t::set_parent(node);
+    }
+
     // ----
 
     symbol_t sym_exp_seq_t::get_type() const {
@@ -399,6 +503,13 @@ namespace clib {
             i++;
         }
         return sym_t::gen_rvalue(gen);
+    }
+
+    int sym_exp_seq_t::set_parent(sym_t::ref node) {
+        for (const auto &s : exps) {
+            s->set_parent(node);
+        }
+        return sym_t::set_parent(node);
     }
 
     // ----
@@ -436,6 +547,13 @@ namespace clib {
         return sym_stmt_t::gen_rvalue(gen);
     }
 
+    int sym_stmt_var_t::set_parent(sym_t::ref node) {
+        for (const auto &s : vars) {
+            s->set_parent(shared_from_this());
+        }
+        return sym_stmt_t::set_parent(node);
+    }
+
     // ----
 
     symbol_t sym_stmt_exp_t::get_type() const {
@@ -450,6 +568,11 @@ namespace clib {
         seq->gen_rvalue(gen);
         gen.emit(line, column, start, end, POP_TOP);
         return sym_stmt_t::gen_rvalue(gen);
+    }
+
+    int sym_stmt_exp_t::set_parent(sym_t::ref node) {
+        seq->set_parent(shared_from_this());
+        return sym_stmt_t::set_parent(node);
     }
 
     // ----
@@ -471,5 +594,12 @@ namespace clib {
             s->gen_rvalue(gen);
         }
         return sym_t::gen_rvalue(gen);
+    }
+
+    int sym_block_t::set_parent(sym_t::ref node) {
+        for (const auto &s : stmts) {
+            s->set_parent(shared_from_this());
+        }
+        return sym_t::set_parent(node);
     }
 }
