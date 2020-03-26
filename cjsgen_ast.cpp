@@ -228,6 +228,22 @@ namespace clib {
                 gen.emit(line, column, start, end, DUP_TOP);
                 exp->gen_lvalue(gen);
                 break;
+            case T_LOG_NOT:
+                gen.emit(line, column, start, end, UNARY_NOT);
+                exp->gen_lvalue(gen);
+                break;
+            case T_BIT_NOT:
+                gen.emit(line, column, start, end, UNARY_INVERT);
+                exp->gen_lvalue(gen);
+                break;
+            case T_ADD:
+                gen.emit(line, column, start, end, UNARY_POSITIVE);
+                exp->gen_lvalue(gen);
+                break;
+            case T_SUB:
+                gen.emit(line, column, start, end, UNARY_NEGATIVE);
+                exp->gen_lvalue(gen);
+                break;
             default:
                 gen.error(line, column, start, end, "unsupported unop");
                 break;

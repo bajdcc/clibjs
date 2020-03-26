@@ -164,7 +164,8 @@ namespace clib {
         std::vector<T *> v;
         if (node == nullptr)
             return v;
-        auto i = node->prev;
+        node = node->prev;
+        auto i = node;
         if (i->next == i) {
             v.push_back(i);
             return v;
@@ -751,6 +752,8 @@ namespace clib {
                     auto t = std::make_shared<sym_member_index_t>(exp);
                     copy_info(t, exp);
                     tmps.front()->start = asts.front()->start;
+                    tmps.front()->line = asts.front()->line;
+                    tmps.front()->column = asts.front()->column;
                     tmps.front()->end = asts.back()->end;
                     t->indexes.push_back(to_exp(tmps.front()));
                     t->end = tmps.front()->end;
@@ -758,6 +761,8 @@ namespace clib {
                 } else {
                     auto t = std::dynamic_pointer_cast<sym_member_index_t>(exp);
                     tmps.front()->start = asts.front()->start;
+                    tmps.front()->line = asts.front()->line;
+                    tmps.front()->column = asts.front()->column;
                     tmps.front()->end = asts.back()->end;
                     t->indexes.push_back(to_exp(tmps.front()));
                     t->end = tmps.front()->end;
@@ -852,6 +857,8 @@ namespace clib {
                 auto unop = std::make_shared<sym_unop_t>(exp, op);
                 copy_info(unop, exp);
                 unop->start = op->start;
+                unop->line = op->line;
+                unop->column = op->column;
                 (tmp.rbegin() + 2)->front() = unop;
                 asts.clear();
             }
