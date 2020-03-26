@@ -272,7 +272,7 @@ namespace clib {
     // ----
 
     sym_binop_t::sym_binop_t(sym_exp_t::ref exp1, sym_exp_t::ref exp2, ast_node *op)
-        : exp1(std::move(exp1)), exp2(std::move(exp2)), op(op) {
+            : exp1(std::move(exp1)), exp2(std::move(exp2)), op(op) {
 
     }
 
@@ -457,7 +457,7 @@ namespace clib {
 
     sym_triop_t::sym_triop_t(sym_exp_t::ref exp1, sym_exp_t::ref exp2,
                              sym_exp_t::ref exp3, ast_node *op1, ast_node *op2)
-        : exp1(std::move(exp1)), exp2(std::move(exp2)), exp3(std::move(exp3)), op1(op1), op2(op2) {
+            : exp1(std::move(exp1)), exp2(std::move(exp2)), exp3(std::move(exp3)), op1(op1), op2(op2) {
 
     }
 
@@ -503,9 +503,9 @@ namespace clib {
         size_t i = 0;
         for (const auto &s : dots) {
             if (i + 1 < dots.size())
-                gen.emit(s->line, s->column, s->start, s->end, LOAD_ATTR);
+                gen.emit(s->line, s->column, s->start, s->end, LOAD_ATTR, gen.load_string(s->data._string, true));
             else
-                gen.emit(s->line, s->column, s->start, s->end, STORE_ATTR);
+                gen.emit(s->line, s->column, s->start, s->end, STORE_ATTR, gen.load_string(s->data._string, true));
             i++;
         }
         return can_be_lvalue;
@@ -514,7 +514,7 @@ namespace clib {
     int sym_member_dot_t::gen_rvalue(ijsgen &gen) {
         exp->gen_rvalue(gen);
         for (const auto &s : dots) {
-            gen.emit(s->line, s->column, s->start, s->end, LOAD_ATTR);
+            gen.emit(s->line, s->column, s->start, s->end, LOAD_ATTR, gen.load_string(s->data._string, true));
         }
         return sym_t::gen_rvalue(gen);
     }
@@ -542,11 +542,10 @@ namespace clib {
         exp->gen_rvalue(gen);
         size_t i = 0;
         for (const auto &s : indexes) {
-            if (i + 1 < indexes.size()){
+            if (i + 1 < indexes.size()) {
                 s->gen_rvalue(gen);
                 gen.emit(s->line, s->column, s->start, s->end, BINARY_SUBSCR);
-            }
-            else{
+            } else {
                 s->gen_rvalue(gen);
                 gen.emit(s->line, s->column, s->start, s->end, STORE_SUBSCR);
             }
@@ -671,6 +670,62 @@ namespace clib {
 
     int sym_object_t::set_parent(sym_t::ref node) {
         for (const auto &s : pairs) {
+            s->set_parent(shared_from_this());
+        }
+        return sym_t::set_parent(node);
+    }
+
+    // ----
+
+    symbol_t sym_call_method_t::get_type() const {
+        return s_call_method;
+    }
+
+    std::string sym_call_method_t::to_string() const {
+        return sym_t::to_string();
+    }
+
+    int sym_call_method_t::gen_rvalue(ijsgen &gen) {
+        obj->gen_rvalue(gen);
+        gen.emit(method->line, method->column, method->start, method->end,
+                 LOAD_METHOD, gen.load_string(method->data._string, true));
+        for (const auto &s : args) {
+            s->gen_rvalue(gen);
+        }
+        gen.emit(line, column, start, end, CALL_METHOD, args.size());
+        return sym_t::gen_rvalue(gen);
+    }
+
+    int sym_call_method_t::set_parent(sym_t::ref node) {
+        obj->set_parent(shared_from_this());
+        for (const auto &s : args) {
+            s->set_parent(shared_from_this());
+        }
+        return sym_t::set_parent(node);
+    }
+
+    // ----
+
+    symbol_t sym_call_function_t::get_type() const {
+        return s_call_function;
+    }
+
+    std::string sym_call_function_t::to_string() const {
+        return sym_t::to_string();
+    }
+
+    int sym_call_function_t::gen_rvalue(ijsgen &gen) {
+        obj->gen_rvalue(gen);
+        for (const auto &s : args) {
+            s->gen_rvalue(gen);
+        }
+        gen.emit(line, column, start, end, CALL_FUNCTION, args.size());
+        return sym_t::gen_rvalue(gen);
+    }
+
+    int sym_call_function_t::set_parent(sym_t::ref node) {
+        obj->set_parent(shared_from_this());
+        for (const auto &s : args) {
             s->set_parent(shared_from_this());
         }
         return sym_t::set_parent(node);

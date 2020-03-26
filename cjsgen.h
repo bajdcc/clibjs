@@ -31,6 +31,8 @@ namespace clib {
         s_array,
         s_object,
         s_object_pair,
+        s_call_method,
+        s_call_function,
         s_ctrl,
         s_statement,
         s_statement_var,
@@ -243,6 +245,29 @@ namespace clib {
         int gen_rvalue(ijsgen &gen) override;
         int set_parent(sym_t::ref node) override;
         std::vector<sym_object_pair_t::ref> pairs;
+    };
+
+    class sym_call_method_t : public sym_exp_t {
+    public:
+        using ref = std::shared_ptr<sym_array_t>;
+        symbol_t get_type() const override;
+        std::string to_string() const override;
+        int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
+        sym_exp_t::ref obj;
+        ast_node *method{nullptr};
+        std::vector<sym_exp_t::ref> args;
+    };
+
+    class sym_call_function_t : public sym_exp_t {
+    public:
+        using ref = std::shared_ptr<sym_array_t>;
+        symbol_t get_type() const override;
+        std::string to_string() const override;
+        int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
+        sym_exp_t::ref obj;
+        std::vector<sym_exp_t::ref> args;
     };
 
     class sym_stmt_t : public sym_t {

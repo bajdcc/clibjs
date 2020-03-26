@@ -782,7 +782,43 @@ namespace clib {
                 asts.clear();
             }
                 break;
-            case c_argumentsExpression:
+            case c_argumentsExpression: {
+                auto exp = to_exp((tmp.rbegin() + 2)->front());
+                if (exp->get_type() == s_member_dot) { // a.b(...)
+                    auto old = std::dynamic_pointer_cast<sym_member_dot_t>(exp);
+                    if (old->dots.size() > 1) { // a.b.c()
+                        auto t = std::make_shared<sym_call_method_t>();
+                        copy_info(t, exp);
+                        t->method = old->dots.back();
+                        old->dots.pop_back();
+                        old->end = old->dots.back()->end;
+                        t->obj = old;
+                        t->end = asts.back()->end;
+                        for (const auto &s : tmps)
+                            t->args.push_back(to_exp(s));
+                        (tmp.rbegin() + 2)->back() = t;
+                    } else { // a.b()
+                        auto t = std::make_shared<sym_call_method_t>();
+                        copy_info(t, exp);
+                        t->method = old->dots.back();
+                        t->obj = old->exp;
+                        t->end = asts.back()->end;
+                        for (const auto &s : tmps)
+                            t->args.push_back(to_exp(s));
+                        (tmp.rbegin() + 2)->back() = t;
+                    }
+                } else { // a(...)
+                    auto t = std::make_shared<sym_call_function_t>();
+                    copy_info(t, exp);
+                    t->obj = exp;
+                    t->end = asts.back()->end;
+                    for (const auto &s : tmps)
+                        t->args.push_back(to_exp(s));
+                    (tmp.rbegin() + 2)->back() = t;
+                }
+                asts.clear();
+                tmps.clear();
+            }
                 break;
             case c_primaryExpression:
                 break;
@@ -1160,6 +1196,52 @@ namespace clib {
                     auto n = std::dynamic_pointer_cast<sym_object_pair_t>(node);
                     print(n->key, level + 1, os);
                     print(n->value, level + 1, os);
+                }
+                break;
+            case s_call_method:
+                os << "call_method"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_call_method_t>(node);
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << "obj" << std::endl;
+                    print(n->obj, level + 2, os);
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << "method: " << n->method->data._identifier
+                       << " " << "[" << n->method->line << ":"
+                       << n->method->column << ":"
+                       << n->method->start << ":"
+                       << n->method->end << "]" << std::endl;
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    if (!n->args.empty()) {
+                        os << "args" << std::endl;
+                        for (const auto &s : n->args) {
+                            print(s, level + 2, os);
+                        }
+                    }
+                }
+                break;
+            case s_call_function:
+                os << "call_function"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_call_function_t>(node);
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << "obj" << std::endl;
+                    print(n->obj, level + 2, os);
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    if (!n->args.empty()) {
+                        os << "args" << std::endl;
+                        for (const auto &s : n->args) {
+                            print(s, level + 2, os);
+                        }
+                    }
                 }
                 break;
             case s_ctrl:

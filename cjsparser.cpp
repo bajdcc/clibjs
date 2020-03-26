@@ -426,7 +426,7 @@ namespace clib {
         reservedWord = keyword | _K_TRUE | _K_FALSE;
         numericLiteral = _NUMBER;
         assignable = _ID | arrayLiteral | objectLiteral;
-        arguments = ~_T_LPARAN + *argument + ~_T_RPARAN;
+        arguments = ~_T_LPARAN + *argument + _T_RPARAN;
         argument = *(argument + ~_T_COMMA) + *~_T_ELLIPSIS + (singleExpression | _ID);
         propertyAssignments = *(propertyAssignments + ~_T_COMMA) + propertyAssignment;
         propertyAssignment = propertyExpressionAssignment
