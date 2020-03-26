@@ -872,7 +872,8 @@ namespace clib {
             case c_bitXOrExpression:
             case c_bitOrExpression:
             case c_logicalAndExpression:
-            case c_logicalOrExpression: {
+            case c_logicalOrExpression:
+            case c_ternaryExpression: {
                 size_t tmp_i = 0;
                 auto exp1 = to_exp(tmps[tmp_i++]);
                 auto exp2 = to_exp(tmps[tmp_i++]);
@@ -1128,6 +1129,35 @@ namespace clib {
                 }
                 break;
             case s_triop:
+                os << "binop"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_triop_t>(node);
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << "exp1" << std::endl;
+                    print(n->exp1, level + 2, os);
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << "op1: " << lexer_string(n->op1->data._op)
+                       << " " << "[" << n->op1->line << ":"
+                       << n->op1->column << ":"
+                       << n->op1->start << ":"
+                       << n->op1->end << "]" << std::endl;
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << "exp2" << std::endl;
+                    print(n->exp2, level + 2, os);
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << "op2: " << lexer_string(n->op2->data._op)
+                       << " " << "[" << n->op2->line << ":"
+                       << n->op2->column << ":"
+                       << n->op2->start << ":"
+                       << n->op2->end << "]" << std::endl;
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << "exp3" << std::endl;
+                    print(n->exp3, level + 2, os);
+                }
                 break;
             case s_member_dot:
                 os << "member_dot"
@@ -1356,21 +1386,28 @@ namespace clib {
                 switch (c.code) {
                     case JUMP_IF_TRUE_OR_POP:
                     case JUMP_IF_FALSE_OR_POP:
+                    case POP_JUMP_IF_TRUE:
+                    case POP_JUMP_IF_FALSE:
                     case JUMP_ABSOLUTE:
-                    case JUMP_FORWARD:
                         jumps_set.insert(c.op1);
+                        break;
+                    case JUMP_FORWARD:
+                        jumps_set.insert(idx + c.op1 + 2);
                         break;
                     default:
                         break;
                 }
+                idx += c.opnum + 1;
             }
             std::copy(jumps_set.begin(), jumps_set.end(), std::back_inserter(jumps));
         }
+        idx = 0;
         for (const auto &c : codes) {
             auto alt = text->substr(c.start, c.end - c.start);
             auto jmp = "  ";
             if (!jumps.empty() && jumps.back() == idx) {
                 jmp = ">>";
+                jumps.pop_back();
             }
             if (c.opnum == 0)
                 fprintf(stdout, "C [%04d:%03d]  %s   %4d %-20s                   (%s)\n",

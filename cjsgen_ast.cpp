@@ -197,6 +197,21 @@ namespace clib {
 
     int sym_unop_t::gen_lvalue(ijsgen &gen) {
         exp->gen_lvalue(gen);
+        switch (op->data._op) {
+            case T_INC:
+                gen.emit(line, column, start, end, BINARY_INC);
+                gen.emit(line, column, start, end, DUP_TOP);
+                exp->gen_lvalue(gen);
+                break;
+            case T_DEC:
+                gen.emit(line, column, start, end, BINARY_DEC);
+                gen.emit(line, column, start, end, DUP_TOP);
+                exp->gen_lvalue(gen);
+                break;
+            default:
+                gen.error(line, column, start, end, "unsupported unop");
+                break;
+        }
         return sym_t::gen_lvalue(gen);
     }
 
@@ -474,6 +489,16 @@ namespace clib {
     }
 
     int sym_triop_t::gen_rvalue(ijsgen &gen) {
+        exp1->gen_rvalue(gen);
+        auto idx = gen.code_length();
+        gen.emit(op1->line, op1->column, op1->start, op1->end, POP_JUMP_IF_FALSE, 0);
+        exp2->gen_rvalue(gen);
+        auto idx2 = gen.code_length();
+        auto cur = gen.current();
+        gen.emit(op2->line, op2->column, op2->start, op2->end, JUMP_FORWARD, 0);
+        gen.edit(idx, 1, gen.current());
+        exp3->gen_rvalue(gen);
+        gen.edit(idx2, 1, gen.current() - cur);
         return sym_t::gen_rvalue(gen);
     }
 

@@ -109,11 +109,18 @@ var d = a + (b * c);
 var e = 1 && 2 > 3;
 a + b, a - b;
 1 + ++--a--++;
+a = b = c, a += b -= c--;
+a.b.c, a.b.c++;
+a[1]["1"], a[1]["1"]++;
+a = [1,2,[3+4],[]];
+b = {1: "a", 'b': {c: c}, [2]: 1};
+a.b(1, 2).c(2, 1), a(3)(4), a[5](6), a.b.c(1);
+(a>b?a:b).c(), !++a?b:c+1;
 ```
 
 Output:
 
-```
+```javascript
 C [#000] [NAME  ] a
 C [#001] [NAME  ] b
 C [#002] [NAME  ] c
@@ -122,45 +129,191 @@ C [#004] [NAME  ] e
 C [#000] [NUMBER] 1.000000
 C [#001] [NUMBER] 2.000000
 C [#002] [NUMBER] 3.000000
+C [#003] [STRING] "1"
+C [#004] [NUMBER] 4.000000
+C [#005] [STRING] "a"
+C [#006] [STRING] 'b'
+C [#007] [STRING] c
+C [#008] [NUMBER] 5.000000
+C [#009] [NUMBER] 6.000000
 C [0001:017]          0 LOAD_CONST                  0          (1)
 C [0001:005]          2 DUP_TOP                                (a)
 C [0001:005]          3 STORE_NAME                  0          (a)
 C [0001:009]          5 DUP_TOP                                (b)
 C [0001:009]          6 STORE_NAME                  1          (b)
-C [0001:013]          8 STORE_NAME                  2          (c)
-C [0002:009]         10 LOAD_NAME                   0          (a)
-C [0002:014]         12 LOAD_NAME                   1          (b)
-C [0002:018]         14 LOAD_NAME                   2          (c)
-C [0002:014]         16 BINARY_MULTIPLY                        ((b * c))
-C [0002:009]         17 BINARY_ADD                             (a + (b * c))
-C [0002:005]         18 STORE_NAME                  3          (d)
-C [0003:009]         20 LOAD_CONST                  0          (1)
-C [0003:009]         22 JUMP_IF_TRUE_OR_POP        30          (1 && 2 > 3)
-C [0003:014]         24 LOAD_CONST                  1          (2)
-C [0003:018]         26 LOAD_CONST                  2          (3)
-C [0003:014]         28 COMPARE_OP                  4          (2 > 3)
-C [0003:005]  >>     30 STORE_NAME                  4          (e)
-C [0004:001]         32 LOAD_NAME                   0          (a)
-C [0004:005]         34 LOAD_NAME                   1          (b)
-C [0004:001]         36 BINARY_ADD                             (a + b)
-C [0004:001]         37 POP_TOP                                (a + b)
-C [0004:008]         38 LOAD_NAME                   0          (a)
-C [0004:012]         40 LOAD_NAME                   1          (b)
-C [0004:008]         42 BINARY_SUBTRACT                        (a - b)
-C [0004:001]         43 POP_TOP                                (a + b, a - b)
-C [0005:001]         44 LOAD_CONST                  0          (1)
-C [0005:009]         46 LOAD_NAME                   0          (a)
-C [0005:009]         48 BINARY_DEC                             (--a)
-C [0005:009]         49 DUP_TOP                                (--a)
-C [0005:009]         50 STORE_NAME                  0          (a)
-C [0005:009]         52 DUP_TOP                                (--a--)
-C [0005:009]         53 BINARY_DEC                             (--a--)
+C [0001:013]          8 DUP_TOP                                (c)
+C [0001:013]          9 STORE_NAME                  2          (c)
+C [0002:009]         11 LOAD_NAME                   0          (a)
+C [0002:014]         13 LOAD_NAME                   1          (b)
+C [0002:018]         15 LOAD_NAME                   2          (c)
+C [0002:014]         17 BINARY_MULTIPLY                        ((b * c))
+C [0002:009]         18 BINARY_ADD                             (a + (b * c))
+C [0002:005]         19 DUP_TOP                                (d)
+C [0002:005]         20 STORE_NAME                  3          (d)
+C [0003:009]         22 LOAD_CONST                  0          (1)
+C [0003:009]         24 JUMP_IF_TRUE_OR_POP        32          (1 && 2 > 3)
+C [0003:014]         26 LOAD_CONST                  1          (2)
+C [0003:018]         28 LOAD_CONST                  2          (3)
+C [0003:014]         30 COMPARE_OP                  4          (2 > 3)
+C [0003:005]  >>     32 DUP_TOP                                (e)
+C [0003:005]         33 STORE_NAME                  4          (e)
+C [0004:001]         35 LOAD_NAME                   0          (a)
+C [0004:005]         37 LOAD_NAME                   1          (b)
+C [0004:001]         39 BINARY_ADD                             (a + b)
+C [0004:001]         40 POP_TOP                                (a + b)
+C [0004:008]         41 LOAD_NAME                   0          (a)
+C [0004:012]         43 LOAD_NAME                   1          (b)
+C [0004:008]         45 BINARY_SUBTRACT                        (a - b)
+C [0004:001]         46 POP_TOP                                (a + b, a - b)
+C [0005:001]         47 LOAD_CONST                  0          (1)
+C [0005:009]         49 LOAD_NAME                   0          (a)
+C [0005:009]         51 BINARY_DEC                             (--a)
+C [0005:009]         52 DUP_TOP                                (--a)
+C [0005:009]         53 DUP_TOP                                (a)
 C [0005:009]         54 STORE_NAME                  0          (a)
-C [0005:009]         56 DUP_TOP                                (--a--++)
-C [0005:009]         57 BINARY_INC                             (--a--++)
-C [0005:009]         58 STORE_NAME                  0          (a)
-C [0005:001]         60 BINARY_ADD                             (1 + ++--a--++)
-C [0005:001]         61 POP_TOP                                (1 + ++--a--++)
+C [0005:009]         56 DUP_TOP                                (--a--)
+C [0005:009]         57 BINARY_DEC                             (--a--)
+C [0005:009]         58 DUP_TOP                                (a)
+C [0005:009]         59 STORE_NAME                  0          (a)
+C [0005:009]         61 BINARY_DEC                             (--a)
+C [0005:009]         62 DUP_TOP                                (--a)
+C [0005:009]         63 DUP_TOP                                (a)
+C [0005:009]         64 STORE_NAME                  0          (a)
+C [0005:009]         66 DUP_TOP                                (--a--++)
+C [0005:009]         67 BINARY_INC                             (--a--++)
+C [0005:009]         68 DUP_TOP                                (a)
+C [0005:009]         69 STORE_NAME                  0          (a)
+C [0005:009]         71 BINARY_DEC                             (--a)
+C [0005:009]         72 DUP_TOP                                (--a)
+C [0005:009]         73 DUP_TOP                                (a)
+C [0005:009]         74 STORE_NAME                  0          (a)
+C [0005:001]         76 BINARY_ADD                             (1 + ++--a--++)
+C [0005:001]         77 POP_TOP                                (1 + ++--a--++)
+C [0006:009]         78 LOAD_NAME                   2          (c)
+C [0006:005]         80 DUP_TOP                                (b)
+C [0006:005]         81 STORE_NAME                  1          (b)
+C [0006:001]         83 DUP_TOP                                (a)
+C [0006:001]         84 STORE_NAME                  0          (a)
+C [0006:001]         86 POP_TOP                                (a = b = c)
+C [0006:012]         87 LOAD_NAME                   0          (a)
+C [0006:017]         89 LOAD_NAME                   1          (b)
+C [0006:022]         91 LOAD_NAME                   2          (c)
+C [0006:022]         93 DUP_TOP                                (c--)
+C [0006:022]         94 BINARY_DEC                             (c--)
+C [0006:022]         95 DUP_TOP                                (c)
+C [0006:022]         96 STORE_NAME                  2          (c)
+C [0006:017]         98 BINARY_SUBTRACT                        (b -= c--)
+C [0006:017]         99 DUP_TOP                                (b)
+C [0006:017]        100 STORE_NAME                  1          (b)
+C [0006:012]        102 BINARY_ADD                             (a += b -= c--)
+C [0006:012]        103 DUP_TOP                                (a)
+C [0006:012]        104 STORE_NAME                  0          (a)
+C [0006:001]        106 POP_TOP                                (a = b = c, a += b -= c--)
+C [0007:001]        107 LOAD_NAME                   0          (a)
+C [0007:003]        109 LOAD_ATTR                   1          (b)
+C [0007:005]        111 LOAD_ATTR                   2          (c)
+C [0007:001]        113 POP_TOP                                (a.b.c)
+C [0007:008]        114 LOAD_NAME                   0          (a)
+C [0007:010]        116 LOAD_ATTR                   1          (b)
+C [0007:012]        118 LOAD_ATTR                   2          (c)
+C [0007:008]        120 DUP_TOP                                (a.b.c++)
+C [0007:008]        121 BINARY_INC                             (a.b.c++)
+C [0007:008]        122 LOAD_NAME                   0          (a)
+C [0007:010]        124 LOAD_ATTR                   1          (b)
+C [0007:012]        126 STORE_ATTR                  2          (c)
+C [0007:001]        128 POP_TOP                                (a.b.c, a.b.c++)
+C [0008:001]        129 LOAD_NAME                   0          (a)
+C [0008:003]        131 LOAD_CONST                  0          ([1])
+C [0008:003]        133 BINARY_SUBSCR                          ([1])
+C [0008:006]        134 LOAD_CONST                  3          (["1"])
+C [0008:006]        136 BINARY_SUBSCR                          (["1"])
+C [0008:001]        137 POP_TOP                                (a[1]["1"])
+C [0008:012]        138 LOAD_NAME                   0          (a)
+C [0008:014]        140 LOAD_CONST                  0          ([1])
+C [0008:014]        142 BINARY_SUBSCR                          ([1])
+C [0008:017]        143 LOAD_CONST                  3          (["1"])
+C [0008:017]        145 BINARY_SUBSCR                          (["1"])
+C [0008:012]        146 DUP_TOP                                (a[1]["1"]++)
+C [0008:012]        147 BINARY_INC                             (a[1]["1"]++)
+C [0008:012]        148 LOAD_NAME                   0          (a)
+C [0008:014]        150 LOAD_CONST                  0          ([1])
+C [0008:014]        152 BINARY_SUBSCR                          ([1])
+C [0008:017]        153 LOAD_CONST                  3          (["1"])
+C [0008:017]        155 STORE_SUBSCR                           (["1"])
+C [0008:001]        156 POP_TOP                                (a[1]["1"], a[1]["1"]++)
+C [0009:006]        157 LOAD_CONST                  0          (1)
+C [0009:008]        159 LOAD_CONST                  1          (2)
+C [0009:011]        161 LOAD_CONST                  2          (3)
+C [0009:013]        163 LOAD_CONST                  4          (4)
+C [0009:011]        165 BINARY_ADD                             (3+4)
+C [0009:010]        166 BUILD_LIST                  1          ([3+4])
+C [0009:016]        168 BUILD_LIST                  0          ([])
+C [0009:005]        170 BUILD_LIST                  4          ([1,2,[3+4],[]])
+C [0009:001]        172 DUP_TOP                                (a)
+C [0009:001]        173 STORE_NAME                  0          (a)
+C [0009:001]        175 POP_TOP                                (a = [1,2,[3+4],[]])
+C [0010:006]        176 LOAD_CONST                  0          (1)
+C [0010:009]        178 LOAD_CONST                  5          ("a")
+C [0010:014]        180 LOAD_CONST                  6          ('b')
+C [0010:020]        182 LOAD_NAME                   2          (c)
+C [0010:023]        184 LOAD_CONST                  7          (c)
+C [0010:019]        186 BUILD_MAP                   1          ({c: c})
+C [0010:028]        188 LOAD_CONST                  1          (2)
+C [0010:032]        190 LOAD_CONST                  0          (1)
+C [0010:005]        192 BUILD_MAP                   3          ({1: "a", 'b': {c: c}, [2]: 1})
+C [0010:001]        194 DUP_TOP                                (b)
+C [0010:001]        195 STORE_NAME                  1          (b)
+C [0010:001]        197 POP_TOP                                (b = {1: "a", 'b': {c: c}, [2]: 1})
+C [0011:001]        198 LOAD_NAME                   0          (a)
+C [0011:003]        200 LOAD_METHOD                 1          (b)
+C [0011:005]        202 LOAD_CONST                  0          (1)
+C [0011:008]        204 LOAD_CONST                  1          (2)
+C [0011:001]        206 CALL_METHOD                 2          (a.b(1, 2))
+C [0011:011]        208 LOAD_METHOD                 2          (c)
+C [0011:013]        210 LOAD_CONST                  1          (2)
+C [0011:016]        212 LOAD_CONST                  0          (1)
+C [0011:001]        214 CALL_METHOD                 2          (a.b(1, 2).c(2, 1))
+C [0011:001]        216 POP_TOP                                (a.b(1, 2).c(2, 1))
+C [0011:020]        217 LOAD_NAME                   0          (a)
+C [0011:022]        219 LOAD_CONST                  2          (3)
+C [0011:020]        221 CALL_FUNCTION               1          (a(3))
+C [0011:025]        223 LOAD_CONST                  4          (4)
+C [0011:020]        225 CALL_FUNCTION               1          (a(3)(4))
+C [0011:020]        227 POP_TOP                                (a(3)(4))
+C [0011:029]        228 LOAD_NAME                   0          (a)
+C [0011:031]        230 LOAD_CONST                  8          ([5])
+C [0011:031]        232 BINARY_SUBSCR                          ([5])
+C [0011:034]        233 LOAD_CONST                  9          (6)
+C [0011:029]        235 CALL_FUNCTION               1          (a[5](6))
+C [0011:029]        237 POP_TOP                                (a[5](6))
+C [0011:038]        238 LOAD_NAME                   0          (a)
+C [0011:040]        240 LOAD_ATTR                   1          (b)
+C [0011:042]        242 LOAD_METHOD                 2          (c)
+C [0011:044]        244 LOAD_CONST                  0          (1)
+C [0011:038]        246 CALL_METHOD                 1          (a.b.c(1))
+C [0011:001]        248 POP_TOP                                (a.b(1, 2).c(2, 1), a(3)(4), a[5](6), a.b.c(1))
+C [0012:002]        249 LOAD_NAME                   0          (a)
+C [0012:004]        251 LOAD_NAME                   1          (b)
+C [0012:002]        253 COMPARE_OP                  4          (a>b)
+C [0012:005]        255 POP_JUMP_IF_FALSE         261          (?)
+C [0012:006]        257 LOAD_NAME                   0          (a)
+C [0012:007]        259 JUMP_FORWARD                4          (:)
+C [0012:008]  >>    261 LOAD_NAME                   1          (b)
+C [0012:011]        263 LOAD_METHOD                 2          (c)
+C [0012:002]  >>    265 CALL_METHOD                 0          ((a>b?a:b).c())
+C [0012:002]        267 POP_TOP                                ((a>b?a:b).c())
+C [0012:019]        268 LOAD_NAME                   0          (a)
+C [0012:019]        270 BINARY_INC                             (++a)
+C [0012:019]        271 DUP_TOP                                (++a)
+C [0012:019]        272 DUP_TOP                                (a)
+C [0012:019]        273 STORE_NAME                  0          (a)
+C [0012:020]        275 POP_JUMP_IF_FALSE         281          (?)
+C [0012:021]        277 LOAD_NAME                   1          (b)
+C [0012:022]        279 JUMP_FORWARD                7          (:)
+C [0012:023]  >>    281 LOAD_NAME                   2          (c)
+C [0012:025]        283 LOAD_CONST                  0          (1)
+C [0012:023]        285 BINARY_ADD                             (c+1)
+C [0012:002]        286 POP_TOP                                ((a>b?a:b).c(), !++a?b:c+1)
 ```
 
 ## Grammar
@@ -171,7 +324,7 @@ See [grammars-v4/javascript](https://github.com/antlr/grammars-v4/blob/master/ja
 program = sourceElements;
 variableStatement = _K_VAR + variableDeclarationList + eos;
 variableDeclarationList = *(variableDeclarationList + ~_T_COMMA) + variableDeclaration;
-variableDeclaration = assignable + *(_T_ASSIGN + singleExpression);
+variableDeclaration = assignable + *(~_T_ASSIGN + singleExpression);
 emptyStatement = _T_SEMI;
 expressionStatement = expressionSequence + eos;
 ifStatement = _K_IF + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement + *(_K_ELSE + statement);
@@ -239,7 +392,7 @@ superExpression = _K_SUPER;
 literalExpression = literal;
 arrayLiteralExpression = arrayLiteral;
 objectLiteralExpression = objectLiteral;
-parenthesizedExpression = ~_T_LPARAN + expressionSequence + ~_T_RPARAN;
+parenthesizedExpression = _T_LPARAN + expressionSequence + _T_RPARAN;
 functionExpression = anonymousFunction
                      | classExpression
                      | thisExpression
@@ -250,29 +403,40 @@ functionExpression = anonymousFunction
                      | objectLiteralExpression
                      | parenthesizedExpression;
 classExpression = _K_CLASS + ~_ID + classTail;
-memberIndexExpression = *memberIndexExpression + _T_LSQUARE + expressionSequence + _T_RSQUARE;
-memberDotExpression = *memberDotExpression + *_T_QUERY + _T_DOT + *_T_SHARP + identifierName;
-argumentsExpression = *argumentsExpression + arguments;
-postIncrementExpression = *postIncrementExpression + _T_INC;
-postDecreaseExpression = *postDecreaseExpression + _T_DEC;
-postfixExpression = postfixExpression +
+memberIndexExpression = _T_LSQUARE + expressionSequence + _T_RSQUARE;
+memberDotExpression = *_T_QUERY + ~_T_DOT + *_T_SHARP + identifierName;
+argumentsExpression = arguments;
+postIncrementExpression = _T_INC;
+postDecreaseExpression = _T_DEC;
+postfixExpression = *postfixExpression +
                     (_RULE_NO_LINE + memberIndexExpression
                      | memberDotExpression
                      | argumentsExpression
                      | _RULE_NO_LINE + postIncrementExpression
-                     | _RULE_NO_LINE + postDecreaseExpression)
-                    | functionExpression;
-newExpression = _K_NEW + singleExpression + *arguments | postfixExpression;
-deleteExpression = _K_DELETE + deleteExpression | newExpression;
-voidExpression = _K_VOID + voidExpression | deleteExpression;
-typeofExpression = _K_TYPEOF + typeofExpression | voidExpression;
-preIncrementExpression = _T_INC + preIncrementExpression | typeofExpression;
-preDecreaseExpression = _T_DEC + preDecreaseExpression | preIncrementExpression;
-unaryPlusExpression = _T_ADD + unaryPlusExpression | preDecreaseExpression;
-unaryMinusExpression = _T_SUB + unaryMinusExpression | unaryPlusExpression;
-bitNotExpression = _T_BIT_NOT + bitNotExpression | unaryMinusExpression;
-notExpression = _T_LOG_NOT + notExpression | bitNotExpression;
-powerExpression = *(powerExpression + _T_POWER) + notExpression;
+                     | _RULE_NO_LINE + postDecreaseExpression);
+newExpression = _K_NEW + singleExpression + *arguments;
+deleteExpression = _K_DELETE;
+voidExpression = _K_VOID;
+typeofExpression = _K_TYPEOF;
+preIncrementExpression = _T_INC;
+preDecreaseExpression = _T_DEC;
+unaryPlusExpression = _T_ADD + *unaryPlusExpression;
+unaryMinusExpression = _T_SUB + *unaryMinusExpression;
+bitNotExpression = _T_BIT_NOT + *bitNotExpression;
+notExpression = _T_LOG_NOT + *notExpression;
+prefixExpression = *prefixExpression +
+                   (newExpression
+                    | deleteExpression
+                    | voidExpression
+                    | typeofExpression
+                    | preIncrementExpression
+                    | preDecreaseExpression
+                    | unaryPlusExpression
+                    | unaryMinusExpression
+                    | bitNotExpression
+                    | notExpression);
+primaryExpression = *prefixExpression + functionExpression + *postfixExpression;
+powerExpression = *(powerExpression + _T_POWER) + primaryExpression;
 multiplicativeExpression = *(multiplicativeExpression + (_T_MUL | _T_DIV | _T_MOD)) + powerExpression;
 additiveExpression = *(additiveExpression + (_T_ADD | _T_SUB)) + multiplicativeExpression;
 coalesceExpression = *(coalesceExpression + (_T_COALESCE)) + additiveExpression;
@@ -295,17 +459,17 @@ assignmentOperatorExpression = *(assignmentOperatorExpression +
                                   _T_ASSIGN_AND | _T_ASSIGN_OR | _T_ASSIGN_XOR | _T_ASSIGN_POWER)) +
                                ternaryExpression;
 assignmentExpression = *(assignmentExpression + _T_ASSIGN) + assignmentOperatorExpression;
-singleExpression = *(singleExpression + ~_T_COMMA) + assignmentExpression;
+singleExpression = assignmentExpression;
 literal = _K_NULL | _K_TRUE | _K_FALSE | _STRING | _REGEX | _NUMBER;
-arrayLiteral = ~_T_LSQUARE + *elementList + ~_T_RSQUARE;
+arrayLiteral = _T_LSQUARE + *elementList + _T_RSQUARE;
 elementList = *(elementList + ~_T_COMMA) + arrayElement;
 arrayElement = *_T_ELLIPSIS + singleExpression;
-objectLiteral = ~_T_LBRACE + *propertyAssignments + *~_T_COMMA + ~_T_RBRACE;
+objectLiteral = _T_LBRACE + *propertyAssignments + *~_T_COMMA + _T_RBRACE;
 identifierName = _ID | reservedWord;
 reservedWord = keyword | _K_TRUE | _K_FALSE;
 numericLiteral = _NUMBER;
 assignable = _ID | arrayLiteral | objectLiteral;
-arguments = ~_T_LPARAN + *argument + ~_T_RPARAN;
+arguments = ~_T_LPARAN + *argument + _T_RPARAN;
 argument = *(argument + ~_T_COMMA) + *~_T_ELLIPSIS + (singleExpression | _ID);
 propertyAssignments = *(propertyAssignments + ~_T_COMMA) + propertyAssignment;
 propertyAssignment = propertyExpressionAssignment
