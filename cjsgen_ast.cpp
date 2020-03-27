@@ -198,18 +198,20 @@ namespace clib {
     }
 
     int sym_unop_t::gen_lvalue(ijsgen &gen) {
-        exp->gen_lvalue(gen);
+        exp->gen_rvalue(gen);
         switch (op->data._op) {
             case T_INC:
                 gen.emit(this, BINARY_INC);
                 gen.emit(this, DUP_TOP);
-                exp->gen_lvalue(gen);
-                break;
+                if (exp->gen_lvalue(gen) == no_lvalue)
+                    gen.error(this, "unsupported unop");
+                return can_be_lvalue;
             case T_DEC:
                 gen.emit(this, BINARY_DEC);
                 gen.emit(this, DUP_TOP);
-                exp->gen_lvalue(gen);
-                break;
+                if (exp->gen_lvalue(gen) == no_lvalue)
+                    gen.error(this, "unsupported unop");
+                return can_be_lvalue;
             default:
                 gen.error(this, "unsupported unop");
                 break;
@@ -223,28 +225,30 @@ namespace clib {
             case T_INC:
                 gen.emit(this, BINARY_INC);
                 gen.emit(this, DUP_TOP);
-                exp->gen_lvalue(gen);
-                break;
+                if (exp->gen_lvalue(gen) == no_lvalue)
+                    gen.error(this, "unsupported unop");
+                return can_be_lvalue;
             case T_DEC:
                 gen.emit(this, BINARY_DEC);
                 gen.emit(this, DUP_TOP);
-                exp->gen_lvalue(gen);
-                break;
+                if (exp->gen_lvalue(gen) == no_lvalue)
+                    gen.error(this, "unsupported unop");
+                return can_be_lvalue;
             case T_LOG_NOT:
                 gen.emit(this, UNARY_NOT);
-                exp->gen_lvalue(gen);
+                exp->gen_rvalue(gen);
                 break;
             case T_BIT_NOT:
                 gen.emit(this, UNARY_INVERT);
-                exp->gen_lvalue(gen);
+                exp->gen_rvalue(gen);
                 break;
             case T_ADD:
                 gen.emit(this, UNARY_POSITIVE);
-                exp->gen_lvalue(gen);
+                exp->gen_rvalue(gen);
                 break;
             case T_SUB:
                 gen.emit(this, UNARY_NEGATIVE);
-                exp->gen_lvalue(gen);
+                exp->gen_rvalue(gen);
                 break;
             default:
                 gen.error(this, "unsupported unop");
@@ -273,8 +277,7 @@ namespace clib {
     }
 
     int sym_sinop_t::gen_lvalue(ijsgen &gen) {
-        exp->gen_lvalue(gen);
-        return sym_t::gen_lvalue(gen);
+        return exp->gen_lvalue(gen);
     }
 
     int sym_sinop_t::gen_rvalue(ijsgen &gen) {
@@ -283,13 +286,15 @@ namespace clib {
             case T_INC:
                 gen.emit(this, DUP_TOP);
                 gen.emit(this, BINARY_INC);
-                exp->gen_lvalue(gen);
-                break;
+                if (exp->gen_lvalue(gen) == no_lvalue)
+                    gen.error(this, "unsupported sinop");
+                return can_be_lvalue;
             case T_DEC:
                 gen.emit(this, DUP_TOP);
                 gen.emit(this, BINARY_DEC);
-                exp->gen_lvalue(gen);
-                break;
+                if (exp->gen_lvalue(gen) == no_lvalue)
+                    gen.error(this, "unsupported sinop");
+                return can_be_lvalue;
             default:
                 gen.error(this, "unsupported sinop");
                 break;
@@ -507,16 +512,18 @@ namespace clib {
     }
 
     int sym_triop_t::gen_rvalue(ijsgen &gen) {
-        exp1->gen_rvalue(gen);
-        auto idx = gen.code_length();
-        gen.emit(op1, POP_JUMP_IF_FALSE, 0);
-        exp2->gen_rvalue(gen);
-        auto idx2 = gen.code_length();
-        auto cur = gen.current();
-        gen.emit(op2, JUMP_FORWARD, 0);
-        gen.edit(idx, 1, gen.current());
-        exp3->gen_rvalue(gen);
-        gen.edit(idx2, 1, gen.current() - cur);
+        if (op1->data._op == T_QUERY && op2->data._op == T_COLON) {
+            exp1->gen_rvalue(gen);
+            auto idx = gen.code_length();
+            gen.emit(op1, POP_JUMP_IF_FALSE, 0);
+            exp2->gen_rvalue(gen);
+            auto idx2 = gen.code_length();
+            auto cur = gen.current();
+            gen.emit(op2, JUMP_FORWARD, 0);
+            gen.edit(idx, 1, gen.current());
+            exp3->gen_rvalue(gen);
+            gen.edit(idx2, 1, gen.current() - cur);
+        }
         return sym_t::gen_rvalue(gen);
     }
 

@@ -1435,7 +1435,7 @@ namespace clib {
     }
 
     int cjsgen::code_length() const {
-        return (int) codes.size();
+        return (int) codes.back()->codes.size();
     }
 
     void cjsgen::edit(int code, int idx, int value) {
