@@ -359,54 +359,42 @@ C [0012:033]  >>    317 LOAD_NAME                   2          (c)
 C [0012:037]        319 LOAD_CONST                  0          (1)
 C [0012:033]        321 BINARY_ADD                             (c + 1)
 C [0012:002]        322 POP_TOP                                ((a > b ? a : b).c(), !++a ? b : c + 1)
-C [0014:010]        323 LOAD_CONST                 10          (fun_a)
-C [0014:010]        325 LOAD_CONST                 11          (fun_a)
-C [0014:001]        327 MAKE_FUNCTION                          (function fun_a(b) {
-    var a = 1;
-})
-C [0014:010]        328 STORE_NAME                  5          (fun_a)
-C [0014:001]        330 POP_TOP                                (function fun_a(b) {
-    var a = 1;
-})
+C [0013:010]        323 LOAD_CONST                 10          (fun_a)
+C [0013:010]        325 LOAD_CONST                 11          (fun_a)
+C [0013:001]        327 MAKE_FUNCTION                          (function fun_a(b) {var a = 1;})
+C [0013:010]        328 STORE_NAME                  5          (fun_a)
+C [0013:001]        330 POP_TOP                                (function fun_a(b) {var a = 1;})
 C [0000:000]        331 LOAD_CONST                 12          (...)
 C [0000:000]        333 LOAD_CONST                 13          (...)
-C [0018:009]        335 MAKE_FUNCTION                          (function (b) {
-    var b = 1;
-})
-C [0018:005]        336 DUP_TOP                                (b)
-C [0018:005]        337 STORE_NAME                  1          (b)
-C [0018:005]        339 POP_TOP                                (b = function (b) {
-    var b = 1;
-})
+C [0014:009]        335 MAKE_FUNCTION                          (function (b) {var b = 1;})
+C [0014:005]        336 DUP_TOP                                (b)
+C [0014:005]        337 STORE_NAME                  1          (b)
+C [0014:005]        339 POP_TOP                                (b = function (b) {var b = 1;})
 C [0000:000]        340 LOAD_CONST                 14          (...)
 C [0000:000]        342 LOAD_CONST                 13          (...)
-C [0022:001]        344 MAKE_FUNCTION                          (function (c) {
-    var c = 1;
-})
-C [0022:001]        345 POP_TOP                                (function (c) {
-    var c = 1;
-})
+C [0015:001]        344 MAKE_FUNCTION                          (function (c) {var c = 1;})
+C [0015:001]        345 POP_TOP                                (function (c) {var c = 1;})
 --== Function: "fun_a" ==--
 C [#000] [NAME  ] a
 C [#000] [NUMBER] 1.000000
-C [0015:013]          0 LOAD_CONST                  0          (1)
-C [0015:009]          2 DUP_TOP                                (a)
-C [0015:009]          3 STORE_NAME                  0          (a)
-C [0015:009]          5 POP_TOP                                (a = 1)
+C [0013:028]          0 LOAD_CONST                  0          (1)
+C [0013:024]          2 DUP_TOP                                (a)
+C [0013:024]          3 STORE_NAME                  0          (a)
+C [0013:024]          5 POP_TOP                                (a = 1)
 --== Function: "[lambda]" ==--
 C [#000] [NAME  ] b
 C [#000] [NUMBER] 1.000000
-C [0019:013]          0 LOAD_CONST                  0          (1)
-C [0019:009]          2 DUP_TOP                                (b)
-C [0019:009]          3 STORE_NAME                  0          (b)
-C [0019:009]          5 POP_TOP                                (b = 1)
+C [0014:031]          0 LOAD_CONST                  0          (1)
+C [0014:027]          2 DUP_TOP                                (b)
+C [0014:027]          3 STORE_NAME                  0          (b)
+C [0014:027]          5 POP_TOP                                (b = 1)
 --== Function: "[lambda]" ==--
 C [#000] [NAME  ] c
 C [#000] [NUMBER] 1.000000
-C [0023:013]          0 LOAD_CONST                  0          (1)
-C [0023:009]          2 DUP_TOP                                (c)
-C [0023:009]          3 STORE_NAME                  0          (c)
-C [0023:009]          5 POP_TOP                                (c = 1)
+C [0015:023]          0 LOAD_CONST                  0          (1)
+C [0015:019]          2 DUP_TOP                                (c)
+C [0015:019]          3 STORE_NAME                  0          (c)
+C [0015:019]          5 POP_TOP                                (c = 1)
 ```
 
 ## Grammar
