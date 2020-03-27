@@ -168,6 +168,7 @@ namespace clib {
             c_returnStatement,
             c_withStatement,
             c_switchStatement,
+            c_functionStatement,
             c_caseBlock,
             c_caseClauses,
             c_caseClause,

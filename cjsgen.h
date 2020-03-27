@@ -38,23 +38,28 @@ namespace clib {
         s_statement_var,
         s_statement_exp,
         s_block,
+        s_code,
     };
+
+    class sym_code_t;
 
     class ijsgen {
     public:
-        virtual void emit(int, int, int, int, ins_t) = 0;
-        virtual void emit(int, int, int, int, ins_t, int) = 0;
-        virtual void emit(int, int, int, int, ins_t, int, int) = 0;
+        virtual void emit(ast_node_index *, ins_t) = 0;
+        virtual void emit(ast_node_index *, ins_t, int) = 0;
+        virtual void emit(ast_node_index *, ins_t, int, int) = 0;
         virtual int current() const = 0;
         virtual int code_length() const = 0;
         virtual void edit(int, int, int) = 0;
         virtual int load_number(double d) = 0;
         virtual int load_string(const std::string &, bool) = 0;
+        virtual int push_function(std::shared_ptr<sym_code_t>) = 0;
+        virtual void pop_function() = 0;
         virtual void add_label(int, int, int, const std::string &) = 0;
-        virtual void error(int, int, int, int, const std::string &) const = 0;
+        virtual void error(ast_node_index *, const std::string &) const = 0;
     };
 
-    class sym_t : public std::enable_shared_from_this<sym_t> {
+    class sym_t : public ast_node_index, public std::enable_shared_from_this<sym_t> {
     public:
         using ref = std::shared_ptr<sym_t>;
         using weak_ref = std::weak_ptr<sym_t>;
@@ -65,7 +70,6 @@ namespace clib {
         virtual int gen_rvalue(ijsgen &gen);
         virtual int gen_invoke(ijsgen &gen, ref &list);
         virtual int set_parent(ref node);
-        int line{0}, column{0}, start{0}, end{0};
         weak_ref parent;
     };
 
@@ -310,14 +314,19 @@ namespace clib {
         std::vector<sym_stmt_t::ref> stmts;
     };
 
+    class sym_code_t;
+
     class cjs_consts {
     public:
         int get_number(double n);
         int get_string(const std::string &str, bool name);
+        int get_function(std::shared_ptr<sym_code_t> code);
         void dump() const;
         std::unordered_map<double, int> numbers;
         std::unordered_map<std::string, int> strings;
         std::unordered_map<std::string, int> names;
+        std::unordered_map<int, std::weak_ptr<sym_code_t>> functions;
+        int index{0};
     };
 
     void copy_info(sym_t::ref dst, sym_t::ref src);
@@ -343,6 +352,22 @@ namespace clib {
         int code, opnum, op1, op2;
     };
 
+    class sym_code_t : public sym_exp_t {
+    public:
+        using ref = std::shared_ptr<sym_code_t>;
+        symbol_t get_type() const override;
+        std::string to_string() const override;
+        int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
+        ast_node *name{nullptr};
+        std::vector<ast_node *> args;
+        sym_t::ref body;
+        cjs_consts consts;
+        std::vector<cjs_scope> scopes;
+        std::vector<cjs_code> codes;
+        int codes_idx{0};
+    };
+
     class cjsgen : public ijsgen {
     public:
         cjsgen();
@@ -355,16 +380,18 @@ namespace clib {
 
         static void print(const sym_t::ref &node, int level, std::ostream &os);
 
-        void emit(int, int, int, int, ins_t) override;
-        void emit(int, int, int, int, ins_t, int) override;
-        void emit(int, int, int, int, ins_t, int, int) override;
+        void emit(ast_node_index *, ins_t) override;
+        void emit(ast_node_index *, ins_t, int) override;
+        void emit(ast_node_index *, ins_t, int, int) override;
         int current() const override;
         int code_length() const override;
         void edit(int, int, int) override;
         int load_number(double d) override;
         int load_string(const std::string &, bool) override;
+        int push_function(std::shared_ptr<sym_code_t>) override;
+        void pop_function() override;
         void add_label(int, int, int, const std::string &) override;
-        void error(int, int, int, int, const std::string &) const override;
+        void error(ast_node_index *, const std::string &) const override;
 
     private:
         void gen_rec(ast_node *node, int level);
@@ -381,16 +408,15 @@ namespace clib {
         sym_var_t::ref primary_node(ast_node *node);
 
         void dump() const;
+        void dump(sym_code_t::ref) const;
 
     private:
         const std::string *text{nullptr};
         std::vector<std::string> err;
-        cjs_consts consts;
         std::vector<std::vector<ast_node *>> ast;
         std::vector<std::vector<sym_t::ref>> tmp;
-        std::vector<cjs_scope> scopes;
-        std::vector<cjs_code> codes;
-        int codes_idx{0};
+        std::vector<sym_code_t::ref> codes;
+        std::vector<sym_code_t::ref> funcs;
     };
 }
 

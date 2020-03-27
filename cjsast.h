@@ -14,12 +14,15 @@ namespace clib {
 
     using namespace types;
 
+    struct ast_node_index {
+        int line{0}, column{0}, start{0}, end{0};
+    };
+
     // 结点
-    struct ast_node {
+    struct ast_node : public ast_node_index {
         // 类型
-        uint16_t flag;
-        uint16_t attr;
-        int line, column, start, end;
+        uint16_t flag{0};
+        uint16_t attr{0};
 
         union {
             double _number;
@@ -35,10 +38,10 @@ namespace clib {
         } data; // 数据
 
         // 树型数据结构，广义表
-        ast_node *parent; // 父亲
-        ast_node *prev; // 左兄弟
-        ast_node *next; // 右兄弟
-        ast_node *child; // 最左儿子
+        ast_node *parent{nullptr}; // 父亲
+        ast_node *prev{nullptr}; // 左兄弟
+        ast_node *next{nullptr}; // 右兄弟
+        ast_node *child{nullptr}; // 最左儿子
     };
 
     class cjsast {

@@ -30,6 +30,7 @@ namespace clib {
     cjsgen::cjsgen() {
         tmp.emplace_back();
         ast.emplace_back();
+        codes.push_back(std::make_shared<sym_code_t>());
     }
 
     void copy_info(sym_t::ref dst, ast_node *src) {
@@ -49,7 +50,7 @@ namespace clib {
     int cjs_consts::get_number(double n) {
         auto f = numbers.find(n);
         if (f == numbers.end()) {
-            auto idx = (int) (numbers.size() + strings.size());
+            auto idx = index++;
             numbers.insert({n, idx});
             return idx;
         }
@@ -68,11 +69,17 @@ namespace clib {
         }
         auto f = strings.find(str);
         if (f == strings.end()) {
-            auto idx = (int) (numbers.size() + strings.size());
+            auto idx = index++;
             strings.insert({str, idx});
             return idx;
         }
         return f->second;
+    }
+
+    int cjs_consts::get_function(std::shared_ptr<sym_code_t> code) {
+        auto idx = index++;
+        functions.insert({idx, code});
+        return idx;
     }
 
     void cjs_consts::dump() const {
@@ -85,12 +92,17 @@ namespace clib {
             fprintf(stdout, "C [#%03d] [NAME  ] %s\n", i++, x);
         }
         i = 0;
-        std::vector<std::tuple<int, void *>> links(numbers.size() + strings.size());
+        std::vector<std::tuple<int, void *>> links(index);
         for (const auto &x : strings) {
             links[x.second] = {0, (void *) &x.first};
         }
         for (const auto &x : numbers) {
             links[x.second] = {1, (void *) &x.first};
+        }
+        for (const auto &x : functions) {
+            auto f = x.second.lock();
+            auto desc = f->name ? f->name->data._identifier : "[lambda]";
+            links[x.first] = {2, (void *) desc};
         }
         for (const auto &x : links) {
             switch (std::get<0>(x)) {
@@ -99,6 +111,9 @@ namespace clib {
                     break;
                 case 1:
                     fprintf(stdout, "C [#%03d] [NUMBER] %lf\n", i, *(double *) std::get<1>(x));
+                    break;
+                case 2:
+                    fprintf(stdout, "C [#%03d] [FUNC  ] %s\n", i, (const char *) std::get<1>(x));
                     break;
                 default:
                     break;
@@ -304,6 +319,8 @@ namespace clib {
             case c_finallyProduction:
                 break;
             case c_debuggerStatement:
+                break;
+            case c_functionStatement:
                 break;
             case c_functionDeclaration:
                 break;
@@ -597,7 +614,30 @@ namespace clib {
                 break;
             case c_debuggerStatement:
                 break;
-            case c_functionDeclaration:
+            case c_functionStatement: {
+                auto stmt = std::make_shared<sym_stmt_exp_t>();
+                auto seq = std::make_shared<sym_exp_seq_t>();
+                stmt->seq = seq;
+                seq->exps.push_back(to_exp(tmps.front()));
+                copy_info(seq, tmps.front());
+                copy_info(stmt, tmps.front());
+                tmps.clear();
+                tmps.push_back(stmt);
+            }
+                break;
+            case c_functionDeclaration: {
+                auto code = std::make_shared<sym_code_t>();
+                copy_info(code, asts[0]);
+                code->name = asts[1];
+                code->end = asts.back()->end;
+                asts.pop_back();
+                std::vector<ast_node *> _asts(asts.begin() + 2, asts.end());
+                code->args = _asts;
+                code->body = tmps.front();
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(code);
+            }
                 break;
             case c_classDeclaration:
                 break;
@@ -738,7 +778,18 @@ namespace clib {
                 break;
             case c_functionDecl:
                 break;
-            case c_anoymousFunctionDecl:
+            case c_anoymousFunctionDecl: {
+                auto code = std::make_shared<sym_code_t>();
+                copy_info(code, asts[0]);
+                code->end = asts.back()->end;
+                asts.pop_back();
+                std::vector<ast_node *> _asts(asts.begin() + 1, asts.end());
+                code->args = _asts;
+                code->body = tmps.front();
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(code);
+            }
                 break;
             case c_arrowFunction:
                 break;
@@ -1319,28 +1370,68 @@ namespace clib {
                     print(s, level + 1, os);
                 }
                 break;
+            case s_code:
+                os << "code"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_code_t>(node);
+                    if (n->name) {
+                        os << std::setfill(' ') << std::setw(level + 1) << "";
+                        os << "name: " << n->name->data._identifier
+                           << " " << "[" << n->name->line << ":"
+                           << n->name->column << ":"
+                           << n->name->start << ":"
+                           << n->name->end << "]" << std::endl;
+                    }
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    if (!n->args.empty()) {
+                        os << "args" << std::endl;
+                        for (const auto &s : n->args) {
+                            os << std::setfill(' ') << std::setw(level + 2) << "";
+                            os << s->data._identifier
+                               << " " << "[" << s->line << ":"
+                               << s->column << ":"
+                               << s->start << ":"
+                               << s->end << "]" << std::endl;
+                        }
+                    }
+                    print(n->body, level + 1, os);
+                }
+                break;
             default:
                 break;
         }
     }
 
-    void cjsgen::emit(int line, int column, int start, int end, ins_t i) {
-        codes.push_back({line, column, start, end, i, 0, 0, 0});
-        codes_idx++;
+    void cjsgen::emit(ast_node_index *idx, ins_t i) {
+        if (idx)
+            codes.back()->codes.push_back({idx->line, idx->column, idx->start, idx->end, i, 0, 0, 0});
+        else
+            codes.back()->codes.push_back({0, 0, 0, 0, i, 0, 0, 0});
+        codes.back()->codes_idx++;
     }
 
-    void cjsgen::emit(int line, int column, int start, int end, ins_t i, int a) {
-        codes.push_back({line, column, start, end, i, 1, a, 0});
-        codes_idx += 2;
+    void cjsgen::emit(ast_node_index *idx, ins_t i, int a) {
+        if (idx)
+            codes.back()->codes.push_back({idx->line, idx->column, idx->start, idx->end, i, 1, a, 0});
+        else
+            codes.back()->codes.push_back({0, 0, 0, 0, i, 1, a, 0});
+        codes.back()->codes_idx += 2;
     }
 
-    void cjsgen::emit(int line, int column, int start, int end, ins_t i, int a, int b) {
-        codes.push_back({line, column, start, end, i, 2, a, b});
-        codes_idx += 3;
+    void cjsgen::emit(ast_node_index *idx, ins_t i, int a, int b) {
+        if (idx)
+            codes.back()->codes.push_back({idx->line, idx->column, idx->start, idx->end, i, 2, a, b});
+        else
+            codes.back()->codes.push_back({0, 0, 0, 0, i, 2, a, b});
+        codes.back()->codes_idx += 3;
     }
 
     int cjsgen::current() const {
-        return codes_idx;
+        return codes.back()->codes_idx;
     }
 
     int cjsgen::code_length() const {
@@ -1350,13 +1441,13 @@ namespace clib {
     void cjsgen::edit(int code, int idx, int value) {
         switch (idx) {
             case 0:
-                codes.at(code).code = value;
+                codes.back()->codes.at(code).code = value;
                 break;
             case 1:
-                codes.at(code).op1 = value;
+                codes.back()->codes.at(code).op1 = value;
                 break;
             case 2:
-                codes.at(code).op2 = value;
+                codes.back()->codes.at(code).op2 = value;
                 break;
             default:
                 break;
@@ -1364,32 +1455,52 @@ namespace clib {
     }
 
     int cjsgen::load_number(double d) {
-        return consts.get_number(d);
+        return codes.back()->consts.get_number(d);
     }
 
     int cjsgen::load_string(const std::string &s, bool name) {
-        return consts.get_string(s, name);
+        return codes.back()->consts.get_string(s, name);
+    }
+
+    int cjsgen::push_function(std::shared_ptr<sym_code_t> code) {
+        funcs.push_back(code);
+        auto id = codes.back()->consts.get_function(code);
+        codes.push_back(std::move(code));
+        return id;
+    }
+
+    void cjsgen::pop_function() {
+        codes.pop_back();
     }
 
     void cjsgen::add_label(int line, int column, int, const std::string &) {
 
     }
 
-    void cjsgen::error(int line, int column, int start, int end, const std::string &str) const {
+    void cjsgen::error(ast_node_index *idx, const std::string &str) const {
         std::stringstream ss;
-        ss << "[" << line << ":" << column << "] ";
+        ss << "[" << idx->line << ":" << idx->column << "] ";
         ss << str;
-        ss << " (" << text->substr(start, end - start) << ")";
+        ss << " (" << text->substr(idx->start, idx->end - idx->start) << ")";
         throw cexception(ss.str());
     }
 
     void cjsgen::dump() const {
-        consts.dump();
+        fprintf(stdout, "--== Main Function ==--\n");
+        dump(codes.front());
+        for (const auto &c : funcs) {
+            fprintf(stdout, "--== Function: \"%s\" ==--\n", c->name ? c->name->data._identifier : "[lambda]");
+            dump(c);
+        }
+    }
+
+    void cjsgen::dump(sym_code_t::ref code) const {
+        code->consts.dump();
         auto idx = 0;
         std::vector<int> jumps;
         {
             std::set<int, std::greater<>> jumps_set;
-            for (const auto &c : codes) {
+            for (const auto &c : code->codes) {
                 switch (c.code) {
                     case JUMP_IF_TRUE_OR_POP:
                     case JUMP_IF_FALSE_OR_POP:
@@ -1409,7 +1520,7 @@ namespace clib {
             std::copy(jumps_set.begin(), jumps_set.end(), std::back_inserter(jumps));
         }
         idx = 0;
-        for (const auto &c : codes) {
+        for (const auto &c : code->codes) {
             auto alt = text->substr(c.start, c.end - c.start);
             auto jmp = "  ";
             if (!jumps.empty() && jumps.back() == idx) {
@@ -1419,15 +1530,15 @@ namespace clib {
             if (c.opnum == 0)
                 fprintf(stdout, "C [%04d:%03d]  %s   %4d %-20s                   (%s)\n",
                         c.line, c.column, jmp, idx, ins_string(ins_t(c.code)),
-                        text->substr(c.start, c.end - c.start).c_str());
+                        c.line == 0 ? "..." : text->substr(c.start, c.end - c.start).c_str());
             else if (c.opnum == 1)
                 fprintf(stdout, "C [%04d:%03d]  %s   %4d %-20s %8d          (%s)\n",
                         c.line, c.column, jmp, idx, ins_string(ins_t(c.code)), c.op1,
-                        text->substr(c.start, c.end - c.start).c_str());
+                        c.line == 0 ? "..." : text->substr(c.start, c.end - c.start).c_str());
             else if (c.opnum == 2)
                 fprintf(stdout, "C [%04d:%03d]  %s   %4d %-20s %8d %8d (%s)\n",
                         c.line, c.column, jmp, idx, ins_string(ins_t(c.code)), c.op1, c.op2,
-                        text->substr(c.start, c.end - c.start).c_str());
+                        c.line == 0 ? "..." : text->substr(c.start, c.end - c.start).c_str());
             idx += c.opnum + 1;
         }
     }

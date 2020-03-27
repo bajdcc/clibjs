@@ -8,6 +8,8 @@
 #include "cjsgen.h"
 #include "cjsast.h"
 
+#define LAMBDA_ID "<lambda>"
+
 namespace clib {
 
     symbol_t sym_t::get_type() const {
@@ -71,7 +73,7 @@ namespace clib {
         if (init)
             init->gen_rvalue(gen);
         else
-            gen.emit(line, column, start, end, LOAD_UNDEFINED);
+            gen.emit(this, LOAD_UNDEFINED);
         for (const auto &s : ids) {
             s->gen_lvalue(gen);
         }
@@ -127,11 +129,11 @@ namespace clib {
     int sym_var_t::gen_lvalue(ijsgen &gen) {
         switch (node->flag) {
             case a_literal:
-                gen.emit(line, column, start, end, DUP_TOP);
-                gen.emit(line, column, start, end, STORE_NAME, gen.load_string(node->data._string, true));
+                gen.emit(this, DUP_TOP);
+                gen.emit(this, STORE_NAME, gen.load_string(node->data._string, true));
                 break;
             default:
-                gen.error(line, column, start, end, "unsupported var type");
+                gen.error(this, "unsupported var type");
                 break;
         }
         return can_be_lvalue;
@@ -140,16 +142,16 @@ namespace clib {
     int sym_var_t::gen_rvalue(ijsgen &gen) {
         switch (node->flag) {
             case a_literal:
-                gen.emit(line, column, start, end, LOAD_NAME, gen.load_string(node->data._string, true));
+                gen.emit(this, LOAD_NAME, gen.load_string(node->data._string, true));
                 break;
             case a_string:
-                gen.emit(line, column, start, end, LOAD_CONST, gen.load_string(node->data._string, false));
+                gen.emit(this, LOAD_CONST, gen.load_string(node->data._string, false));
                 break;
             case a_number:
-                gen.emit(line, column, start, end, LOAD_CONST, gen.load_number(node->data._number));
+                gen.emit(this, LOAD_CONST, gen.load_number(node->data._number));
                 break;
             default:
-                gen.error(line, column, start, end, "unsupported var type");
+                gen.error(this, "unsupported var type");
                 break;
         }
         return sym_t::gen_rvalue(gen);
@@ -199,17 +201,17 @@ namespace clib {
         exp->gen_lvalue(gen);
         switch (op->data._op) {
             case T_INC:
-                gen.emit(line, column, start, end, BINARY_INC);
-                gen.emit(line, column, start, end, DUP_TOP);
+                gen.emit(this, BINARY_INC);
+                gen.emit(this, DUP_TOP);
                 exp->gen_lvalue(gen);
                 break;
             case T_DEC:
-                gen.emit(line, column, start, end, BINARY_DEC);
-                gen.emit(line, column, start, end, DUP_TOP);
+                gen.emit(this, BINARY_DEC);
+                gen.emit(this, DUP_TOP);
                 exp->gen_lvalue(gen);
                 break;
             default:
-                gen.error(line, column, start, end, "unsupported unop");
+                gen.error(this, "unsupported unop");
                 break;
         }
         return sym_t::gen_lvalue(gen);
@@ -219,33 +221,33 @@ namespace clib {
         exp->gen_rvalue(gen);
         switch (op->data._op) {
             case T_INC:
-                gen.emit(line, column, start, end, BINARY_INC);
-                gen.emit(line, column, start, end, DUP_TOP);
+                gen.emit(this, BINARY_INC);
+                gen.emit(this, DUP_TOP);
                 exp->gen_lvalue(gen);
                 break;
             case T_DEC:
-                gen.emit(line, column, start, end, BINARY_DEC);
-                gen.emit(line, column, start, end, DUP_TOP);
+                gen.emit(this, BINARY_DEC);
+                gen.emit(this, DUP_TOP);
                 exp->gen_lvalue(gen);
                 break;
             case T_LOG_NOT:
-                gen.emit(line, column, start, end, UNARY_NOT);
+                gen.emit(this, UNARY_NOT);
                 exp->gen_lvalue(gen);
                 break;
             case T_BIT_NOT:
-                gen.emit(line, column, start, end, UNARY_INVERT);
+                gen.emit(this, UNARY_INVERT);
                 exp->gen_lvalue(gen);
                 break;
             case T_ADD:
-                gen.emit(line, column, start, end, UNARY_POSITIVE);
+                gen.emit(this, UNARY_POSITIVE);
                 exp->gen_lvalue(gen);
                 break;
             case T_SUB:
-                gen.emit(line, column, start, end, UNARY_NEGATIVE);
+                gen.emit(this, UNARY_NEGATIVE);
                 exp->gen_lvalue(gen);
                 break;
             default:
-                gen.error(line, column, start, end, "unsupported unop");
+                gen.error(this, "unsupported unop");
                 break;
         }
         return sym_t::gen_rvalue(gen);
@@ -279,17 +281,17 @@ namespace clib {
         exp->gen_rvalue(gen);
         switch (op->data._op) {
             case T_INC:
-                gen.emit(line, column, start, end, DUP_TOP);
-                gen.emit(line, column, start, end, BINARY_INC);
+                gen.emit(this, DUP_TOP);
+                gen.emit(this, BINARY_INC);
                 exp->gen_lvalue(gen);
                 break;
             case T_DEC:
-                gen.emit(line, column, start, end, DUP_TOP);
-                gen.emit(line, column, start, end, BINARY_DEC);
+                gen.emit(this, DUP_TOP);
+                gen.emit(this, BINARY_DEC);
                 exp->gen_lvalue(gen);
                 break;
             default:
-                gen.error(line, column, start, end, "unsupported sinop");
+                gen.error(this, "unsupported sinop");
                 break;
         }
         return sym_t::gen_rvalue(gen);
@@ -324,7 +326,7 @@ namespace clib {
             case T_ASSIGN: {
                 exp2->gen_rvalue(gen);
                 if (exp1->gen_lvalue(gen) == 0) {
-                    gen.error(line, column, start, end, "invalid assignment");
+                    gen.error(this, "invalid assignment");
                 }
             }
                 return 0;
@@ -344,46 +346,46 @@ namespace clib {
                 exp2->gen_rvalue(gen);
                 switch (op->data._op) {
                     case T_ASSIGN_ADD:
-                        gen.emit(line, column, start, end, BINARY_ADD);
+                        gen.emit(this, BINARY_ADD);
                         break;
                     case T_ASSIGN_SUB:
-                        gen.emit(line, column, start, end, BINARY_SUBTRACT);
+                        gen.emit(this, BINARY_SUBTRACT);
                         break;
                     case T_ASSIGN_MUL:
-                        gen.emit(line, column, start, end, BINARY_MULTIPLY);
+                        gen.emit(this, BINARY_MULTIPLY);
                         break;
                     case T_ASSIGN_DIV:
-                        gen.emit(line, column, start, end, BINARY_TRUE_DIVIDE);
+                        gen.emit(this, BINARY_TRUE_DIVIDE);
                         break;
                     case T_ASSIGN_MOD:
-                        gen.emit(line, column, start, end, BINARY_MODULO);
+                        gen.emit(this, BINARY_MODULO);
                         break;
                     case T_ASSIGN_LSHIFT:
-                        gen.emit(line, column, start, end, BINARY_LSHIFT);
+                        gen.emit(this, BINARY_LSHIFT);
                         break;
                     case T_ASSIGN_RSHIFT:
-                        gen.emit(line, column, start, end, BINARY_RSHIFT);
+                        gen.emit(this, BINARY_RSHIFT);
                         break;
                     case T_ASSIGN_URSHIFT:
-                        gen.emit(line, column, start, end, BINARY_URSHIFT);
+                        gen.emit(this, BINARY_URSHIFT);
                         break;
                     case T_ASSIGN_AND:
-                        gen.emit(line, column, start, end, BINARY_AND);
+                        gen.emit(this, BINARY_AND);
                         break;
                     case T_ASSIGN_OR:
-                        gen.emit(line, column, start, end, BINARY_OR);
+                        gen.emit(this, BINARY_OR);
                         break;
                     case T_ASSIGN_XOR:
-                        gen.emit(line, column, start, end, BINARY_XOR);
+                        gen.emit(this, BINARY_XOR);
                         break;
                     case T_ASSIGN_POWER:
-                        gen.emit(line, column, start, end, BINARY_POWER);
+                        gen.emit(this, BINARY_POWER);
                         break;
                     default:
                         break;
                 }
                 if (exp1->gen_lvalue(gen) == 0) {
-                    gen.error(line, column, start, end, "invalid assignment");
+                    gen.error(this, "invalid assignment");
                 }
             }
                 return 0;
@@ -394,14 +396,14 @@ namespace clib {
         switch (op->data._op) {
             case T_LOG_AND: {
                 auto idx = gen.code_length();
-                gen.emit(line, column, start, end, JUMP_IF_TRUE_OR_POP, 0);
+                gen.emit(this, JUMP_IF_TRUE_OR_POP, 0);
                 exp2->gen_rvalue(gen);
                 gen.edit(idx, 1, gen.current());
             }
                 return 0;
             case T_LOG_OR: {
                 auto idx = gen.code_length();
-                gen.emit(line, column, start, end, JUMP_IF_FALSE_OR_POP, 0);
+                gen.emit(this, JUMP_IF_FALSE_OR_POP, 0);
                 exp2->gen_rvalue(gen);
                 gen.edit(idx, 1, gen.current());
             }
@@ -412,67 +414,67 @@ namespace clib {
         exp2->gen_rvalue(gen);
         switch (op->data._op) {
             case T_ADD:
-                gen.emit(line, column, start, end, BINARY_ADD);
+                gen.emit(this, BINARY_ADD);
                 break;
             case T_SUB:
-                gen.emit(line, column, start, end, BINARY_SUBTRACT);
+                gen.emit(this, BINARY_SUBTRACT);
                 break;
             case T_MUL:
-                gen.emit(line, column, start, end, BINARY_MULTIPLY);
+                gen.emit(this, BINARY_MULTIPLY);
                 break;
             case T_DIV:
-                gen.emit(line, column, start, end, BINARY_TRUE_DIVIDE);
+                gen.emit(this, BINARY_TRUE_DIVIDE);
                 break;
             case T_MOD:
-                gen.emit(line, column, start, end, BINARY_MODULO);
+                gen.emit(this, BINARY_MODULO);
                 break;
             case T_POWER:
-                gen.emit(line, column, start, end, BINARY_POWER);
+                gen.emit(this, BINARY_POWER);
                 break;
             case T_LESS:
-                gen.emit(line, column, start, end, COMPARE_OP, 0);
+                gen.emit(this, COMPARE_OP, 0);
                 break;
             case T_LESS_EQUAL:
-                gen.emit(line, column, start, end, COMPARE_OP, 1);
+                gen.emit(this, COMPARE_OP, 1);
                 break;
             case T_EQUAL:
-                gen.emit(line, column, start, end, COMPARE_OP, 2);
+                gen.emit(this, COMPARE_OP, 2);
                 break;
             case T_NOT_EQUAL:
-                gen.emit(line, column, start, end, COMPARE_OP, 3);
+                gen.emit(this, COMPARE_OP, 3);
                 break;
             case T_GREATER:
-                gen.emit(line, column, start, end, COMPARE_OP, 4);
+                gen.emit(this, COMPARE_OP, 4);
                 break;
             case T_GREATER_EQUAL:
-                gen.emit(line, column, start, end, COMPARE_OP, 5);
+                gen.emit(this, COMPARE_OP, 5);
                 break;
             case T_FEQUAL:
-                gen.emit(line, column, start, end, COMPARE_OP, 6);
+                gen.emit(this, COMPARE_OP, 6);
                 break;
             case T_FNOT_EQUAL:
-                gen.emit(line, column, start, end, COMPARE_OP, 7);
+                gen.emit(this, COMPARE_OP, 7);
                 break;
             case T_BIT_AND:
-                gen.emit(line, column, start, end, BINARY_AND);
+                gen.emit(this, BINARY_AND);
                 break;
             case T_BIT_OR:
-                gen.emit(line, column, start, end, BINARY_OR);
+                gen.emit(this, BINARY_OR);
                 break;
             case T_BIT_XOR:
-                gen.emit(line, column, start, end, BINARY_XOR);
+                gen.emit(this, BINARY_XOR);
                 break;
             case T_LSHIFT:
-                gen.emit(line, column, start, end, BINARY_LSHIFT);
+                gen.emit(this, BINARY_LSHIFT);
                 break;
             case T_RSHIFT:
-                gen.emit(line, column, start, end, BINARY_RSHIFT);
+                gen.emit(this, BINARY_RSHIFT);
                 break;
             case T_URSHIFT:
-                gen.emit(line, column, start, end, BINARY_URSHIFT);
+                gen.emit(this, BINARY_URSHIFT);
                 break;
             default:
-                gen.error(line, column, start, end, "unsupported binop");
+                gen.error(this, "unsupported binop");
                 break;
         }
         return sym_t::gen_rvalue(gen);
@@ -507,11 +509,11 @@ namespace clib {
     int sym_triop_t::gen_rvalue(ijsgen &gen) {
         exp1->gen_rvalue(gen);
         auto idx = gen.code_length();
-        gen.emit(op1->line, op1->column, op1->start, op1->end, POP_JUMP_IF_FALSE, 0);
+        gen.emit(op1, POP_JUMP_IF_FALSE, 0);
         exp2->gen_rvalue(gen);
         auto idx2 = gen.code_length();
         auto cur = gen.current();
-        gen.emit(op2->line, op2->column, op2->start, op2->end, JUMP_FORWARD, 0);
+        gen.emit(op2, JUMP_FORWARD, 0);
         gen.edit(idx, 1, gen.current());
         exp3->gen_rvalue(gen);
         gen.edit(idx2, 1, gen.current() - cur);
@@ -544,9 +546,9 @@ namespace clib {
         size_t i = 0;
         for (const auto &s : dots) {
             if (i + 1 < dots.size())
-                gen.emit(s->line, s->column, s->start, s->end, LOAD_ATTR, gen.load_string(s->data._string, true));
+                gen.emit(s, LOAD_ATTR, gen.load_string(s->data._string, true));
             else
-                gen.emit(s->line, s->column, s->start, s->end, STORE_ATTR, gen.load_string(s->data._string, true));
+                gen.emit(s, STORE_ATTR, gen.load_string(s->data._string, true));
             i++;
         }
         return can_be_lvalue;
@@ -555,7 +557,7 @@ namespace clib {
     int sym_member_dot_t::gen_rvalue(ijsgen &gen) {
         exp->gen_rvalue(gen);
         for (const auto &s : dots) {
-            gen.emit(s->line, s->column, s->start, s->end, LOAD_ATTR, gen.load_string(s->data._string, true));
+            gen.emit(s, LOAD_ATTR, gen.load_string(s->data._string, true));
         }
         return sym_t::gen_rvalue(gen);
     }
@@ -585,10 +587,10 @@ namespace clib {
         for (const auto &s : indexes) {
             if (i + 1 < indexes.size()) {
                 s->gen_rvalue(gen);
-                gen.emit(s->line, s->column, s->start, s->end, BINARY_SUBSCR);
+                gen.emit(s.get(), BINARY_SUBSCR);
             } else {
                 s->gen_rvalue(gen);
-                gen.emit(s->line, s->column, s->start, s->end, STORE_SUBSCR);
+                gen.emit(s.get(), STORE_SUBSCR);
             }
             i++;
         }
@@ -599,7 +601,7 @@ namespace clib {
         exp->gen_rvalue(gen);
         for (const auto &s : indexes) {
             s->gen_rvalue(gen);
-            gen.emit(s->line, s->column, s->start, s->end, BINARY_SUBSCR);
+            gen.emit(s.get(), BINARY_SUBSCR);
         }
         return sym_t::gen_rvalue(gen);
     }
@@ -627,7 +629,7 @@ namespace clib {
         for (const auto &s : exps) {
             s->gen_rvalue(gen);
             if (i + 1 < exps.size())
-                gen.emit(s->line, s->column, s->start, s->end, POP_TOP);
+                gen.emit(s.get(), POP_TOP);
             i++;
         }
         return sym_t::gen_rvalue(gen);
@@ -654,7 +656,7 @@ namespace clib {
         for (const auto &s : exps) {
             s->gen_rvalue(gen);
         }
-        gen.emit(line, column, start, end, BUILD_LIST, exps.size());
+        gen.emit(this, BUILD_LIST, exps.size());
         return sym_t::gen_rvalue(gen);
     }
 
@@ -705,7 +707,7 @@ namespace clib {
         for (const auto &s : pairs) {
             s->gen_rvalue(gen);
         }
-        gen.emit(line, column, start, end, BUILD_MAP, pairs.size());
+        gen.emit(this, BUILD_MAP, pairs.size());
         return sym_t::gen_rvalue(gen);
     }
 
@@ -728,12 +730,11 @@ namespace clib {
 
     int sym_call_method_t::gen_rvalue(ijsgen &gen) {
         obj->gen_rvalue(gen);
-        gen.emit(method->line, method->column, method->start, method->end,
-                 LOAD_METHOD, gen.load_string(method->data._string, true));
+        gen.emit(method, LOAD_METHOD, gen.load_string(method->data._string, true));
         for (const auto &s : args) {
             s->gen_rvalue(gen);
         }
-        gen.emit(line, column, start, end, CALL_METHOD, args.size());
+        gen.emit(this, CALL_METHOD, args.size());
         return sym_t::gen_rvalue(gen);
     }
 
@@ -760,7 +761,7 @@ namespace clib {
         for (const auto &s : args) {
             s->gen_rvalue(gen);
         }
-        gen.emit(line, column, start, end, CALL_FUNCTION, args.size());
+        gen.emit(this, CALL_FUNCTION, args.size());
         return sym_t::gen_rvalue(gen);
     }
 
@@ -803,6 +804,7 @@ namespace clib {
     int sym_stmt_var_t::gen_rvalue(ijsgen &gen) {
         for (const auto &s : vars) {
             s->gen_rvalue(gen);
+            gen.emit(s.get(), POP_TOP);
         }
         return sym_stmt_t::gen_rvalue(gen);
     }
@@ -826,7 +828,7 @@ namespace clib {
 
     int sym_stmt_exp_t::gen_rvalue(ijsgen &gen) {
         seq->gen_rvalue(gen);
-        gen.emit(line, column, start, end, POP_TOP);
+        gen.emit(this, POP_TOP);
         return sym_stmt_t::gen_rvalue(gen);
     }
 
@@ -860,6 +862,38 @@ namespace clib {
         for (const auto &s : stmts) {
             s->set_parent(shared_from_this());
         }
+        return sym_t::set_parent(node);
+    }
+
+    // ----
+
+    symbol_t sym_code_t::get_type() const {
+        return s_code;
+    }
+
+    std::string sym_code_t::to_string() const {
+        return sym_t::to_string();
+    }
+
+    int sym_code_t::gen_rvalue(ijsgen &gen) {
+        auto id = gen.push_function(std::dynamic_pointer_cast<sym_code_t>(shared_from_this()));
+        body->gen_rvalue(gen);
+        gen.pop_function();
+        if (name) {
+            gen.emit(name, LOAD_CONST, id);
+            gen.emit(name, LOAD_CONST, gen.load_string(name->data._identifier, false));
+            gen.emit(this, MAKE_FUNCTION);
+            gen.emit(name, STORE_NAME, gen.load_string(name->data._identifier, true));
+        } else {
+            gen.emit(nullptr, LOAD_CONST, id);
+            gen.emit(nullptr, LOAD_CONST, gen.load_string(LAMBDA_ID, false));
+            gen.emit(this, MAKE_FUNCTION);
+        }
+        return sym_t::gen_rvalue(gen);
+    }
+
+    int sym_code_t::set_parent(sym_t::ref node) {
+        body->set_parent(shared_from_this());
         return sym_t::set_parent(node);
     }
 }

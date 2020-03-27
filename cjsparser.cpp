@@ -184,6 +184,7 @@ namespace clib {
         DEF_RULE(returnStatement)
         DEF_RULE(withStatement)
         DEF_RULE(switchStatement)
+        DEF_RULE(functionStatement)
         DEF_RULE(caseBlock)
         DEF_RULE(caseClauses)
         DEF_RULE(caseClause)
@@ -307,8 +308,6 @@ namespace clib {
         catchProduction = _K_CATCH + *(~_T_LPARAN + *assignable + ~_T_RPARAN) + block;
         finallyProduction = _K_FINALLY + block;
         debuggerStatement = _K_DEBUGGER + eos;
-        functionDeclaration = _K_FUNCTION + _ID + ~_T_LPARAN + *formalParameterList + ~_T_RPARAN +
-                              ~_T_LBRACE + *functionBody + ~_T_RBRACE;
         classDeclaration = _K_CLASS + _ID + classTail;
         classTail = ~_T_LBRACE + classElements + ~_T_RBRACE;
         classElements = *(classElements + ~_T_COMMA) + classElement;
@@ -338,7 +337,7 @@ namespace clib {
                     | throwStatement
                     | tryStatement
                     | debuggerStatement
-                    | functionDeclaration;
+                    | functionStatement;
         block = ~_T_LBRACE + *statementList + ~_T_RBRACE;
         statementList = *statementList + statement;
         expressionStatement = expressionSequence + eos;
@@ -440,12 +439,15 @@ namespace clib {
                        | _STRING
                        | numericLiteral
                        | ~_T_LSQUARE + singleExpression + ~_T_RSQUARE;
+        functionStatement = anonymousFunction;
         anonymousFunction = functionDecl
                             | anoymousFunctionDecl
                             | arrowFunction;
         functionDecl = functionDeclaration;
+        functionDeclaration = _K_FUNCTION + _ID + ~_T_LPARAN + *formalParameterList + ~_T_RPARAN +
+                              ~_T_LBRACE + *functionBody + _T_RBRACE;
         anoymousFunctionDecl = _K_FUNCTION + ~_T_LPARAN + *formalParameterList + ~_T_RPARAN +
-                               ~_T_LBRACE + *functionBody + ~_T_RBRACE;
+                               ~_T_LBRACE + *functionBody + _T_RBRACE;
         arrowFunction = arrowFunctionParameters + ~_T_ARROW + arrowFunctionBody;
         arrowFunctionParameters = _ID | ~_T_LPARAN + *formalParameterList + ~_T_RPARAN;
         arrowFunctionBody = singleExpression | _T_LBRACE + *functionBody + _T_RBRACE;
