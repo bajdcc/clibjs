@@ -8,8 +8,6 @@
 #include "cjsgen.h"
 #include "cjsast.h"
 
-#define LAMBDA_ID "<lambda>"
-
 namespace clib {
 
     symbol_t sym_t::get_type() const {

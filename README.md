@@ -148,11 +148,11 @@ C [#006] [STRING] 'b'
 C [#007] [STRING] c
 C [#008] [NUMBER] 5.000000
 C [#009] [NUMBER] 6.000000
-C [#010] [FUNC  ] fun_a
+C [#010] [FUNC  ] fun_a | function fun_a(b) {var a = 1;}
 C [#011] [STRING] fun_a
-C [#012] [FUNC  ] [lambda]
+C [#012] [FUNC  ] [lambda] | function (b) {var b = 1;}
 C [#013] [STRING] <lambda>
-C [#014] [FUNC  ] [lambda]
+C [#014] [FUNC  ] [lambda] | function (c) {var c = 1;}
 C [0001:017]          0 LOAD_CONST                  0          (1)
 C [0001:005]          2 DUP_TOP                                (a)
 C [0001:005]          3 STORE_NAME                  0          (a)
@@ -364,14 +364,14 @@ C [0013:010]        325 LOAD_CONST                 11          (fun_a)
 C [0013:001]        327 MAKE_FUNCTION                          (function fun_a(b) {var a = 1;})
 C [0013:010]        328 STORE_NAME                  5          (fun_a)
 C [0013:001]        330 POP_TOP                                (function fun_a(b) {var a = 1;})
-C [0000:000]        331 LOAD_CONST                 12          (...)
-C [0000:000]        333 LOAD_CONST                 13          (...)
+C [0000:000]        331 LOAD_CONST                 12          (<lambda>)
+C [0000:000]        333 LOAD_CONST                 13          (<lambda>)
 C [0014:009]        335 MAKE_FUNCTION                          (function (b) {var b = 1;})
 C [0014:005]        336 DUP_TOP                                (b)
 C [0014:005]        337 STORE_NAME                  1          (b)
 C [0014:005]        339 POP_TOP                                (b = function (b) {var b = 1;})
-C [0000:000]        340 LOAD_CONST                 14          (...)
-C [0000:000]        342 LOAD_CONST                 13          (...)
+C [0000:000]        340 LOAD_CONST                 14          (<lambda>)
+C [0000:000]        342 LOAD_CONST                 13          (<lambda>)
 C [0015:001]        344 MAKE_FUNCTION                          (function (c) {var c = 1;})
 C [0015:001]        345 POP_TOP                                (function (c) {var c = 1;})
 --== Function: "fun_a" ==--

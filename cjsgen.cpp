@@ -82,7 +82,27 @@ namespace clib {
         return idx;
     }
 
-    void cjs_consts::dump() const {
+    std::string cjs_consts::get_desc(int n) const {
+        auto f = functions.find(n);
+        if (f != functions.end()) {
+            auto func = f->second.lock();
+            return func->name ? func->name->data._identifier : LAMBDA_ID;
+        }
+        for (const auto &x : strings) {
+            if (x.second == n)
+                return x.first;
+        }
+        for (const auto &x : numbers) {
+            if (x.second == n) {
+                std::stringstream ss;
+                ss<<x.first;
+                return ss.str();
+            }
+        }
+        return "";
+    }
+
+    void cjs_consts::dump(const std::string *text) const {
         auto i = 0;
         std::vector<const char *> linksa(names.size());
         for (const auto &x : names) {
@@ -112,8 +132,11 @@ namespace clib {
                 case 1:
                     fprintf(stdout, "C [#%03d] [NUMBER] %lf\n", i, *(double *) std::get<1>(x));
                     break;
-                case 2:
-                    fprintf(stdout, "C [#%03d] [FUNC  ] %s\n", i, (const char *) std::get<1>(x));
+                case 2: {
+                    auto f = functions.at(i).lock();
+                    fprintf(stdout, "C [#%03d] [FUNC  ] %s | %s\n", i, (const char *) std::get<1>(x),
+                            text->substr(f->start, f->end - f->start).c_str());
+                }
                     break;
                 default:
                     break;
@@ -1495,7 +1518,7 @@ namespace clib {
     }
 
     void cjsgen::dump(sym_code_t::ref code) const {
-        code->consts.dump();
+        code->consts.dump(text);
         auto idx = 0;
         std::vector<int> jumps;
         {
@@ -1531,10 +1554,17 @@ namespace clib {
                 fprintf(stdout, "C [%04d:%03d]  %s   %4d %-20s                   (%s)\n",
                         c.line, c.column, jmp, idx, ins_string(ins_t(c.code)),
                         c.line == 0 ? "..." : text->substr(c.start, c.end - c.start).c_str());
-            else if (c.opnum == 1)
-                fprintf(stdout, "C [%04d:%03d]  %s   %4d %-20s %8d          (%s)\n",
-                        c.line, c.column, jmp, idx, ins_string(ins_t(c.code)), c.op1,
-                        c.line == 0 ? "..." : text->substr(c.start, c.end - c.start).c_str());
+            else if (c.opnum == 1) {
+                if (c.code == LOAD_CONST && c.line == 0) {
+                    fprintf(stdout, "C [%04d:%03d]  %s   %4d %-20s %8d          (%s)\n",
+                            c.line, c.column, jmp, idx, ins_string(ins_t(c.code)), c.op1,
+                            code->consts.get_desc(c.op1).c_str());
+                } else {
+                    fprintf(stdout, "C [%04d:%03d]  %s   %4d %-20s %8d          (%s)\n",
+                            c.line, c.column, jmp, idx, ins_string(ins_t(c.code)), c.op1,
+                            c.line == 0 ? "..." : text->substr(c.start, c.end - c.start).c_str());
+                }
+            }
             else if (c.opnum == 2)
                 fprintf(stdout, "C [%04d:%03d]  %s   %4d %-20s %8d %8d (%s)\n",
                         c.line, c.column, jmp, idx, ins_string(ins_t(c.code)), c.op1, c.op2,

@@ -12,6 +12,8 @@
 #include <unordered_set>
 #include "cjsast.h"
 
+#define LAMBDA_ID "<lambda>"
+
 namespace clib {
 
     enum symbol_t {
@@ -321,7 +323,8 @@ namespace clib {
         int get_number(double n);
         int get_string(const std::string &str, bool name);
         int get_function(std::shared_ptr<sym_code_t> code);
-        void dump() const;
+        std::string get_desc(int n) const;
+        void dump(const std::string *text) const;
         std::unordered_map<double, int> numbers;
         std::unordered_map<std::string, int> strings;
         std::unordered_map<std::string, int> names;
