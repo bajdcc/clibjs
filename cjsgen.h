@@ -39,6 +39,7 @@ namespace clib {
         s_statement,
         s_statement_var,
         s_statement_exp,
+        s_statement_return,
         s_block,
         s_code,
     };
@@ -55,7 +56,7 @@ namespace clib {
         virtual int code_length() const = 0;
         virtual void edit(int, int, int) = 0;
         virtual int load_number(double d) = 0;
-        virtual int load_string(const std::string &, bool) = 0;
+        virtual int load_string(const std::string &, int) = 0;
         virtual int push_function(std::shared_ptr<sym_code_t>) = 0;
         virtual void pop_function() = 0;
         virtual void enter(int) = 0;
@@ -99,6 +100,11 @@ namespace clib {
         std::string to_string() const override;
         int gen_lvalue(ijsgen &gen) override;
         int gen_rvalue(ijsgen &gen) override;
+        enum class_t {
+            local,
+            closure,
+            global,
+        } clazz {local};
         ast_node *node{nullptr};
     };
 
@@ -112,6 +118,8 @@ namespace clib {
         int gen_rvalue(ijsgen &gen) override;
         int gen_invoke(ijsgen &gen, sym_t::ref &list) override;
         sym_t::weak_ref id;
+    private:
+        void init_id(ijsgen &gen);
     };
 
     class sym_id_t : public sym_t {
@@ -300,6 +308,16 @@ namespace clib {
         sym_exp_seq_t::ref seq;
     };
 
+    class sym_stmt_return_t : public sym_stmt_t {
+    public:
+        using ref = std::shared_ptr<sym_stmt_exp_t>;
+        symbol_t get_type() const override;
+        std::string to_string() const override;
+        int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
+        sym_exp_seq_t::ref seq;
+    };
+
     class sym_block_t : public sym_t {
     public:
         using ref = std::shared_ptr<sym_block_t>;
@@ -315,13 +333,21 @@ namespace clib {
 
     class cjs_consts {
     public:
+        enum get_string_t {
+            gs_string,
+            gs_name,
+            gs_global,
+            gs_deref,
+        };
         int get_number(double n);
-        int get_string(const std::string &str, bool name);
+        int get_string(const std::string &str, get_string_t type);
         int get_function(std::shared_ptr<sym_code_t> code);
         std::string get_desc(int n) const;
         void dump(const std::string *text) const;
         std::unordered_map<double, int> numbers;
         std::unordered_map<std::string, int> strings;
+        std::unordered_map<std::string, int> globals;
+        std::unordered_map<std::string, int> derefs;
         std::unordered_map<std::string, int> names;
         std::unordered_map<int, std::weak_ptr<sym_code_t>> functions;
         int index{0};
@@ -343,6 +369,7 @@ namespace clib {
 
     enum cjs_scope_query_t {
         sq_local,
+        sq_local_func,
         sq_all,
     };
 
@@ -391,7 +418,7 @@ namespace clib {
         int code_length() const override;
         void edit(int, int, int) override;
         int load_number(double d) override;
-        int load_string(const std::string &, bool) override;
+        int load_string(const std::string &, int) override;
         int push_function(std::shared_ptr<sym_code_t>) override;
         void pop_function() override;
         void enter(int) override;

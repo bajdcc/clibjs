@@ -57,8 +57,8 @@ namespace clib {
         return f->second;
     }
 
-    int cjs_consts::get_string(const std::string &str, bool name) {
-        if (name) {
+    int cjs_consts::get_string(const std::string &str, get_string_t type) {
+        if (type == gs_name) {
             auto f = names.find(str);
             if (f == names.end()) {
                 auto idx = (int) names.size();
@@ -67,13 +67,35 @@ namespace clib {
             }
             return f->second;
         }
-        auto f = strings.find(str);
-        if (f == strings.end()) {
-            auto idx = index++;
-            strings.insert({str, idx});
-            return idx;
+        if (type == gs_string) {
+            auto f = strings.find(str);
+            if (f == strings.end()) {
+                auto idx = index++;
+                strings.insert({str, idx});
+                return idx;
+            }
+            return f->second;
         }
-        return f->second;
+        if (type == gs_global) {
+            auto f = globals.find(str);
+            if (f == globals.end()) {
+                auto idx = (int) globals.size();
+                globals.insert({str, idx});
+                return idx;
+            }
+            return f->second;
+        }
+        if (type == gs_deref) {
+            auto f = derefs.find(str);
+            if (f == derefs.end()) {
+                auto idx = (int) derefs.size();
+                derefs.insert({str, idx});
+                return idx;
+            }
+            return f->second;
+        }
+        assert(!"invalid type");
+        return -1;
     }
 
     int cjs_consts::get_function(std::shared_ptr<sym_code_t> code) {
@@ -151,10 +173,10 @@ namespace clib {
         if (tmp.front().empty())
             return false;
         tmp.front().front()->set_parent(nullptr);
+        tmp.front().front()->gen_rvalue(*this);
 #if PRINT_AST
         print(tmp.front().front(), 0, std::cout);
 #endif
-        tmp.front().front()->gen_rvalue(*this);
 #if DUMP_CODE
         dump();
 #endif
@@ -611,7 +633,25 @@ namespace clib {
                 break;
             case c_breakStatement:
                 break;
-            case c_returnStatement:
+            case c_returnStatement: {
+                auto stmt = std::make_shared<sym_stmt_return_t>();
+                copy_info(stmt, asts.front());
+                if (!tmps.empty()) {
+                    sym_exp_seq_t::ref seq;
+                    if (tmps.back()->get_type() == s_expression_seq) {
+                        seq = std::dynamic_pointer_cast<sym_exp_seq_t>(tmps.back());
+                    } else {
+                        seq = std::make_shared<sym_exp_seq_t>();
+                        copy_info(seq, tmps.front());
+                        seq->exps.push_back(to_exp(tmps.front()));
+                    }
+                    stmt->seq = seq;
+                    stmt->end = seq->end;
+                }
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(stmt);
+            }
                 break;
             case c_withStatement:
                 break;
@@ -1144,6 +1184,19 @@ namespace clib {
                 {
                     auto n = std::dynamic_pointer_cast<sym_var_t>(node);
                     os << std::setfill(' ') << std::setw(level + 1) << "";
+                    switch (n->clazz) {
+                        case sym_var_t::local:
+                            os << "[LOCAL] ";
+                            break;
+                        case sym_var_t::closure:
+                            os << "[CLOSURE] ";
+                            break;
+                        case sym_var_t::global:
+                            os << "[GLOBAL] ";
+                            break;
+                        default:
+                            break;
+                    }
                     os << n->node->data._string << std::endl;
                 }
                 break;
@@ -1383,6 +1436,18 @@ namespace clib {
                     print(n->seq, level + 1, os);
                 }
                 break;
+            case s_statement_return:
+                os << "statement_return"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_stmt_return_t>(node);
+                    if (n->seq)
+                        print(n->seq, level + 1, os);
+                }
+                break;
             case s_block:
                 os << "block"
                    << " " << "[" << node->line << ":"
@@ -1409,8 +1474,8 @@ namespace clib {
                            << n->name->start << ":"
                            << n->name->end << "]" << std::endl;
                     }
-                    os << std::setfill(' ') << std::setw(level + 1) << "";
                     if (!n->args.empty()) {
+                        os << std::setfill(' ') << std::setw(level + 1) << "";
                         os << "args" << std::endl;
                         for (const auto &s : n->args) {
                             os << std::setfill(' ') << std::setw(level + 2) << "";
@@ -1481,8 +1546,8 @@ namespace clib {
         return codes.back()->consts.get_number(d);
     }
 
-    int cjsgen::load_string(const std::string &s, bool name) {
-        return codes.back()->consts.get_string(s, name);
+    int cjsgen::load_string(const std::string &s, int type) {
+        return codes.back()->consts.get_string(s, (cjs_consts::get_string_t) (type));
     }
 
     int cjsgen::push_function(std::shared_ptr<sym_code_t> code) {
@@ -1516,9 +1581,30 @@ namespace clib {
                 }
                 return nullptr;
             }
-                break;
-            case sq_all:
-                break;
+            case sq_local_func: {
+                const auto &scope = codes.back()->scopes;
+                for (auto s = scope.rbegin(); s != scope.rend(); s++) {
+                    const auto &vars = s->vars;
+                    auto f = vars.find(name);
+                    if (f != vars.end()) {
+                        return f->second.lock();
+                    }
+                }
+                return nullptr;
+            }
+            case sq_all: {
+                for (auto i = codes.rbegin() + 1; i != codes.rend(); i++) {
+                    const auto &scope = (*i)->scopes;
+                    for (auto s = scope.rbegin(); s != scope.rend(); s++) {
+                        const auto &vars = s->vars;
+                        auto f = vars.find(name);
+                        if (f != vars.end()) {
+                            return f->second.lock();
+                        }
+                    }
+                }
+                return nullptr;
+            }
             default:
                 break;
         }

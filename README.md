@@ -119,13 +119,13 @@ a + b, a - b;
 a = b = c, a += b -= c--;
 a.b.c, a.b.c++;
 a[1]["1"], a[1]["1"]++;
-a = [1,2,[3+4],[]];
+a = [1, 2, [3 + 4], []];
 b = {1: "a", 'b': {c: c}, [2]: 1};
 a.b(1, 2).c(2, 1), a(3)(4), a[5](6), a.b.c(1);
 (a > b ? a : b).c(), !++a ? b : c + 1;
 function fun_a(b) {var a = 1;}
-var b = function(b) {var b = 1;}
-function(c) {var c = 1;}
+var f = function (b) {var b = 1;}
+function (c) {return function (){return c++ +g;}}
 ```
 
 Output:
@@ -138,6 +138,7 @@ C [#002] [NAME  ] c
 C [#003] [NAME  ] d
 C [#004] [NAME  ] e
 C [#005] [NAME  ] fun_a
+C [#006] [NAME  ] f
 C [#000] [NUMBER] 1.000000
 C [#001] [NUMBER] 2.000000
 C [#002] [NUMBER] 3.000000
@@ -152,7 +153,7 @@ C [#010] [FUNC  ] fun_a | function fun_a(b) {var a = 1;}
 C [#011] [STRING] fun_a
 C [#012] [FUNC  ] [lambda] | function (b) {var b = 1;}
 C [#013] [STRING] <lambda>
-C [#014] [FUNC  ] [lambda] | function (c) {var c = 1;}
+C [#014] [FUNC  ] [lambda] | function (c) {return function (){return c++ +g;}}
 C [0001:017]          0 LOAD_CONST                  0          (1)
 C [0001:005]          2 DUP_TOP                                (a)
 C [0001:005]          3 STORE_NAME                  0          (a)
@@ -367,13 +368,13 @@ C [0013:001]        330 POP_TOP                                (function fun_a(b
 C [0000:000]        331 LOAD_CONST                 12          (<lambda>)
 C [0000:000]        333 LOAD_CONST                 13          (<lambda>)
 C [0014:009]        335 MAKE_FUNCTION                          (function (b) {var b = 1;})
-C [0014:005]        336 DUP_TOP                                (b)
-C [0014:005]        337 STORE_NAME                  1          (b)
-C [0014:005]        339 POP_TOP                                (b = function (b) {var b = 1;})
+C [0014:005]        336 DUP_TOP                                (f)
+C [0014:005]        337 STORE_NAME                  6          (f)
+C [0014:005]        339 POP_TOP                                (f = function (b) {var b = 1;})
 C [0000:000]        340 LOAD_CONST                 14          (<lambda>)
 C [0000:000]        342 LOAD_CONST                 13          (<lambda>)
-C [0015:001]        344 MAKE_FUNCTION                          (function (c) {var c = 1;})
-C [0015:001]        345 POP_TOP                                (function (c) {var c = 1;})
+C [0015:001]        344 MAKE_FUNCTION                          (function (c) {return function (){return c++ +g;}})
+C [0015:001]        345 POP_TOP                                (function (c) {return function (){return c++ +g;}})
 --== Function: "fun_a" ==--
 C [#000] [NAME  ] a
 C [#000] [NUMBER] 1.000000
@@ -389,12 +390,21 @@ C [0014:027]          2 DUP_TOP                                (b)
 C [0014:027]          3 STORE_NAME                  0          (b)
 C [0014:027]          5 POP_TOP                                (b = 1)
 --== Function: "[lambda]" ==--
-C [#000] [NAME  ] c
-C [#000] [NUMBER] 1.000000
-C [0015:023]          0 LOAD_CONST                  0          (1)
-C [0015:019]          2 DUP_TOP                                (c)
-C [0015:019]          3 STORE_NAME                  0          (c)
-C [0015:019]          5 POP_TOP                                (c = 1)
+C [#000] [FUNC  ] [lambda] | function (){return c++ +g;}
+C [#001] [STRING] <lambda>
+C [0000:000]          0 LOAD_CONST                  0          (<lambda>)
+C [0000:000]          2 LOAD_CONST                  1          (<lambda>)
+C [0015:022]          4 MAKE_FUNCTION                          (function (){return c++ +g;})
+C [0015:015]          5 RETURN_VALUE                           (return function (){return c++ +g;})
+--== Function: "[lambda]" ==--
+C [0015:041]          0 LOAD_DEREF                  0          (c)
+C [0015:041]          2 DUP_TOP                                (c++)
+C [0015:041]          3 BINARY_INC                             (c++)
+C [0015:041]          4 DUP_TOP                                (c)
+C [0015:041]          5 STORE_DEREF                 0          (c)
+C [0015:046]          7 LOAD_GLOBAL                 0          (g)
+C [0015:041]          9 BINARY_ADD                             (c++ +g)
+C [0015:034]         10 RETURN_VALUE                           (return c++ +g)
 ```
 
 ## Grammar
