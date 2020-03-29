@@ -43,6 +43,7 @@ namespace clib {
         s_code,
     };
 
+    class sym_t;
     class sym_code_t;
 
     class ijsgen {
@@ -57,7 +58,10 @@ namespace clib {
         virtual int load_string(const std::string &, bool) = 0;
         virtual int push_function(std::shared_ptr<sym_code_t>) = 0;
         virtual void pop_function() = 0;
-        virtual void add_label(int, int, int, const std::string &) = 0;
+        virtual void enter(int) = 0;
+        virtual void leave() = 0;
+        virtual std::shared_ptr<sym_t> get_var(const std::string &, int) = 0;
+        virtual void add_var(const std::string &, std::shared_ptr<sym_t>) = 0;
         virtual void error(ast_node_index *, const std::string &) const = 0;
     };
 
@@ -73,14 +77,6 @@ namespace clib {
         virtual int gen_invoke(ijsgen &gen, ref &list);
         virtual int set_parent(ref node);
         weak_ref parent;
-    };
-
-    enum sym_class_t {
-        z_undefined,
-        z_local_var,
-        z_param_var,
-        z_function,
-        z_end,
     };
 
     enum sym_lvalue_t {
@@ -130,7 +126,6 @@ namespace clib {
         void parse();
         std::vector<sym_var_t::ref> ids;
         sym_exp_t::ref init;
-        sym_class_t clazz{z_undefined};
     };
 
     class sym_unop_t : public sym_exp_t {
@@ -337,8 +332,8 @@ namespace clib {
 
     enum cjs_scope_t {
         sp_none,
-        sp_function,
         sp_block,
+        sp_param,
         sp_for,
         sp_for_each,
         sp_while,
@@ -346,8 +341,14 @@ namespace clib {
         sp_switch,
     };
 
+    enum cjs_scope_query_t {
+        sq_local,
+        sq_all,
+    };
+
     struct cjs_scope {
         cjs_scope_t type;
+        std::unordered_map<std::string, sym_t::weak_ref> vars;
     };
 
     struct cjs_code {
@@ -393,7 +394,10 @@ namespace clib {
         int load_string(const std::string &, bool) override;
         int push_function(std::shared_ptr<sym_code_t>) override;
         void pop_function() override;
-        void add_label(int, int, int, const std::string &) override;
+        void enter(int) override;
+        void leave() override;
+        std::shared_ptr<sym_t> get_var(const std::string &, int) override;
+        void add_var(const std::string &, std::shared_ptr<sym_t>) override;
         void error(ast_node_index *, const std::string &) const override;
 
     private:

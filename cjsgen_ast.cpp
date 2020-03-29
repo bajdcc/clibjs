@@ -129,6 +129,11 @@ namespace clib {
             case a_literal:
                 gen.emit(this, DUP_TOP);
                 gen.emit(this, STORE_NAME, gen.load_string(node->data._string, true));
+                if (parent.lock()->get_type() == s_id) {
+                    if (gen.get_var(node->data._string, sq_local) != nullptr)
+                        gen.error(this, "id conflict");
+                    gen.add_var(node->data._string, shared_from_this());
+                }
                 break;
             default:
                 gen.error(this, "unsupported var type");
@@ -857,9 +862,11 @@ namespace clib {
     }
 
     int sym_block_t::gen_rvalue(ijsgen &gen) {
+        gen.enter(sp_block);
         for (const auto &s : stmts) {
             s->gen_rvalue(gen);
         }
+        gen.leave();
         return sym_t::gen_rvalue(gen);
     }
 
@@ -881,6 +888,8 @@ namespace clib {
     }
 
     int sym_code_t::gen_rvalue(ijsgen &gen) {
+        if (!args.empty())
+            gen.enter(sp_param);
         auto id = gen.push_function(std::dynamic_pointer_cast<sym_code_t>(shared_from_this()));
         body->gen_rvalue(gen);
         gen.pop_function();
@@ -894,6 +903,8 @@ namespace clib {
             gen.emit(nullptr, LOAD_CONST, gen.load_string(LAMBDA_ID, false));
             gen.emit(this, MAKE_FUNCTION);
         }
+        if (!args.empty())
+            gen.leave();
         return sym_t::gen_rvalue(gen);
     }
 

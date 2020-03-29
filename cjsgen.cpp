@@ -95,7 +95,7 @@ namespace clib {
         for (const auto &x : numbers) {
             if (x.second == n) {
                 std::stringstream ss;
-                ss<<x.first;
+                ss << x.first;
                 return ss.str();
             }
         }
@@ -1496,8 +1496,37 @@ namespace clib {
         codes.pop_back();
     }
 
-    void cjsgen::add_label(int line, int column, int, const std::string &) {
+    void cjsgen::enter(int type) {
+        codes.back()->scopes.emplace_back();
+        codes.back()->scopes.back().type = (cjs_scope_t) type;
+    }
 
+    void cjsgen::leave() {
+        codes.back()->scopes.pop_back();
+    }
+
+    std::shared_ptr<sym_t> cjsgen::get_var(const std::string &name, int t) {
+        auto type = (cjs_scope_query_t) t;
+        switch (type) {
+            case sq_local: {
+                const auto &vars = codes.back()->scopes.back().vars;
+                auto f = vars.find(name);
+                if (f != vars.end()) {
+                    return f->second.lock();
+                }
+                return nullptr;
+            }
+                break;
+            case sq_all:
+                break;
+            default:
+                break;
+        }
+        return nullptr;
+    }
+
+    void cjsgen::add_var(const std::string &name, std::shared_ptr<sym_t> id) {
+        codes.back()->scopes.back().vars.insert({name, id});
     }
 
     void cjsgen::error(ast_node_index *idx, const std::string &str) const {
@@ -1564,8 +1593,7 @@ namespace clib {
                             c.line, c.column, jmp, idx, ins_string(ins_t(c.code)), c.op1,
                             c.line == 0 ? "..." : text->substr(c.start, c.end - c.start).c_str());
                 }
-            }
-            else if (c.opnum == 2)
+            } else if (c.opnum == 2)
                 fprintf(stdout, "C [%04d:%03d]  %s   %4d %-20s %8d %8d (%s)\n",
                         c.line, c.column, jmp, idx, ins_string(ins_t(c.code)), c.op1, c.op2,
                         c.line == 0 ? "..." : text->substr(c.start, c.end - c.start).c_str());
