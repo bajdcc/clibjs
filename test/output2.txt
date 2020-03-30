@@ -1,0 +1,1125 @@
+Program
+ SourceElements
+  Statement
+   VariableStatement
+    keyword: K_VAR var [1:1:0:3]
+    VariableDeclarationList
+     VariableDeclaration
+      Assignable
+       id: a [1:5:4:5]
+      AssignmentExpression
+       IdentifierExpression
+        id: b [1:9:8:9]
+       operator: T_ASSIGN = [1:11:10:11]
+       IdentifierExpression
+        id: c [1:13:12:13]
+       operator: T_ASSIGN = [1:15:14:15]
+       Literal
+        number: 1 "1" [1:17:16:17]
+  Statement
+   VariableStatement
+    keyword: K_VAR var [2:1:19:22]
+    VariableDeclarationList
+     VariableDeclaration
+      Assignable
+       id: d [2:5:23:24]
+      AdditiveExpression
+       IdentifierExpression
+        id: a [2:9:27:28]
+       operator: T_ADD + [2:11:29:30]
+       ParenthesizedExpression
+        operator: T_LPARAN ( [2:13:31:32]
+        ExpressionSequence
+         MultiplicativeExpression
+          IdentifierExpression
+           id: b [2:14:32:33]
+          operator: T_MUL * [2:16:34:35]
+          IdentifierExpression
+           id: c [2:18:36:37]
+        operator: T_RPARAN ) [2:19:37:38]
+  Statement
+   VariableStatement
+    keyword: K_VAR var [3:1:40:43]
+    VariableDeclarationList
+     VariableDeclaration
+      Assignable
+       id: e [3:5:44:45]
+      LogicalAndExpression
+       Literal
+        number: 1 "1" [3:9:48:49]
+       operator: T_LOG_AND && [3:11:50:52]
+       RelationalExpression
+        Literal
+         number: 2 "2" [3:14:53:54]
+        operator: T_GREATER > [3:16:55:56]
+        Literal
+         number: 3 "3" [3:18:57:58]
+  Statement
+   ExpressionStatement
+    ExpressionSequence
+     AdditiveExpression
+      IdentifierExpression
+       id: a [4:1:60:61]
+      operator: T_ADD + [4:3:62:63]
+      IdentifierExpression
+       id: b [4:5:64:65]
+     AdditiveExpression
+      IdentifierExpression
+       id: a [4:8:67:68]
+      operator: T_SUB - [4:10:69:70]
+      IdentifierExpression
+       id: b [4:12:71:72]
+  Statement
+   ExpressionStatement
+    ExpressionSequence
+     AdditiveExpression
+      Literal
+       number: 1 "1" [5:1:74:75]
+      operator: T_ADD + [5:3:76:77]
+      PrimaryExpression
+       PrefixExpression
+        PreIncrementExpression
+         operator: T_INC ++ [5:5:78:80]
+        PreDecreaseExpression
+         operator: T_DEC -- [5:7:80:82]
+       IdentifierExpression
+        id: a [5:9:82:83]
+       PostfixExpression
+        PostDecreaseExpression
+         operator: T_DEC -- [5:10:83:85]
+        PostIncrementExpression
+         operator: T_INC ++ [5:12:85:87]
+  Statement
+   ExpressionStatement
+    ExpressionSequence
+     AssignmentExpression
+      IdentifierExpression
+       id: a [6:1:89:90]
+      operator: T_ASSIGN = [6:3:91:92]
+      IdentifierExpression
+       id: b [6:5:93:94]
+      operator: T_ASSIGN = [6:7:95:96]
+      IdentifierExpression
+       id: c [6:9:97:98]
+     AssignmentOperatorExpression
+      IdentifierExpression
+       id: a [6:12:100:101]
+      operator: T_ASSIGN_ADD += [6:14:102:104]
+      IdentifierExpression
+       id: b [6:17:105:106]
+      operator: T_ASSIGN_SUB -= [6:19:107:109]
+      PrimaryExpression
+       IdentifierExpression
+        id: c [6:22:110:111]
+       PostfixExpression
+        PostDecreaseExpression
+         operator: T_DEC -- [6:23:111:113]
+  Statement
+   ExpressionStatement
+    ExpressionSequence
+     PrimaryExpression
+      IdentifierExpression
+       id: a [7:1:115:116]
+      PostfixExpression
+       MemberDotExpression
+        IdentifierName
+         id: b [7:3:117:118]
+       MemberDotExpression
+        IdentifierName
+         id: c [7:5:119:120]
+     PrimaryExpression
+      IdentifierExpression
+       id: a [7:8:122:123]
+      PostfixExpression
+       MemberDotExpression
+        IdentifierName
+         id: b [7:10:124:125]
+       MemberDotExpression
+        IdentifierName
+         id: c [7:12:126:127]
+       PostIncrementExpression
+        operator: T_INC ++ [7:13:127:129]
+  Statement
+   ExpressionStatement
+    ExpressionSequence
+     PrimaryExpression
+      IdentifierExpression
+       id: a [8:1:131:132]
+      PostfixExpression
+       MemberIndexExpression
+        operator: T_LSQUARE [ [8:2:132:133]
+        ExpressionSequence
+         Literal
+          number: 1 "1" [8:3:133:134]
+        operator: T_RSQUARE ] [8:4:134:135]
+       MemberIndexExpression
+        operator: T_LSQUARE [ [8:5:135:136]
+        ExpressionSequence
+         Literal
+          string: \"1\" [8:6:136:139]
+        operator: T_RSQUARE ] [8:9:139:140]
+     PrimaryExpression
+      IdentifierExpression
+       id: a [8:12:142:143]
+      PostfixExpression
+       MemberIndexExpression
+        operator: T_LSQUARE [ [8:13:143:144]
+        ExpressionSequence
+         Literal
+          number: 1 "1" [8:14:144:145]
+        operator: T_RSQUARE ] [8:15:145:146]
+       MemberIndexExpression
+        operator: T_LSQUARE [ [8:16:146:147]
+        ExpressionSequence
+         Literal
+          string: \"1\" [8:17:147:150]
+        operator: T_RSQUARE ] [8:20:150:151]
+       PostIncrementExpression
+        operator: T_INC ++ [8:21:151:153]
+  Statement
+   ExpressionStatement
+    ExpressionSequence
+     AssignmentExpression
+      IdentifierExpression
+       id: a [9:1:155:156]
+      operator: T_ASSIGN = [9:3:157:158]
+      ArrayLiteral
+       operator: T_LSQUARE [ [9:5:159:160]
+       ElementList
+        ArrayElement
+         Literal
+          number: 1 "1" [9:6:160:161]
+        ArrayElement
+         Literal
+          number: 2 "2" [9:9:163:164]
+        ArrayElement
+         ArrayLiteral
+          operator: T_LSQUARE [ [9:12:166:167]
+          ElementList
+           ArrayElement
+            AdditiveExpression
+             Literal
+              number: 3 "3" [9:13:167:168]
+             operator: T_ADD + [9:15:169:170]
+             Literal
+              number: 4 "4" [9:17:171:172]
+          operator: T_RSQUARE ] [9:18:172:173]
+        ArrayElement
+         ArrayLiteral
+          operator: T_LSQUARE [ [9:21:175:176]
+          operator: T_RSQUARE ] [9:22:176:177]
+       operator: T_RSQUARE ] [9:23:177:178]
+  Statement
+   ExpressionStatement
+    ExpressionSequence
+     AssignmentExpression
+      IdentifierExpression
+       id: b [10:1:180:181]
+      operator: T_ASSIGN = [10:3:182:183]
+      ObjectLiteral
+       operator: T_LBRACE { [10:5:184:185]
+       PropertyAssignments
+        PropertyAssignment
+         PropertyExpressionAssignment
+          PropertyName
+           NumericLiteral
+            number: 1 "1" [10:6:185:186]
+          Literal
+           string: \"a\" [10:9:188:191]
+        PropertyAssignment
+         PropertyExpressionAssignment
+          PropertyName
+           string: 'b' [10:14:193:196]
+          ObjectLiteral
+           operator: T_LBRACE { [10:19:198:199]
+           PropertyAssignments
+            PropertyAssignment
+             PropertyExpressionAssignment
+              PropertyName
+               IdentifierName
+                id: c [10:20:199:200]
+              IdentifierExpression
+               id: c [10:23:202:203]
+           operator: T_RBRACE } [10:24:203:204]
+        PropertyAssignment
+         PropertyExpressionAssignment
+          PropertyName
+           Literal
+            number: 2 "2" [10:28:207:208]
+          Literal
+           number: 1 "1" [10:32:211:212]
+       operator: T_RBRACE } [10:33:212:213]
+  Statement
+   ExpressionStatement
+    ExpressionSequence
+     PrimaryExpression
+      IdentifierExpression
+       id: a [11:1:215:216]
+      PostfixExpression
+       MemberDotExpression
+        IdentifierName
+         id: b [11:3:217:218]
+       ArgumentsExpression
+        Arguments
+         Argument
+          Literal
+           number: 1 "1" [11:5:219:220]
+          Literal
+           number: 2 "2" [11:8:222:223]
+         operator: T_RPARAN ) [11:9:223:224]
+       MemberDotExpression
+        IdentifierName
+         id: c [11:11:225:226]
+       ArgumentsExpression
+        Arguments
+         Argument
+          Literal
+           number: 2 "2" [11:13:227:228]
+          Literal
+           number: 1 "1" [11:16:230:231]
+         operator: T_RPARAN ) [11:17:231:232]
+     PrimaryExpression
+      IdentifierExpression
+       id: a [11:20:234:235]
+      PostfixExpression
+       ArgumentsExpression
+        Arguments
+         Argument
+          Literal
+           number: 3 "3" [11:22:236:237]
+         operator: T_RPARAN ) [11:23:237:238]
+       ArgumentsExpression
+        Arguments
+         Argument
+          Literal
+           number: 4 "4" [11:25:239:240]
+         operator: T_RPARAN ) [11:26:240:241]
+     PrimaryExpression
+      IdentifierExpression
+       id: a [11:29:243:244]
+      PostfixExpression
+       MemberIndexExpression
+        operator: T_LSQUARE [ [11:30:244:245]
+        ExpressionSequence
+         Literal
+          number: 5 "5" [11:31:245:246]
+        operator: T_RSQUARE ] [11:32:246:247]
+       ArgumentsExpression
+        Arguments
+         Argument
+          Literal
+           number: 6 "6" [11:34:248:249]
+         operator: T_RPARAN ) [11:35:249:250]
+     PrimaryExpression
+      IdentifierExpression
+       id: a [11:38:252:253]
+      PostfixExpression
+       MemberDotExpression
+        IdentifierName
+         id: b [11:40:254:255]
+       MemberDotExpression
+        IdentifierName
+         id: c [11:42:256:257]
+       ArgumentsExpression
+        Arguments
+         Argument
+          Literal
+           number: 1 "1" [11:44:258:259]
+         operator: T_RPARAN ) [11:45:259:260]
+  Statement
+   ExpressionStatement
+    ExpressionSequence
+     PrimaryExpression
+      ParenthesizedExpression
+       operator: T_LPARAN ( [12:1:262:263]
+       ExpressionSequence
+        TernaryExpression
+         RelationalExpression
+          IdentifierExpression
+           id: a [12:2:263:264]
+          operator: T_GREATER > [12:4:265:266]
+          IdentifierExpression
+           id: b [12:6:267:268]
+         operator: T_QUERY ? [12:8:269:270]
+         IdentifierExpression
+          id: a [12:10:271:272]
+         operator: T_COLON : [12:12:273:274]
+         IdentifierExpression
+          id: b [12:14:275:276]
+       operator: T_RPARAN ) [12:15:276:277]
+      PostfixExpression
+       MemberDotExpression
+        IdentifierName
+         id: c [12:17:278:279]
+       ArgumentsExpression
+        Arguments
+         operator: T_RPARAN ) [12:19:280:281]
+     TernaryExpression
+      PrimaryExpression
+       PrefixExpression
+        NotExpression
+         operator: T_LOG_NOT ! [12:22:283:284]
+        PreIncrementExpression
+         operator: T_INC ++ [12:23:284:286]
+       IdentifierExpression
+        id: a [12:25:286:287]
+      operator: T_QUERY ? [12:27:288:289]
+      IdentifierExpression
+       id: b [12:29:290:291]
+      operator: T_COLON : [12:31:292:293]
+      AdditiveExpression
+       IdentifierExpression
+        id: c [12:33:294:295]
+       operator: T_ADD + [12:35:296:297]
+       Literal
+        number: 1 "1" [12:37:298:299]
+  Statement
+   FunctionStatement
+    AnonymousFunction
+     FunctionDecl
+      FunctionDeclaration
+       keyword: K_FUNCTION function [13:1:301:309]
+       id: fun_a [13:10:310:315]
+       FormalParameterList
+        Assignable
+         id: b [13:16:316:317]
+       FunctionBody
+        SourceElements
+         Statement
+          VariableStatement
+           keyword: K_VAR var [13:20:320:323]
+           VariableDeclarationList
+            VariableDeclaration
+             Assignable
+              id: a [13:24:324:325]
+             Literal
+              number: 1 "1" [13:28:328:329]
+         Statement
+          FunctionStatement
+           AnonymousFunction
+            FunctionDecl
+             FunctionDeclaration
+              keyword: K_FUNCTION function [13:31:331:339]
+              id: c [13:40:340:341]
+              FunctionBody
+               SourceElements
+                Statement
+                 VariableStatement
+                  keyword: K_VAR var [13:44:344:347]
+                  VariableDeclarationList
+                   VariableDeclaration
+                    Assignable
+                     id: b [13:48:348:349]
+                    Literal
+                     number: 1 "1" [13:52:352:353]
+              operator: T_RBRACE } [13:54:354:355]
+       operator: T_RBRACE } [13:55:355:356]
+  Statement
+   VariableStatement
+    keyword: K_VAR var [14:1:357:360]
+    VariableDeclarationList
+     VariableDeclaration
+      Assignable
+       id: f [14:5:361:362]
+      AnonymousFunction
+       AnoymousFunctionDecl
+        keyword: K_FUNCTION function [14:9:365:373]
+        FormalParameterList
+         Assignable
+          id: b [14:19:375:376]
+        FunctionBody
+         SourceElements
+          Statement
+           VariableStatement
+            keyword: K_VAR var [14:23:379:382]
+            VariableDeclarationList
+             VariableDeclaration
+              Assignable
+               id: b [14:27:383:384]
+              Literal
+               number: 1 "1" [14:31:387:388]
+        operator: T_RBRACE } [14:33:389:390]
+  Statement
+   FunctionStatement
+    AnonymousFunction
+     AnoymousFunctionDecl
+      keyword: K_FUNCTION function [15:1:391:399]
+      FormalParameterList
+       Assignable
+        id: c [15:11:401:402]
+      FunctionBody
+       SourceElements
+        Statement
+         ReturnStatement
+          keyword: K_RETURN return [15:15:405:411]
+          ExpressionSequence
+           AnonymousFunction
+            AnoymousFunctionDecl
+             keyword: K_FUNCTION function [15:22:412:420]
+             FunctionBody
+              SourceElements
+               Statement
+                ReturnStatement
+                 keyword: K_RETURN return [15:34:424:430]
+                 ExpressionSequence
+                  AdditiveExpression
+                   PrimaryExpression
+                    IdentifierExpression
+                     id: c [15:41:431:432]
+                    PostfixExpression
+                     PostIncrementExpression
+                      operator: T_INC ++ [15:42:432:434]
+                   operator: T_ADD + [15:45:435:436]
+                   IdentifierExpression
+                    id: g [15:46:436:437]
+             operator: T_RBRACE } [15:48:438:439]
+      operator: T_RBRACE } [15:49:439:440]
+block [1:5:4:440]
+ statement_var [1:5:4:17]
+  id [1:5:4:17]
+   id
+    var [1:5:4:5]
+     id: a
+    var [1:9:8:9]
+     id: b
+    var [1:13:12:13]
+     id: c
+   init
+    var [1:17:16:17]
+     number: 1
+ statement_var [2:5:23:38]
+  id [2:5:23:38]
+   id
+    var [2:5:23:24]
+     id: d
+   init
+    binop [2:9:27:38]
+     exp1
+      var_id [2:9:27:28]
+       [LOCAL] a
+     op: T_ADD [2:11:29:30]
+     exp2
+      binop [2:14:31:38]
+       exp1
+        var_id [2:14:32:33]
+         [LOCAL] b
+       op: T_MUL [2:16:34:35]
+       exp2
+        var_id [2:18:36:37]
+         [LOCAL] c
+ statement_var [3:5:44:58]
+  id [3:5:44:58]
+   id
+    var [3:5:44:45]
+     id: e
+   init
+    binop [3:9:48:58]
+     exp1
+      var [3:9:48:49]
+       number: 1
+     op: T_LOG_AND [3:11:50:52]
+     exp2
+      binop [3:14:53:58]
+       exp1
+        var [3:14:53:54]
+         number: 2
+       op: T_GREATER [3:16:55:56]
+       exp2
+        var [3:18:57:58]
+         number: 3
+ statement_exp [4:1:60:72]
+  exp_seq [4:1:60:72]
+   binop [4:1:60:65]
+    exp1
+     var_id [4:1:60:61]
+      [LOCAL] a
+    op: T_ADD [4:3:62:63]
+    exp2
+     var_id [4:5:64:65]
+      [LOCAL] b
+   binop [4:8:67:72]
+    exp1
+     var_id [4:8:67:68]
+      [LOCAL] a
+    op: T_SUB [4:10:69:70]
+    exp2
+     var_id [4:12:71:72]
+      [LOCAL] b
+ statement_exp [5:1:74:87]
+  exp_seq [5:1:74:87]
+   binop [5:1:74:87]
+    exp1
+     var [5:1:74:75]
+      number: 1
+    op: T_ADD [5:3:76:77]
+    exp2
+     sinop [5:5:78:87]
+      exp
+       sinop [5:5:78:85]
+        exp
+         unop [5:5:78:83]
+          op: T_INC [5:5:78:80]
+          exp
+           unop [5:7:80:83]
+            op: T_DEC [5:7:80:82]
+            exp
+             var_id [5:9:82:83]
+              [LOCAL] a
+        op: T_DEC [5:10:83:85]
+      op: T_INC [5:12:85:87]
+ statement_exp [6:1:89:113]
+  exp_seq [6:1:89:113]
+   binop [6:1:89:98]
+    exp1
+     var_id [6:1:89:90]
+      [LOCAL] a
+    op: T_ASSIGN [6:3:91:92]
+    exp2
+     binop [6:5:93:98]
+      exp1
+       var_id [6:5:93:94]
+        [LOCAL] b
+      op: T_ASSIGN [6:7:95:96]
+      exp2
+       var_id [6:9:97:98]
+        [LOCAL] c
+   binop [6:12:100:113]
+    exp1
+     var_id [6:12:100:101]
+      [LOCAL] a
+    op: T_ASSIGN_ADD [6:14:102:104]
+    exp2
+     binop [6:17:105:113]
+      exp1
+       var_id [6:17:105:106]
+        [LOCAL] b
+      op: T_ASSIGN_SUB [6:19:107:109]
+      exp2
+       sinop [6:22:110:113]
+        exp
+         var_id [6:22:110:111]
+          [LOCAL] c
+        op: T_DEC [6:23:111:113]
+ statement_exp [7:1:115:129]
+  exp_seq [7:1:115:129]
+   member_dot [7:1:115:120]
+    dot: b [7:3:117:118]
+    dot: c [7:5:119:120]
+   sinop [7:8:122:129]
+    exp
+     member_dot [7:8:122:127]
+      dot: b [7:10:124:125]
+      dot: c [7:12:126:127]
+    op: T_INC [7:13:127:129]
+ statement_exp [8:1:131:153]
+  exp_seq [8:1:131:153]
+      sinop [8:12:142:153]
+    exp
+         op: T_INC [8:21:151:153]
+ statement_exp [9:1:155:178]
+  exp_seq [9:1:155:178]
+   binop [9:1:155:178]
+    exp1
+     var_id [9:1:155:156]
+      [LOCAL] a
+    op: T_ASSIGN [9:3:157:158]
+    exp2
+     array [9:5:159:178]
+      var [9:6:160:161]
+       number: 1
+      var [9:9:163:164]
+       number: 2
+      array [9:12:166:173]
+       binop [9:13:167:172]
+        exp1
+         var [9:13:167:168]
+          number: 3
+        op: T_ADD [9:15:169:170]
+        exp2
+         var [9:17:171:172]
+          number: 4
+      array [9:21:175:177]
+ statement_exp [10:1:180:213]
+  exp_seq [10:1:180:213]
+   binop [10:1:180:213]
+    exp1
+     var_id [10:1:180:181]
+      [LOCAL] b
+    op: T_ASSIGN [10:3:182:183]
+    exp2
+     object [10:5:184:213]
+      pair [10:6:185:191]
+       var [10:6:185:186]
+        number: 1
+       var [10:9:188:191]
+        string: \"a\"
+      pair [10:14:193:204]
+       var [10:14:193:196]
+        string: 'b'
+       object [10:19:198:204]
+        pair [10:20:199:203]
+         var_id [10:20:199:200]
+          [LOCAL] c
+         var [10:23:202:203]
+          string: c
+      pair [10:28:207:212]
+       var [10:28:207:208]
+        number: 2
+       var [10:32:211:212]
+        number: 1
+ statement_exp [11:1:215:260]
+  exp_seq [11:1:215:260]
+   call_method [11:1:215:232]
+    obj
+     call_method [11:1:215:224]
+      obj
+       var_id [11:1:215:216]
+        [LOCAL] a
+      method: b [11:3:217:218]
+      args
+       var [11:5:219:220]
+        number: 1
+       var [11:8:222:223]
+        number: 2
+    method: c [11:11:225:226]
+    args
+     var [11:13:227:228]
+      number: 2
+     var [11:16:230:231]
+      number: 1
+   call_function [11:20:234:241]
+    obj
+     call_function [11:20:234:238]
+      obj
+       var_id [11:20:234:235]
+        [LOCAL] a
+      args
+       var [11:22:236:237]
+        number: 3
+    args
+     var [11:25:239:240]
+      number: 4
+   call_function [11:29:243:250]
+    obj
+         args
+     var [11:34:248:249]
+      number: 6
+   call_method [11:38:252:260]
+    obj
+     member_dot [11:38:252:255]
+      dot: b [11:40:254:255]
+    method: c [11:42:256:257]
+    args
+     var [11:44:258:259]
+      number: 1
+ statement_exp [12:2:262:299]
+  exp_seq [12:2:262:299]
+   call_method [12:2:262:281]
+    obj
+     binop [12:2:262:277]
+      exp1
+       binop [12:2:263:268]
+        exp1
+         var_id [12:2:263:264]
+          [LOCAL] a
+        op: T_GREATER [12:4:265:266]
+        exp2
+         var_id [12:6:267:268]
+          [LOCAL] b
+      op1: T_QUERY [12:8:269:270]
+      exp2
+       var_id [12:10:271:272]
+        [LOCAL] a
+      op2: T_COLON [12:12:273:274]
+      exp3
+       var_id [12:14:275:276]
+        [LOCAL] b
+    method: c [12:17:278:279]
+       binop [12:22:283:299]
+    exp1
+     unop [12:22:283:287]
+      op: T_LOG_NOT [12:22:283:284]
+      exp
+       unop [12:23:284:287]
+        op: T_INC [12:23:284:286]
+        exp
+         var_id [12:25:286:287]
+          [LOCAL] a
+    op1: T_QUERY [12:27:288:289]
+    exp2
+     var_id [12:29:290:291]
+      [LOCAL] b
+    op2: T_COLON [12:31:292:293]
+    exp3
+     binop [12:33:294:299]
+      exp1
+       var_id [12:33:294:295]
+        [LOCAL] c
+      op: T_ADD [12:35:296:297]
+      exp2
+       var [12:37:298:299]
+        number: 1
+ statement_exp [13:1:301:356]
+  exp_seq [13:1:301:356]
+   code [13:1:301:356]
+    name: fun_a [13:10:310:315]
+    args
+     b [13:16:316:317]
+    block [13:24:324:355]
+     statement_var [13:24:324:329]
+      id [13:24:324:329]
+       id
+        var [13:24:324:325]
+         id: a
+       init
+        var [13:28:328:329]
+         number: 1
+     statement_exp [13:31:331:355]
+      exp_seq [13:31:331:355]
+       code [13:31:331:355]
+        name: c [13:40:340:341]
+        block [13:48:348:353]
+         statement_var [13:48:348:353]
+          id [13:48:348:353]
+           id
+            var [13:48:348:349]
+             id: b
+           init
+            var [13:52:352:353]
+             number: 1
+ statement_var [14:5:361:390]
+  id [14:5:361:390]
+   id
+    var [14:5:361:362]
+     id: f
+   init
+    code [14:9:365:390]
+     args
+      b [14:19:375:376]
+     block [14:27:383:388]
+      statement_var [14:27:383:388]
+       id [14:27:383:388]
+        id
+         var [14:27:383:384]
+          id: b
+        init
+         var [14:31:387:388]
+          number: 1
+ statement_exp [15:1:391:440]
+  exp_seq [15:1:391:440]
+   code [15:1:391:440]
+    args
+     c [15:11:401:402]
+    block [15:15:405:439]
+     statement_return [15:15:405:439]
+      exp_seq [15:22:412:439]
+       code [15:22:412:439]
+        block [15:34:424:437]
+         statement_return [15:34:424:437]
+          exp_seq [15:41:431:437]
+           binop [15:41:431:437]
+            exp1
+             sinop [15:41:431:434]
+              exp
+               var_id [15:41:431:432]
+                [CLOSURE] c
+              op: T_INC [15:42:432:434]
+            op: T_ADD [15:45:435:436]
+            exp2
+             var_id [15:46:436:437]
+              [GLOBAL] g
+--== Main Function ==--
+C [#000] [NAME  ] a
+C [#001] [NAME  ] b
+C [#002] [NAME  ] c
+C [#003] [NAME  ] d
+C [#004] [NAME  ] e
+C [#005] [NAME  ] fun_a
+C [#006] [NAME  ] f
+C [#000] [NUMBER] 1.000000
+C [#001] [NUMBER] 2.000000
+C [#002] [NUMBER] 3.000000
+C [#003] [STRING] "1"
+C [#004] [NUMBER] 4.000000
+C [#005] [STRING] "a"
+C [#006] [STRING] 'b'
+C [#007] [STRING] c
+C [#008] [NUMBER] 5.000000
+C [#009] [NUMBER] 6.000000
+C [#010] [FUNC  ] fun_a | function fun_a(b) {var a = 1; function c(){var b = 1;}}
+C [#011] [STRING] fun_a
+C [#012] [FUNC  ] [lambda] | function (b) {var b = 1;}
+C [#013] [STRING] <lambda>
+C [#014] [FUNC  ] [lambda] | function (c) {return function (){return c++ +g;}}
+C [0001:017]          0 LOAD_CONST                  0          (1)
+C [0001:005]          2 DUP_TOP                                (a)
+C [0001:005]          3 STORE_NAME                  0          (a)
+C [0001:009]          5 DUP_TOP                                (b)
+C [0001:009]          6 STORE_NAME                  1          (b)
+C [0001:013]          8 DUP_TOP                                (c)
+C [0001:013]          9 STORE_NAME                  2          (c)
+C [0001:005]         11 POP_TOP                                (a = b = c = 1)
+C [0002:009]         12 LOAD_NAME                   0          (a)
+C [0002:014]         14 LOAD_NAME                   1          (b)
+C [0002:018]         16 LOAD_NAME                   2          (c)
+C [0002:014]         18 BINARY_MULTIPLY                        ((b * c))
+C [0002:009]         19 BINARY_ADD                             (a + (b * c))
+C [0002:005]         20 DUP_TOP                                (d)
+C [0002:005]         21 STORE_NAME                  3          (d)
+C [0002:005]         23 POP_TOP                                (d = a + (b * c))
+C [0003:009]         24 LOAD_CONST                  0          (1)
+C [0003:009]         26 JUMP_IF_TRUE_OR_POP        34          (1 && 2 > 3)
+C [0003:014]         28 LOAD_CONST                  1          (2)
+C [0003:018]         30 LOAD_CONST                  2          (3)
+C [0003:014]         32 COMPARE_OP                  4          (2 > 3)
+C [0003:005]  >>     34 DUP_TOP                                (e)
+C [0003:005]         35 STORE_NAME                  4          (e)
+C [0003:005]         37 POP_TOP                                (e = 1 && 2 > 3)
+C [0004:001]         38 LOAD_NAME                   0          (a)
+C [0004:005]         40 LOAD_NAME                   1          (b)
+C [0004:001]         42 BINARY_ADD                             (a + b)
+C [0004:001]         43 POP_TOP                                (a + b)
+C [0004:008]         44 LOAD_NAME                   0          (a)
+C [0004:012]         46 LOAD_NAME                   1          (b)
+C [0004:008]         48 BINARY_SUBTRACT                        (a - b)
+C [0004:001]         49 POP_TOP                                (a + b, a - b)
+C [0005:001]         50 LOAD_CONST                  0          (1)
+C [0005:009]         52 LOAD_NAME                   0          (a)
+C [0005:007]         54 BINARY_DEC                             (--a)
+C [0005:007]         55 DUP_TOP                                (--a)
+C [0005:009]         56 DUP_TOP                                (a)
+C [0005:009]         57 STORE_NAME                  0          (a)
+C [0005:005]         59 BINARY_INC                             (++--a)
+C [0005:005]         60 DUP_TOP                                (++--a)
+C [0005:009]         61 LOAD_NAME                   0          (a)
+C [0005:007]         63 BINARY_DEC                             (--a)
+C [0005:007]         64 DUP_TOP                                (--a)
+C [0005:009]         65 DUP_TOP                                (a)
+C [0005:009]         66 STORE_NAME                  0          (a)
+C [0005:005]         68 DUP_TOP                                (++--a--)
+C [0005:005]         69 BINARY_DEC                             (++--a--)
+C [0005:009]         70 LOAD_NAME                   0          (a)
+C [0005:007]         72 BINARY_DEC                             (--a)
+C [0005:007]         73 DUP_TOP                                (--a)
+C [0005:009]         74 DUP_TOP                                (a)
+C [0005:009]         75 STORE_NAME                  0          (a)
+C [0005:005]         77 BINARY_INC                             (++--a)
+C [0005:005]         78 DUP_TOP                                (++--a)
+C [0005:009]         79 LOAD_NAME                   0          (a)
+C [0005:007]         81 BINARY_DEC                             (--a)
+C [0005:007]         82 DUP_TOP                                (--a)
+C [0005:009]         83 DUP_TOP                                (a)
+C [0005:009]         84 STORE_NAME                  0          (a)
+C [0005:005]         86 DUP_TOP                                (++--a--++)
+C [0005:005]         87 BINARY_INC                             (++--a--++)
+C [0005:009]         88 LOAD_NAME                   0          (a)
+C [0005:007]         90 BINARY_DEC                             (--a)
+C [0005:007]         91 DUP_TOP                                (--a)
+C [0005:009]         92 DUP_TOP                                (a)
+C [0005:009]         93 STORE_NAME                  0          (a)
+C [0005:005]         95 BINARY_INC                             (++--a)
+C [0005:005]         96 DUP_TOP                                (++--a)
+C [0005:009]         97 LOAD_NAME                   0          (a)
+C [0005:007]         99 BINARY_DEC                             (--a)
+C [0005:007]        100 DUP_TOP                                (--a)
+C [0005:009]        101 DUP_TOP                                (a)
+C [0005:009]        102 STORE_NAME                  0          (a)
+C [0005:001]        104 BINARY_ADD                             (1 + ++--a--++)
+C [0005:001]        105 POP_TOP                                (1 + ++--a--++)
+C [0006:009]        106 LOAD_NAME                   2          (c)
+C [0006:005]        108 DUP_TOP                                (b)
+C [0006:005]        109 STORE_NAME                  1          (b)
+C [0006:001]        111 DUP_TOP                                (a)
+C [0006:001]        112 STORE_NAME                  0          (a)
+C [0006:001]        114 POP_TOP                                (a = b = c)
+C [0006:012]        115 LOAD_NAME                   0          (a)
+C [0006:017]        117 LOAD_NAME                   1          (b)
+C [0006:022]        119 LOAD_NAME                   2          (c)
+C [0006:022]        121 DUP_TOP                                (c--)
+C [0006:022]        122 BINARY_DEC                             (c--)
+C [0006:022]        123 DUP_TOP                                (c)
+C [0006:022]        124 STORE_NAME                  2          (c)
+C [0006:017]        126 BINARY_SUBTRACT                        (b -= c--)
+C [0006:017]        127 DUP_TOP                                (b)
+C [0006:017]        128 STORE_NAME                  1          (b)
+C [0006:012]        130 BINARY_ADD                             (a += b -= c--)
+C [0006:012]        131 DUP_TOP                                (a)
+C [0006:012]        132 STORE_NAME                  0          (a)
+C [0006:001]        134 POP_TOP                                (a = b = c, a += b -= c--)
+C [0007:001]        135 LOAD_NAME                   0          (a)
+C [0007:003]        137 LOAD_ATTR                   1          (b)
+C [0007:005]        139 LOAD_ATTR                   2          (c)
+C [0007:001]        141 POP_TOP                                (a.b.c)
+C [0007:008]        142 LOAD_NAME                   0          (a)
+C [0007:010]        144 LOAD_ATTR                   1          (b)
+C [0007:012]        146 LOAD_ATTR                   2          (c)
+C [0007:008]        148 DUP_TOP                                (a.b.c++)
+C [0007:008]        149 BINARY_INC                             (a.b.c++)
+C [0007:008]        150 LOAD_NAME                   0          (a)
+C [0007:010]        152 LOAD_ATTR                   1          (b)
+C [0007:012]        154 STORE_ATTR                  2          (c)
+C [0007:001]        156 POP_TOP                                (a.b.c, a.b.c++)
+C [0008:001]        157 LOAD_NAME                   0          (a)
+C [0008:002]        159 LOAD_CONST                  0          ([1])
+C [0008:002]        161 BINARY_SUBSCR                          ([1])
+C [0008:005]        162 LOAD_CONST                  3          (["1"])
+C [0008:005]        164 BINARY_SUBSCR                          (["1"])
+C [0008:001]        165 POP_TOP                                (a[1]["1"])
+C [0008:012]        166 LOAD_NAME                   0          (a)
+C [0008:013]        168 LOAD_CONST                  0          ([1])
+C [0008:013]        170 BINARY_SUBSCR                          ([1])
+C [0008:016]        171 LOAD_CONST                  3          (["1"])
+C [0008:016]        173 BINARY_SUBSCR                          (["1"])
+C [0008:012]        174 DUP_TOP                                (a[1]["1"]++)
+C [0008:012]        175 BINARY_INC                             (a[1]["1"]++)
+C [0008:012]        176 LOAD_NAME                   0          (a)
+C [0008:013]        178 LOAD_CONST                  0          ([1])
+C [0008:013]        180 BINARY_SUBSCR                          ([1])
+C [0008:016]        181 LOAD_CONST                  3          (["1"])
+C [0008:016]        183 STORE_SUBSCR                           (["1"])
+C [0008:001]        184 POP_TOP                                (a[1]["1"], a[1]["1"]++)
+C [0009:006]        185 LOAD_CONST                  0          (1)
+C [0009:009]        187 LOAD_CONST                  1          (2)
+C [0009:013]        189 LOAD_CONST                  2          (3)
+C [0009:017]        191 LOAD_CONST                  4          (4)
+C [0009:013]        193 BINARY_ADD                             (3 + 4)
+C [0009:012]        194 BUILD_LIST                  1          ([3 + 4])
+C [0009:021]        196 BUILD_LIST                  0          ([])
+C [0009:005]        198 BUILD_LIST                  4          ([1, 2, [3 + 4], []])
+C [0009:001]        200 DUP_TOP                                (a)
+C [0009:001]        201 STORE_NAME                  0          (a)
+C [0009:001]        203 POP_TOP                                (a = [1, 2, [3 + 4], []])
+C [0010:006]        204 LOAD_CONST                  0          (1)
+C [0010:009]        206 LOAD_CONST                  5          ("a")
+C [0010:014]        208 LOAD_CONST                  6          ('b')
+C [0010:020]        210 LOAD_NAME                   2          (c)
+C [0010:023]        212 LOAD_CONST                  7          (c)
+C [0010:019]        214 BUILD_MAP                   1          ({c: c})
+C [0010:028]        216 LOAD_CONST                  1          (2)
+C [0010:032]        218 LOAD_CONST                  0          (1)
+C [0010:005]        220 BUILD_MAP                   3          ({1: "a", 'b': {c: c}, [2]: 1})
+C [0010:001]        222 DUP_TOP                                (b)
+C [0010:001]        223 STORE_NAME                  1          (b)
+C [0010:001]        225 POP_TOP                                (b = {1: "a", 'b': {c: c}, [2]: 1})
+C [0011:001]        226 LOAD_NAME                   0          (a)
+C [0011:003]        228 LOAD_METHOD                 1          (b)
+C [0011:005]        230 LOAD_CONST                  0          (1)
+C [0011:008]        232 LOAD_CONST                  1          (2)
+C [0011:001]        234 CALL_METHOD                 2          (a.b(1, 2))
+C [0011:011]        236 LOAD_METHOD                 2          (c)
+C [0011:013]        238 LOAD_CONST                  1          (2)
+C [0011:016]        240 LOAD_CONST                  0          (1)
+C [0011:001]        242 CALL_METHOD                 2          (a.b(1, 2).c(2, 1))
+C [0011:001]        244 POP_TOP                                (a.b(1, 2).c(2, 1))
+C [0011:020]        245 LOAD_NAME                   0          (a)
+C [0011:022]        247 LOAD_CONST                  2          (3)
+C [0011:020]        249 CALL_FUNCTION               1          (a(3))
+C [0011:025]        251 LOAD_CONST                  4          (4)
+C [0011:020]        253 CALL_FUNCTION               1          (a(3)(4))
+C [0011:020]        255 POP_TOP                                (a(3)(4))
+C [0011:029]        256 LOAD_NAME                   0          (a)
+C [0011:030]        258 LOAD_CONST                  8          ([5])
+C [0011:030]        260 BINARY_SUBSCR                          ([5])
+C [0011:034]        261 LOAD_CONST                  9          (6)
+C [0011:029]        263 CALL_FUNCTION               1          (a[5](6))
+C [0011:029]        265 POP_TOP                                (a[5](6))
+C [0011:038]        266 LOAD_NAME                   0          (a)
+C [0011:040]        268 LOAD_ATTR                   1          (b)
+C [0011:042]        270 LOAD_METHOD                 2          (c)
+C [0011:044]        272 LOAD_CONST                  0          (1)
+C [0011:038]        274 CALL_METHOD                 1          (a.b.c(1))
+C [0011:001]        276 POP_TOP                                (a.b(1, 2).c(2, 1), a(3)(4), a[5](6), a.b.c(1))
+C [0012:002]        277 LOAD_NAME                   0          (a)
+C [0012:006]        279 LOAD_NAME                   1          (b)
+C [0012:002]        281 COMPARE_OP                  4          (a > b)
+C [0012:008]        283 POP_JUMP_IF_FALSE         289          (?)
+C [0012:010]        285 LOAD_NAME                   0          (a)
+C [0012:012]        287 JUMP_FORWARD                4          (:)
+C [0012:014]  >>    289 LOAD_NAME                   1          (b)
+C [0012:017]        291 LOAD_METHOD                 2          (c)
+C [0012:002]  >>    293 CALL_METHOD                 0          ((a > b ? a : b).c())
+C [0012:002]        295 POP_TOP                                ((a > b ? a : b).c())
+C [0012:025]        296 LOAD_NAME                   0          (a)
+C [0012:023]        298 BINARY_INC                             (++a)
+C [0012:023]        299 DUP_TOP                                (++a)
+C [0012:025]        300 DUP_TOP                                (a)
+C [0012:025]        301 STORE_NAME                  0          (a)
+C [0012:022]        303 UNARY_NOT                              (!++a)
+C [0012:025]        304 LOAD_NAME                   0          (a)
+C [0012:023]        306 BINARY_INC                             (++a)
+C [0012:023]        307 DUP_TOP                                (++a)
+C [0012:025]        308 DUP_TOP                                (a)
+C [0012:025]        309 STORE_NAME                  0          (a)
+C [0012:027]        311 POP_JUMP_IF_FALSE         317          (?)
+C [0012:029]        313 LOAD_NAME                   1          (b)
+C [0012:031]        315 JUMP_FORWARD                7          (:)
+C [0012:033]  >>    317 LOAD_NAME                   2          (c)
+C [0012:037]        319 LOAD_CONST                  0          (1)
+C [0012:033]        321 BINARY_ADD                             (c + 1)
+C [0012:002]        322 POP_TOP                                ((a > b ? a : b).c(), !++a ? b : c + 1)
+C [0013:010]        323 LOAD_CONST                 10          (fun_a)
+C [0013:010]        325 LOAD_CONST                 11          (fun_a)
+C [0013:001]        327 MAKE_FUNCTION               0          (function fun_a(b) {var a = 1; function c(){var b = 1;}})
+
+C [0013:010]        329 STORE_NAME                  5          (fun_a)
+C [0013:001]        331 POP_TOP                                (function fun_a(b) {var a = 1; function c(){var b = 1;}})
+
+C [0000:000]        332 LOAD_CONST                 12          (<lambda>)
+C [0000:000]        334 LOAD_CONST                 13          (<lambda>)
+C [0014:009]        336 MAKE_FUNCTION               0          (function (b) {var b = 1;})
+C [0014:005]        338 DUP_TOP                                (f)
+C [0014:005]        339 STORE_NAME                  6          (f)
+C [0014:005]        341 POP_TOP                                (f = function (b) {var b = 1;})
+C [0000:000]        342 LOAD_CONST                 14          (<lambda>)
+C [0000:000]        344 LOAD_CONST                 13          (<lambda>)
+C [0015:001]        346 MAKE_FUNCTION               0          (function (c) {return function (){return c++ +g;}})
+C [0015:001]        348 POP_TOP                                (function (c) {return function (){return c++ +g;}})
+--== Function: "fun_a" ==--
+C [#000] [NAME  ] a
+C [#001] [NAME  ] c
+C [#000] [NUMBER] 1.000000
+C [#001] [FUNC  ] c | function c(){var b = 1;}
+C [#002] [STRING] fun_a.<locals>.c
+C [0013:028]          0 LOAD_CONST                  0          (1)
+C [0013:024]          2 DUP_TOP                                (a)
+C [0013:024]          3 STORE_NAME                  0          (a)
+C [0013:024]          5 POP_TOP                                (a = 1)
+C [0013:040]          6 LOAD_CONST                  1          (c)
+C [0013:040]          8 LOAD_CONST                  2          (c)
+C [0013:031]         10 MAKE_FUNCTION               0          (function c(){var b = 1;})
+C [0013:040]         12 STORE_NAME                  1          (c)
+C [0013:031]         14 POP_TOP                                (function c(){var b = 1;})
+--== Function: "fun_a.<locals>.c" ==--
+C [#000] [NAME  ] b
+C [#000] [NUMBER] 1.000000
+C [0013:052]          0 LOAD_CONST                  0          (1)
+C [0013:048]          2 DUP_TOP                                (b)
+C [0013:048]          3 STORE_NAME                  0          (b)
+C [0013:048]          5 POP_TOP                                (b = 1)
+--== Function: "<lambda>" ==--
+C [#000] [NAME  ] b
+C [#000] [NUMBER] 1.000000
+C [0014:031]          0 LOAD_CONST                  0          (1)
+C [0014:027]          2 DUP_TOP                                (b)
+C [0014:027]          3 STORE_NAME                  0          (b)
+C [0014:027]          5 POP_TOP                                (b = 1)
+--== Function: "<lambda>" ==--
+C [#000] [NAME  ] c
+C [#000] [FUNC  ] [lambda] | function (){return c++ +g;}
+C [#001] [STRING] <lambda>.<locals>.<lambda>
+C [0015:041]          0 LOAD_CLOSURE                0          (c)
+C [0015:041]          2 LOAD_CLOSURE                0          (c)
+C [0000:000]          4 BUILD_LIST                  2          (...)
+C [0000:000]          6 LOAD_CONST                  0          (<lambda>)
+C [0000:000]          8 LOAD_CONST                  1          (<lambda>.<locals>.<lambda>)
+C [0015:022]         10 MAKE_FUNCTION               8          (function (){return c++ +g;})
+C [0015:015]         12 RETURN_VALUE                           (return function (){return c++ +g;})
+--== Function: "<lambda>.<locals>.<lambda>" ==--
+C [0015:041]          0 LOAD_DEREF                  0          (c)
+C [0015:041]          2 DUP_TOP                                (c++)
+C [0015:041]          3 BINARY_INC                             (c++)
+C [0015:041]          4 DUP_TOP                                (c)
+C [0015:041]          5 STORE_DEREF                 0          (c)
+C [0015:046]          7 LOAD_GLOBAL                 0          (g)
+C [0015:041]          9 BINARY_ADD                             (c++ +g)
+C [0015:034]         10 RETURN_VALUE                           (return c++ +g)

@@ -135,6 +135,13 @@ namespace clib {
                             gen.error(this, "id conflict");
                         gen.add_var(node->data._string, shared_from_this());
                     }
+                } else if (clazz == fast) {
+                    gen.emit(this, STORE_FAST, gen.load_string(node->data._string, cjs_consts::get_string_t::gs_name));
+                    if (parent.lock()->get_type() == s_id) {
+                        if (gen.get_var(node->data._string, sq_local) != nullptr)
+                            gen.error(this, "id conflict");
+                        gen.add_var(node->data._string, shared_from_this());
+                    }
                 } else if (clazz == global) {
                     gen.emit(this, STORE_GLOBAL, gen.load_string(node->data._string, cjs_consts::get_string_t::gs_global));
                 } else if (clazz == closure) {
@@ -155,6 +162,8 @@ namespace clib {
             case a_literal:
                 if (clazz == local) {
                     gen.emit(this, LOAD_NAME, gen.load_string(node->data._string, cjs_consts::get_string_t::gs_name));
+                } else if (clazz == fast) {
+                    gen.emit(this, LOAD_FAST, gen.load_string(node->data._string, cjs_consts::get_string_t::gs_name));
                 } else if (clazz == global) {
                     gen.emit(this, LOAD_GLOBAL, gen.load_string(node->data._string, cjs_consts::get_string_t::gs_global));
                 } else if (clazz == closure) {
@@ -208,12 +217,13 @@ namespace clib {
         auto i = gen.get_var(node->data._identifier, sq_local_func);
         if (i) {
             id = i;
-            clazz = local;
+            clazz = gen.get_func_level() == 1 ? local : fast;
         } else {
             i = gen.get_var(node->data._identifier, sq_all);
             if (i) {
                 id = i;
                 clazz = closure;
+                gen.add_closure(std::dynamic_pointer_cast<sym_var_id_t>(shared_from_this()));
             } else {
                 clazz = global;
             }
@@ -952,15 +962,25 @@ namespace clib {
         auto id = gen.push_function(std::dynamic_pointer_cast<sym_code_t>(shared_from_this()));
         body->gen_rvalue(gen);
         gen.pop_function();
+        uint32_t flag = 0;
+        if (!closure.empty()) {
+            for (const auto &s : closure) {
+                gen.emit(s->node, LOAD_CLOSURE, gen.load_string(
+                        s->node->data._identifier, cjs_consts::get_string_t::gs_name));
+            }
+            flag |= 8U;
+            gen.emit(nullptr, BUILD_LIST, closure.size());
+        }
+        fullname = gen.get_fullname(name ? name->data._identifier : LAMBDA_ID);
         if (name) {
             gen.emit(name, LOAD_CONST, id);
-            gen.emit(name, LOAD_CONST, gen.load_string(name->data._identifier, cjs_consts::get_string_t::gs_string));
-            gen.emit(this, MAKE_FUNCTION);
+            gen.emit(name, LOAD_CONST, gen.load_string(fullname, cjs_consts::get_string_t::gs_string));
+            gen.emit(this, MAKE_FUNCTION, (int) flag);
             gen.emit(name, STORE_NAME, gen.load_string(name->data._identifier, cjs_consts::get_string_t::gs_name));
         } else {
             gen.emit(nullptr, LOAD_CONST, id);
-            gen.emit(nullptr, LOAD_CONST, gen.load_string(LAMBDA_ID, cjs_consts::get_string_t::gs_string));
-            gen.emit(this, MAKE_FUNCTION);
+            gen.emit(nullptr, LOAD_CONST, gen.load_string(fullname, cjs_consts::get_string_t::gs_string));
+            gen.emit(this, MAKE_FUNCTION, (int) flag);
         }
         if (!args.empty())
             gen.leave();

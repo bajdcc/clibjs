@@ -45,7 +45,10 @@ namespace clib {
     };
 
     class sym_t;
+
     class sym_code_t;
+
+    class sym_var_id_t;
 
     class ijsgen {
     public:
@@ -63,6 +66,9 @@ namespace clib {
         virtual void leave() = 0;
         virtual std::shared_ptr<sym_t> get_var(const std::string &, int) = 0;
         virtual void add_var(const std::string &, std::shared_ptr<sym_t>) = 0;
+        virtual void add_closure(std::shared_ptr<sym_var_id_t>) = 0;
+        virtual int get_func_level() const = 0;
+        virtual std::string get_fullname(const std::string &name) const = 0;
         virtual void error(ast_node_index *, const std::string &) const = 0;
     };
 
@@ -102,9 +108,10 @@ namespace clib {
         int gen_rvalue(ijsgen &gen) override;
         enum class_t {
             local,
+            fast,
             closure,
             global,
-        } clazz {local};
+        } clazz{local};
         ast_node *node{nullptr};
     };
 
@@ -391,12 +398,14 @@ namespace clib {
         int gen_rvalue(ijsgen &gen) override;
         int set_parent(sym_t::ref node) override;
         ast_node *name{nullptr};
+        std::string fullname;
         std::vector<ast_node *> args;
         sym_t::ref body;
         cjs_consts consts;
         std::vector<cjs_scope> scopes;
         std::vector<cjs_code> codes;
         int codes_idx{0};
+        std::vector<sym_var_id_t::ref> closure;
     };
 
     class cjsgen : public ijsgen {
@@ -425,6 +434,9 @@ namespace clib {
         void leave() override;
         std::shared_ptr<sym_t> get_var(const std::string &, int) override;
         void add_var(const std::string &, std::shared_ptr<sym_t>) override;
+        void add_closure(std::shared_ptr<sym_var_id_t>) override;
+        int get_func_level() const override;
+        std::string get_fullname(const std::string &name) const override;
         void error(ast_node_index *, const std::string &) const override;
 
     private:

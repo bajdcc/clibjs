@@ -1615,6 +1615,29 @@ namespace clib {
         codes.back()->scopes.back().vars.insert({name, id});
     }
 
+    void cjsgen::add_closure(std::shared_ptr<sym_var_id_t> c) {
+        codes.back()->closure.push_back(std::move(c));
+    }
+
+    int cjsgen::get_func_level() const {
+        return (int) codes.size();
+    }
+
+    std::string cjsgen::get_fullname(const std::string &name) const {
+        if (codes.size() == 1)
+            return name;
+        std::stringstream ss;
+        for (auto i = codes.begin() + 1; i != codes.end(); i++) {
+            if ((*i)->name)
+                ss << (*i)->name->data._identifier;
+            else
+                ss << LAMBDA_ID;
+            ss << ".<locals>.";
+        }
+        ss << name;
+        return ss.str();
+    }
+
     void cjsgen::error(ast_node_index *idx, const std::string &str) const {
         std::stringstream ss;
         ss << "[" << idx->line << ":" << idx->column << "] ";
@@ -1627,7 +1650,7 @@ namespace clib {
         fprintf(stdout, "--== Main Function ==--\n");
         dump(codes.front());
         for (const auto &c : funcs) {
-            fprintf(stdout, "--== Function: \"%s\" ==--\n", c->name ? c->name->data._identifier : "[lambda]");
+            fprintf(stdout, "--== Function: \"%s\" ==--\n", c->fullname.c_str());
             dump(c);
         }
     }
