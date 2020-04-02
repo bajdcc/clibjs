@@ -145,6 +145,14 @@ namespace clib {
         return consts_data.at(n);
     }
 
+    const char *cjs_consts::get_name(int n) const {
+        return names_data.at(n);
+    }
+
+    const char *cjs_consts::get_global(int n) const {
+        return globals_data.at(n);
+    }
+
     void cjs_consts::dump(const std::string *text) const {
         auto i = 0;
         std::vector<const char *> linksa(names.size());
@@ -199,6 +207,10 @@ namespace clib {
         std::fill(consts.begin(), consts.end(), r__end);
         consts_data.resize(index);
         std::fill(consts_data.begin(), consts_data.end(), nullptr);
+        names_data.resize(names.size());
+        std::fill(names_data.begin(), names_data.end(), nullptr);
+        globals_data.resize(globals.size());
+        std::fill(globals_data.begin(), globals_data.end(), nullptr);
         for (const auto &x : strings) {
             consts[x.second] = r_string;
             consts_data[x.second] = (char *) &x.first;
@@ -209,10 +221,17 @@ namespace clib {
         }
         for (const auto &x : functions) {
             consts[x.first] = r_function;
+            consts_data[x.first] = (char *) &x;
         }
         for (const auto &x : regexes) {
             consts[x.second] = r_regex;
             consts_data[x.second] = (char *) &x.first;
+        }
+        for (const auto &x : names) {
+            names_data[x.second] = x.first.c_str();
+        }
+        for (const auto &x : globals) {
+            globals_data[x.second] = x.first.c_str();
         }
     }
 
@@ -762,8 +781,18 @@ namespace clib {
                 code->name = asts[1];
                 code->end = asts.back()->end;
                 asts.pop_back();
-                std::vector<ast_node *> _asts(asts.begin() + 2, asts.end());
-                code->args = _asts;
+                decltype(code->args) _asts;
+                std::transform(asts.begin() + 2, asts.end(),
+                               std::back_inserter(_asts),
+                               [this](const auto &x) { return this->primary_node(x); });
+                std::unordered_set<std::string> arg_set;
+                for (const auto &s : _asts) {
+                    if (arg_set.find(s->node->data._identifier) != arg_set.end()) {
+                        error(s, "conflict arg");
+                    }
+                    arg_set.insert(s->node->data._identifier);
+                }
+                code->args = std::move(_asts);
                 code->body = tmps.front();
                 asts.clear();
                 tmps.clear();
@@ -914,8 +943,18 @@ namespace clib {
                 copy_info(code, asts[0]);
                 code->end = asts.back()->end;
                 asts.pop_back();
-                std::vector<ast_node *> _asts(asts.begin() + 1, asts.end());
-                code->args = _asts;
+                decltype(code->args) _asts;
+                std::transform(asts.begin() + 1, asts.end(),
+                               std::back_inserter(_asts),
+                               [this](const auto &x) { return this->primary_node(x); });
+                std::unordered_set<std::string> arg_set;
+                for (const auto &s : _asts) {
+                    if (arg_set.find(s->node->data._identifier) != arg_set.end()) {
+                        error(s, "conflict arg");
+                    }
+                    arg_set.insert(s->node->data._identifier);
+                }
+                code->args = std::move(_asts);
                 code->body = tmps.front();
                 asts.clear();
                 tmps.clear();
@@ -1546,12 +1585,7 @@ namespace clib {
                         os << std::setfill(' ') << std::setw(level + 1) << "";
                         os << "args" << std::endl;
                         for (const auto &s : n->args) {
-                            os << std::setfill(' ') << std::setw(level + 2) << "";
-                            os << s->data._identifier
-                               << " " << "[" << s->line << ":"
-                               << s->column << ":"
-                               << s->start << ":"
-                               << s->end << "]" << std::endl;
+                            print(s, level + 2, os);
                         }
                     }
                     print(n->body, level + 1, os);
@@ -1649,6 +1683,12 @@ namespace clib {
                     auto f = vars.find(name);
                     if (f != vars.end()) {
                         return f->second.lock();
+                    }
+                }
+                const auto &args = codes.back()->args;
+                for (const auto &arg : args) {
+                    if (arg->node->data._identifier) {
+                        return arg;
                     }
                 }
                 return nullptr;

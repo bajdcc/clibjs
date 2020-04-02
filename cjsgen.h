@@ -351,8 +351,11 @@ namespace clib {
         std::string get_desc(int n) const;
         runtime_t get_type(int n) const;
         char *get_data(int n) const;
+        const char *get_name(int n) const;
+        const char *get_global(int n) const;
         void dump(const std::string *text) const;
         void save();
+    private:
         std::unordered_map<double, int> numbers;
         std::unordered_map<std::string, int> strings;
         std::unordered_map<std::string, int> regexes;
@@ -362,6 +365,8 @@ namespace clib {
         std::unordered_map<int, std::weak_ptr<sym_code_t>> functions;
         std::vector<runtime_t> consts;
         std::vector<char *> consts_data;
+        std::vector<const char *> names_data;
+        std::vector<const char *> globals_data;
         int index{0};
     };
 
@@ -405,7 +410,7 @@ namespace clib {
         int set_parent(sym_t::ref node) override;
         ast_node *name{nullptr};
         std::string fullname;
-        std::vector<ast_node *> args;
+        std::vector<sym_var_t::ref> args;
         sym_t::ref body;
         cjs_consts consts;
         std::vector<cjs_scope> scopes;

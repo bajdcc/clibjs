@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <iomanip>
 #include "cjsruntime.h"
 
 #define DUMP_STEP 1
@@ -23,6 +24,65 @@ namespace clib {
         return r_number;
     }
 
+    js_value::ref jsv_number::binary_op(int code, js_value::ref op) {
+        switch (code) {
+            case BINARY_POWER:
+                break;
+            case BINARY_MULTIPLY:
+                break;
+            case BINARY_MODULO:
+                break;
+            case BINARY_ADD: {
+                switch (op->get_type()) {
+                    case r_number:
+                        return std::make_shared<jsv_number>(
+                                number +
+                                std::dynamic_pointer_cast<jsv_number>(op)->number);
+                    case r_string:
+                        break;
+                    case r_boolean:
+                        break;
+                    case r_regex:
+                        break;
+                    case r_array:
+                        break;
+                    case r_object:
+                        break;
+                    case r_function:
+                        break;
+                    default:
+                        break;
+                }
+            }
+                break;
+            case BINARY_SUBTRACT:
+                break;
+            case BINARY_FLOOR_DIVIDE:
+                break;
+            case BINARY_TRUE_DIVIDE:
+                break;
+            case BINARY_LSHIFT:
+                break;
+            case BINARY_RSHIFT:
+                break;
+            case BINARY_URSHIFT:
+                break;
+            case BINARY_AND:
+                break;
+            case BINARY_XOR:
+                break;
+            case BINARY_OR:
+                break;
+            default:
+                break;
+        }
+        return nullptr;
+    }
+
+    void jsv_number::mark(int n) {
+        marked = n;
+    }
+
     jsv_string::jsv_string(std::string s) : str(std::move(s)) {
 
     }
@@ -33,6 +93,14 @@ namespace clib {
 
     runtime_t jsv_string::get_type() {
         return r_string;
+    }
+
+    js_value::ref jsv_string::binary_op(int code, js_value::ref op) {
+        return nullptr;
+    }
+
+    void jsv_string::mark(int n) {
+        marked = n;
     }
 
     jsv_boolean::jsv_boolean(bool flag) : b(flag) {
@@ -47,6 +115,14 @@ namespace clib {
         return r_boolean;
     }
 
+    js_value::ref jsv_boolean::binary_op(int code, js_value::ref op) {
+        return nullptr;
+    }
+
+    void jsv_boolean::mark(int n) {
+        marked = n;
+    }
+
     jsv_regex::jsv_regex(std::string s) : re(std::move(s)) {
 
     }
@@ -59,12 +135,28 @@ namespace clib {
         return r_regex;
     }
 
+    js_value::ref jsv_regex::binary_op(int code, js_value::ref op) {
+        return nullptr;
+    }
+
+    void jsv_regex::mark(int n) {
+        marked = n;
+    }
+
     js_value::ref jsv_array::clone() const {
         return nullptr;
     }
 
     runtime_t jsv_array::get_type() {
         return r_array;
+    }
+
+    js_value::ref jsv_array::binary_op(int code, js_value::ref op) {
+        return nullptr;
+    }
+
+    void jsv_array::mark(int n) {
+        marked = n;
     }
 
     js_value::ref jsv_object::clone() const {
@@ -75,6 +167,18 @@ namespace clib {
         return r_object;
     }
 
+    js_value::ref jsv_object::binary_op(int code, js_value::ref op) {
+        return nullptr;
+    }
+
+    void jsv_object::mark(int n) {
+        marked = n;
+    }
+
+    jsv_function::jsv_function(sym_code_t::weak_ref c) : code(std::move(c)) {
+
+    }
+
     js_value::ref jsv_function::clone() const {
         return nullptr;
     }
@@ -83,13 +187,26 @@ namespace clib {
         return r_function;
     }
 
-    cjs_function::cjs_function(sym_code_t::ref code, int pc) : code(code), pc(pc) {
+    cjs_function::cjs_function(sym_code_t::ref code, int pc) : code(std::move(code)), pc(pc) {
 
+    }
+
+    void cjs_function::store_name(const std::string &name, js_value::weak_ref obj) {
+        envs.insert({name, obj});
+    }
+
+    js_value::ref jsv_function::binary_op(int code, js_value::ref op) {
+        return nullptr;
+    }
+
+    void jsv_function::mark(int n) {
+        marked = n;
     }
 
     void cjsruntime::eval(sym_code_t::ref code) {
         stack.clear();
         stack.push_back(std::make_shared<cjs_function>(code, 0));
+        decltype(stack.back()->ret_value) ret;
         while (!stack.empty()) {
             current_stack = stack.back();
             const auto &fun = stack.back()->code;
@@ -102,13 +219,17 @@ namespace clib {
 #if DUMP_STEP
                 dump_step(c);
 #endif
-                auto ret = run(code, c);
-                if (ret != 0)
+                auto r = run(code, c);
+#if DUMP_STEP
+                dump_step2(c);
+#endif
+                if (r != 0)
                     break;
             }
-            auto ret = stack.back()->ret_value;
+            ret = stack.back()->ret_value;
             stack.pop_back();
         }
+        print(ret.lock(), 0, std::cout);
     }
 
     int cjsruntime::run(const sym_code_t::ref &fun, const cjs_code &code) {
@@ -150,24 +271,29 @@ namespace clib {
             case INPLACE_MATRIX_MULTIPLY:
                 break;
             case BINARY_POWER:
-                break;
             case BINARY_MULTIPLY:
-                break;
             case BINARY_MODULO:
-                break;
             case BINARY_ADD:
-                break;
             case BINARY_SUBTRACT:
+            case BINARY_FLOOR_DIVIDE:
+            case BINARY_TRUE_DIVIDE:
+            case BINARY_LSHIFT:
+            case BINARY_RSHIFT:
+            case BINARY_URSHIFT:
+            case BINARY_AND:
+            case BINARY_XOR:
+            case BINARY_OR: {
+                auto op2 = pop();
+                auto op1 = pop();
+                push(register_value(op1.lock()->binary_op(code.code, op2.lock())));
+            }
                 break;
             case BINARY_SUBSCR:
                 break;
-            case BINARY_FLOOR_DIVIDE:
-                break;
-            case BINARY_TRUE_DIVIDE:
-                break;
             case BINARY_INC:
-                break;
-            case BINARY_DEC:
+            case BINARY_DEC: {
+                auto op1 = pop();
+            }
                 break;
             case INPLACE_FLOOR_DIVIDE:
                 break;
@@ -196,18 +322,6 @@ namespace clib {
             case STORE_SUBSCR:
                 break;
             case DELETE_SUBSCR:
-                break;
-            case BINARY_LSHIFT:
-                break;
-            case BINARY_RSHIFT:
-                break;
-            case BINARY_URSHIFT:
-                break;
-            case BINARY_AND:
-                break;
-            case BINARY_XOR:
-                break;
-            case BINARY_OR:
                 break;
             case INPLACE_POWER:
                 break;
@@ -251,7 +365,12 @@ namespace clib {
                 break;
             case HAVE_ARGUMENT:
                 break;
-            case STORE_NAME:
+            case STORE_NAME: {
+                auto obj = top();
+                auto id = code.op1;
+                auto name = fun->consts.get_name(id);
+                current_stack->store_name(name, obj);
+            }
                 break;
             case DELETE_NAME:
                 break;
@@ -265,7 +384,12 @@ namespace clib {
                 break;
             case DELETE_ATTR:
                 break;
-            case STORE_GLOBAL:
+            case STORE_GLOBAL: {
+                auto obj = top();
+                auto id = code.op1;
+                auto name = fun->consts.get_global(id);
+                stack.front()->store_name(name, obj);
+            }
                 break;
             case DELETE_GLOBAL:
                 break;
@@ -305,7 +429,11 @@ namespace clib {
                 break;
             case POP_JUMP_IF_TRUE:
                 break;
-            case LOAD_GLOBAL:
+            case LOAD_GLOBAL: {
+                auto op = code.op1;
+                auto var = load_global(fun, op);
+                push(var);
+            }
                 break;
             case IS_OP:
                 break;
@@ -325,7 +453,14 @@ namespace clib {
                 break;
             case CALL_FUNCTION:
                 break;
-            case MAKE_FUNCTION:
+            case MAKE_FUNCTION: {
+                auto name = pop();
+                auto f = top();
+                assert(f.lock()->get_type() == r_function);
+                assert(name.lock()->get_type() == r_string);
+                std::dynamic_pointer_cast<jsv_function>(f.lock())->name =
+                        std::dynamic_pointer_cast<jsv_string>(name.lock());
+            }
                 break;
             case BUILD_SLICE:
                 break;
@@ -399,11 +534,22 @@ namespace clib {
             case r_object:
                 break;
             case r_function:
-                break;
+                return register_value(std::make_shared<jsv_function>(
+                        *(sym_code_t::weak_ref *) fun->consts.get_data(op)));
             default:
                 break;
         }
         assert(!"invalid runtime type");
+        return nullptr;
+    }
+
+    js_value::ref cjsruntime::load_global(const sym_code_t::ref &fun, int op) {
+        auto t = fun->consts.get_type(op);
+        auto g = fun->consts.get_global(op);
+        auto G = stack.front()->envs.find(g);
+        if (G != stack.front()->envs.end()) {
+            return G->second.lock();
+        }
         return nullptr;
     }
 
@@ -430,5 +576,61 @@ namespace clib {
 
     void cjsruntime::dump_step(const cjs_code &c) {
         fprintf(stdout, "R [%04d] %s\n", current_stack->pc, c.desc.c_str());
+    }
+
+    void cjsruntime::dump_step2(const cjs_code &c) {
+        if (!stack.empty() && !stack.front()->stack.empty())
+            std::cout << std::setfill('=') << std::setw(60) << "" << std::endl;
+        for (auto s = stack.rbegin(); s != stack.rend(); s++) {
+            const auto &st = (*s)->stack;
+            auto sti = (int) st.size();
+            for (auto s2 = st.rbegin(); s2 != st.rend(); s2++) {
+                fprintf(stdout, "%4d | [%p] ", sti--, s2->lock().get());
+                print(s2->lock(), 0, std::cout);
+            }
+            const auto &env = (*s)->envs;
+            for (const auto &e : env) {
+                fprintf(stdout, " Env | [%p] \"%.100s\" ", e.second.lock().get(), e.first.c_str());
+                print(e.second.lock(), 0, std::cout);
+            }
+            std::cout << std::setfill('-') << std::setw(60) << "" << std::endl;
+        }
+    }
+
+    void cjsruntime::print(const js_value::ref &value, int level, std::ostream &os) {
+        if (value == nullptr)
+            return;
+        auto type = value->get_type();
+        os << std::setfill(' ') << std::setw(level) << "";
+        switch (type) {
+            case r_number: {
+                auto n = std::dynamic_pointer_cast<jsv_number>(value);
+                os << "number: " << n->number << std::endl;
+            }
+                break;
+            case r_string: {
+                auto n = std::dynamic_pointer_cast<jsv_string>(value);
+                os << "string: " << n->str << std::endl;
+            }
+                break;
+            case r_boolean: {
+                auto n = std::dynamic_pointer_cast<jsv_boolean>(value);
+                os << "boolean: " << n->b << std::endl;
+            }
+                break;
+            case r_regex: {
+                auto n = std::dynamic_pointer_cast<jsv_regex>(value);
+                os << "regex: " << n->re << std::endl;
+            }
+                break;
+            case r_array:
+                break;
+            case r_object:
+                break;
+            case r_function:
+                break;
+            default:
+                break;
+        }
     }
 }
