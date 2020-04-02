@@ -410,6 +410,18 @@ namespace clib {
             INS_END,
         };
         const char *ins_string(ins_t t);
+
+        enum runtime_t {
+            r_number,
+            r_string,
+            r_boolean,
+            r_regex,
+            r_array,
+            r_object,
+            r_function,
+            r__end,
+        };
+        const char *runtime_string(runtime_t t);
     }
 
     class cexception : public std::exception {

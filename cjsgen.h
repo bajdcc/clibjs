@@ -55,7 +55,6 @@ namespace clib {
         virtual void emit(ast_node_index *, ins_t) = 0;
         virtual void emit(ast_node_index *, ins_t, int) = 0;
         virtual void emit(ast_node_index *, ins_t, int, int) = 0;
-        virtual int current() const = 0;
         virtual int code_length() const = 0;
         virtual void edit(int, int, int) = 0;
         virtual int load_number(double d) = 0;
@@ -325,11 +324,10 @@ namespace clib {
         sym_exp_seq_t::ref seq;
     };
 
-    class sym_block_t : public sym_t {
+    class sym_block_t : public sym_stmt_t {
     public:
         using ref = std::shared_ptr<sym_block_t>;
         symbol_t get_type() const override;
-        symbol_t get_base_type() const override;
         std::string to_string() const override;
         int gen_rvalue(ijsgen &gen) override;
         int set_parent(sym_t::ref node) override;
@@ -345,18 +343,25 @@ namespace clib {
             gs_name,
             gs_global,
             gs_deref,
+            gs_regex,
         };
         int get_number(double n);
         int get_string(const std::string &str, get_string_t type);
         int get_function(std::shared_ptr<sym_code_t> code);
         std::string get_desc(int n) const;
+        runtime_t get_type(int n) const;
+        char *get_data(int n) const;
         void dump(const std::string *text) const;
+        void save();
         std::unordered_map<double, int> numbers;
         std::unordered_map<std::string, int> strings;
+        std::unordered_map<std::string, int> regexes;
         std::unordered_map<std::string, int> globals;
         std::unordered_map<std::string, int> derefs;
         std::unordered_map<std::string, int> names;
         std::unordered_map<int, std::weak_ptr<sym_code_t>> functions;
+        std::vector<runtime_t> consts;
+        std::vector<char *> consts_data;
         int index{0};
     };
 
@@ -388,6 +393,7 @@ namespace clib {
     struct cjs_code {
         int line, column, start, end;
         int code, opnum, op1, op2;
+        std::string desc;
     };
 
     class sym_code_t : public sym_exp_t {
@@ -404,7 +410,6 @@ namespace clib {
         cjs_consts consts;
         std::vector<cjs_scope> scopes;
         std::vector<cjs_code> codes;
-        int codes_idx{0};
         std::vector<sym_var_id_t::ref> closure;
     };
 
@@ -417,13 +422,13 @@ namespace clib {
         cjsgen &operator=(const cjsgen &) = delete;
 
         bool gen_code(ast_node *node, const std::string *str);
+        sym_code_t::ref get_code() const;
 
         static void print(const sym_t::ref &node, int level, std::ostream &os);
 
         void emit(ast_node_index *, ins_t) override;
         void emit(ast_node_index *, ins_t, int) override;
         void emit(ast_node_index *, ins_t, int, int) override;
-        int current() const override;
         int code_length() const override;
         void edit(int, int, int) override;
         int load_number(double d) override;

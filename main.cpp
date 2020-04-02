@@ -9,7 +9,8 @@ int main() {
     //std::ifstream file("..\\test\\vue.js");
     //std::ifstream file("..\\test\\vue.min.js");
     //std::ifstream file("..\\test\\test_1.js");
-    std::ifstream file("..\\test\\test_2.js");
+    //std::ifstream file("..\\test\\test_2.js");
+    std::ifstream file("..\\test\\test_3.js");
     if (file) {
         std::stringstream buffer;
         buffer << file.rdbuf();
@@ -19,6 +20,8 @@ int main() {
             js.exec("output.txt", str);
         } catch (const clib::cexception &e) {
             std::cout << e.message() << std::endl;
+        } catch (const std::exception &e) {
+            std::cout << e.what() << std::endl;
         }
     }
     return 0;

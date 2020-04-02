@@ -21,4 +21,6 @@ add_executable(clibjs
         cjsparser.h
         cjsgen.cpp
         cjsgen.h
-        cjsgen_ast.cpp)
+        cjsgen_ast.cpp
+        cjsruntime.cpp
+        cjsruntime.h)

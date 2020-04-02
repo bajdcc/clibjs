@@ -178,6 +178,9 @@ namespace clib {
             case a_number:
                 gen.emit(this, LOAD_CONST, gen.load_number(node->data._number));
                 break;
+            case a_regex:
+                gen.emit(this, LOAD_CONST, gen.load_string(node->data._string, cjs_consts::get_string_t::gs_regex));
+                break;
             default:
                 gen.error(this, "unsupported var type");
                 break;
@@ -450,14 +453,14 @@ namespace clib {
                 auto idx = gen.code_length();
                 gen.emit(this, JUMP_IF_TRUE_OR_POP, 0);
                 exp2->gen_rvalue(gen);
-                gen.edit(idx, 1, gen.current());
+                gen.edit(idx, 1, gen.code_length());
             }
                 return 0;
             case T_LOG_OR: {
                 auto idx = gen.code_length();
                 gen.emit(this, JUMP_IF_FALSE_OR_POP, 0);
                 exp2->gen_rvalue(gen);
-                gen.edit(idx, 1, gen.current());
+                gen.edit(idx, 1, gen.code_length());
             }
                 return 0;
             default:
@@ -565,11 +568,11 @@ namespace clib {
             gen.emit(op1, POP_JUMP_IF_FALSE, 0);
             exp2->gen_rvalue(gen);
             auto idx2 = gen.code_length();
-            auto cur = gen.current();
+            auto cur = gen.code_length();
             gen.emit(op2, JUMP_FORWARD, 0);
-            gen.edit(idx, 1, gen.current());
+            gen.edit(idx, 1, gen.code_length());
             exp3->gen_rvalue(gen);
-            gen.edit(idx2, 1, gen.current() - cur);
+            gen.edit(idx2, 1, gen.code_length() - cur);
         }
         return sym_t::gen_rvalue(gen);
     }
@@ -922,12 +925,8 @@ namespace clib {
         return s_block;
     }
 
-    symbol_t sym_block_t::get_base_type() const {
-        return s_block;
-    }
-
     std::string sym_block_t::to_string() const {
-        return sym_t::to_string();
+        return sym_stmt_t::to_string();
     }
 
     int sym_block_t::gen_rvalue(ijsgen &gen) {
@@ -984,6 +983,7 @@ namespace clib {
         }
         if (!args.empty())
             gen.leave();
+        consts.save();
         return sym_t::gen_rvalue(gen);
     }
 

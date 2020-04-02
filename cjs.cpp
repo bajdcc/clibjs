@@ -8,8 +8,9 @@
 #include "cjs.h"
 #include "cjsparser.h"
 #include "cjsgen.h"
+#include "cjsruntime.h"
 
-#define LOG_FILE 1
+#define LOG_FILE 0
 
 namespace clib {
 
@@ -31,5 +32,8 @@ namespace clib {
         if (ofs)
             cjsast::print(p.root(), 0, input, ofs);
 #endif
+        auto fun = g.get_code();
+        cjsruntime rt;
+        rt.eval(fun);
     }
 }

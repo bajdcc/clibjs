@@ -94,6 +94,15 @@ namespace clib {
             }
             return f->second;
         }
+        if (type == gs_regex) {
+            auto f = regexes.find(str);
+            if (f == regexes.end()) {
+                auto idx = index++;
+                regexes.insert({str, idx});
+                return idx;
+            }
+            return f->second;
+        }
         assert(!"invalid type");
         return -1;
     }
@@ -121,7 +130,19 @@ namespace clib {
                 return ss.str();
             }
         }
+        for (const auto &x : regexes) {
+            if (x.second == n)
+                return x.first;
+        }
         return "";
+    }
+
+    runtime_t cjs_consts::get_type(int n) const {
+        return consts.at(n);
+    }
+
+    char *cjs_consts::get_data(int n) const {
+        return consts_data.at(n);
     }
 
     void cjs_consts::dump(const std::string *text) const {
@@ -146,6 +167,9 @@ namespace clib {
             auto desc = f->name ? f->name->data._identifier : "[lambda]";
             links[x.first] = {2, (void *) desc};
         }
+        for (const auto &x : regexes) {
+            links[x.second] = {3, (void *) &x.first};
+        }
         for (const auto &x : links) {
             switch (std::get<0>(x)) {
                 case 0:
@@ -160,10 +184,35 @@ namespace clib {
                             text->substr(f->start, f->end - f->start).c_str());
                 }
                     break;
+                case 3:
+                    fprintf(stdout, "C [#%03d] [REGEX ] %s\n", i, ((std::string *) std::get<1>(x))->c_str());
+                    break;
                 default:
                     break;
             }
             i++;
+        }
+    }
+
+    void cjs_consts::save() {
+        consts.resize(index);
+        std::fill(consts.begin(), consts.end(), r__end);
+        consts_data.resize(index);
+        std::fill(consts_data.begin(), consts_data.end(), nullptr);
+        for (const auto &x : strings) {
+            consts[x.second] = r_string;
+            consts_data[x.second] = (char *) &x.first;
+        }
+        for (const auto &x : numbers) {
+            consts[x.second] = r_number;
+            consts_data[x.second] = (char *) &x.first;
+        }
+        for (const auto &x : functions) {
+            consts[x.first] = r_function;
+        }
+        for (const auto &x : regexes) {
+            consts[x.second] = r_regex;
+            consts_data[x.second] = (char *) &x.first;
         }
     }
 
@@ -180,7 +229,15 @@ namespace clib {
 #if DUMP_CODE
         dump();
 #endif
-        return false;
+        codes.front()->consts.save();
+        for (const auto &c : funcs) {
+            c->consts.save();
+        }
+        return true;
+    }
+
+    sym_code_t::ref cjsgen::get_code() const {
+        return codes.empty() ? nullptr : codes.front();
     }
 
     template<class T>
@@ -557,7 +614,18 @@ namespace clib {
                 break;
             case c_statement:
                 break;
-            case c_block:
+            case c_block: {
+                auto block = std::make_shared<sym_block_t>();
+                copy_info(block, tmps.front());
+                for (const auto &s : tmps) {
+                    assert(s->get_base_type() == s_statement);
+                    block->stmts.push_back(std::dynamic_pointer_cast<sym_stmt_t>(s));
+                    block->end = s->end;
+                }
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(block);
+            }
                 break;
             case c_statementList:
                 break;
@@ -1499,7 +1567,6 @@ namespace clib {
             codes.back()->codes.push_back({idx->line, idx->column, idx->start, idx->end, i, 0, 0, 0});
         else
             codes.back()->codes.push_back({0, 0, 0, 0, i, 0, 0, 0});
-        codes.back()->codes_idx++;
     }
 
     void cjsgen::emit(ast_node_index *idx, ins_t i, int a) {
@@ -1507,7 +1574,6 @@ namespace clib {
             codes.back()->codes.push_back({idx->line, idx->column, idx->start, idx->end, i, 1, a, 0});
         else
             codes.back()->codes.push_back({0, 0, 0, 0, i, 1, a, 0});
-        codes.back()->codes_idx += 2;
     }
 
     void cjsgen::emit(ast_node_index *idx, ins_t i, int a, int b) {
@@ -1515,11 +1581,6 @@ namespace clib {
             codes.back()->codes.push_back({idx->line, idx->column, idx->start, idx->end, i, 2, a, b});
         else
             codes.back()->codes.push_back({0, 0, 0, 0, i, 2, a, b});
-        codes.back()->codes_idx += 3;
-    }
-
-    int cjsgen::current() const {
-        return codes.back()->codes_idx;
     }
 
     int cjsgen::code_length() const {
@@ -1676,12 +1737,13 @@ namespace clib {
                     default:
                         break;
                 }
-                idx += c.opnum + 1;
+                idx++;
             }
             std::copy(jumps_set.begin(), jumps_set.end(), std::back_inserter(jumps));
         }
         idx = 0;
-        for (const auto &c : code->codes) {
+        char buf[256];
+        for (auto &c : code->codes) {
             auto alt = text->substr(c.start, c.end - c.start);
             auto jmp = "  ";
             if (!jumps.empty() && jumps.back() == idx) {
@@ -1689,24 +1751,26 @@ namespace clib {
                 jumps.pop_back();
             }
             if (c.opnum == 0)
-                fprintf(stdout, "C [%04d:%03d]  %s   %4d %-20s                   (%s)\n",
-                        c.line, c.column, jmp, idx, ins_string(ins_t(c.code)),
-                        c.line == 0 ? "..." : text->substr(c.start, c.end - c.start).c_str());
+                snprintf(buf, sizeof(buf), "[%04d:%03d]  %s   %4d %-20s                   (%.100s)",
+                         c.line, c.column, jmp, idx, ins_string(ins_t(c.code)),
+                         c.line == 0 ? "..." : text->substr(c.start, c.end - c.start).c_str());
             else if (c.opnum == 1) {
                 if (c.code == LOAD_CONST && c.line == 0) {
-                    fprintf(stdout, "C [%04d:%03d]  %s   %4d %-20s %8d          (%s)\n",
-                            c.line, c.column, jmp, idx, ins_string(ins_t(c.code)), c.op1,
-                            code->consts.get_desc(c.op1).c_str());
+                    snprintf(buf, sizeof(buf), "[%04d:%03d]  %s   %4d %-20s %8d          (%.100s)",
+                             c.line, c.column, jmp, idx, ins_string(ins_t(c.code)), c.op1,
+                             code->consts.get_desc(c.op1).c_str());
                 } else {
-                    fprintf(stdout, "C [%04d:%03d]  %s   %4d %-20s %8d          (%s)\n",
-                            c.line, c.column, jmp, idx, ins_string(ins_t(c.code)), c.op1,
-                            c.line == 0 ? "..." : text->substr(c.start, c.end - c.start).c_str());
+                    snprintf(buf, sizeof(buf), "[%04d:%03d]  %s   %4d %-20s %8d          (%.100s)",
+                             c.line, c.column, jmp, idx, ins_string(ins_t(c.code)), c.op1,
+                             c.line == 0 ? "..." : text->substr(c.start, c.end - c.start).c_str());
                 }
             } else if (c.opnum == 2)
-                fprintf(stdout, "C [%04d:%03d]  %s   %4d %-20s %8d %8d (%s)\n",
-                        c.line, c.column, jmp, idx, ins_string(ins_t(c.code)), c.op1, c.op2,
-                        c.line == 0 ? "..." : text->substr(c.start, c.end - c.start).c_str());
-            idx += c.opnum + 1;
+                snprintf(buf, sizeof(buf), "[%04d:%03d]  %s   %4d %-20s %8d %8d (%.100s)",
+                         c.line, c.column, jmp, idx, ins_string(ins_t(c.code)), c.op1, c.op2,
+                         c.line == 0 ? "..." : text->substr(c.start, c.end - c.start).c_str());
+            fprintf(stdout, "C %s\n", buf);
+            c.desc = buf;
+            idx++;
         }
     }
 }
