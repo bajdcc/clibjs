@@ -159,6 +159,8 @@ namespace clib {
 
     void jsv_array::mark(int n) {
         marked = n;
+        for (auto &s : arr)
+            s.lock()->mark(n);
     }
 
     js_value::ref jsv_object::clone() const {
@@ -177,8 +179,8 @@ namespace clib {
         marked = n;
     }
 
-    jsv_function::jsv_function(sym_code_t::weak_ref c) {
-        code = std::make_shared<cjs_function_info>(c.lock());
+    jsv_function::jsv_function(sym_code_t::ref c) {
+        code = std::make_shared<cjs_function_info>(std::move(c));
     }
 
     js_value::ref jsv_function::clone() const {
@@ -195,6 +197,9 @@ namespace clib {
 
     void jsv_function::mark(int n) {
         marked = n;
+        if (closure.lock()) {
+            closure.lock()->mark(n);
+        }
     }
 
     cjs_function::cjs_function(sym_code_t::ref code) {
@@ -250,7 +255,8 @@ namespace clib {
             case r_object:
                 break;
             case r_function:
-                return std::make_shared<jsv_function>(*(sym_code_t::weak_ref *) c.get_data(op));
+                return std::make_shared<jsv_function>(((
+                        sym_code_t::weak_ref *) c.get_data(op))->lock());
             default:
                 break;
         }
@@ -479,7 +485,25 @@ namespace clib {
                 break;
             case BUILD_SET:
                 break;
-            case BUILD_MAP:
+            case BUILD_MAP: {
+                auto n = code.op1;
+                assert(current_stack->stack.size() >= n * 2);
+                auto obj = std::make_shared<jsv_object>();
+                for (auto i = 0; i < n; i++) {
+                    auto v = pop();
+                    auto k = pop().lock();
+                    if (k->get_type() == r_string) {
+                        obj->obj.insert({std::dynamic_pointer_cast<jsv_string>(k)->str, v});
+                    } else if (k->get_type() == r_number) {
+                        std::stringstream ss;
+                        ss << std::dynamic_pointer_cast<jsv_number>(k)->number;
+                        obj->obj.insert({ss.str(), v});
+                    } else {
+                        continue;
+                    }
+                }
+                push(register_value(obj));
+            }
                 break;
             case LOAD_ATTR:
                 break;
@@ -548,23 +572,48 @@ namespace clib {
                 for (auto i = 0; i < code.op1; i++) {
                     new_stack->envs.insert({func->code->args.at(i), args.at(i)});
                 }
+                if (func->closure.lock())
+                    new_stack->closure = func->closure.lock()->obj;
                 current_stack->pc++;
                 return 1;
             }
             case MAKE_FUNCTION: {
-                auto name = pop();
-                auto f = top();
-                assert(f.lock()->get_type() == r_function);
-                assert(name.lock()->get_type() == r_string);
-                std::dynamic_pointer_cast<jsv_function>(f.lock())->name =
-                        std::dynamic_pointer_cast<jsv_string>(name.lock())->str;
+                auto op = (uint32_t) code.op1;
+                if (op & 8U) {
+                    auto name = pop();
+                    auto f = pop();
+                    auto closure = pop();
+                    assert(f.lock()->get_type() == r_function);
+                    assert(name.lock()->get_type() == r_string);
+                    assert(closure.lock()->get_type() == r_object);
+                    auto func = std::dynamic_pointer_cast<jsv_function>(f.lock());
+                    func->name = std::dynamic_pointer_cast<jsv_string>(name.lock())->str;
+                    func->closure = std::dynamic_pointer_cast<jsv_object>(closure.lock());
+                    push(f);
+                } else {
+                    auto name = pop();
+                    auto f = top();
+                    assert(f.lock()->get_type() == r_function);
+                    assert(name.lock()->get_type() == r_string);
+                    std::dynamic_pointer_cast<jsv_function>(f.lock())->name =
+                            std::dynamic_pointer_cast<jsv_string>(name.lock())->str;
+                }
             }
                 break;
             case BUILD_SLICE:
                 break;
-            case LOAD_CLOSURE:
+            case LOAD_CLOSURE: {
+                auto op = code.op1;
+                auto var = current_stack->info->names.at(op);
+                push(register_value(std::make_shared<jsv_string>(var)));
+                push(load_closure(var));
+            }
                 break;
-            case LOAD_DEREF:
+            case LOAD_DEREF: {
+                auto op = code.op1;
+                auto var = current_stack->info->derefs.at(op);
+                push(load_deref(var));
+            }
                 break;
             case STORE_DEREF:
                 break;
@@ -652,6 +701,26 @@ namespace clib {
         return nullptr;
     }
 
+    js_value::ref cjsruntime::load_closure(const std::string &name) {
+        for (auto i = stack.rbegin() + 1; i != stack.rend(); i++) {
+            auto L = (*i)->envs.find(name);
+            if (L != (*i)->envs.end()) {
+                return L->second.lock();
+            }
+        }
+        assert(!"cannot load closure value by name");
+        return nullptr;
+    }
+
+    js_value::ref cjsruntime::load_deref(const std::string &name) {
+        auto f = current_stack->closure.find(name);
+        if (f != current_stack->closure.end()) {
+            return f->second.lock();
+        }
+        assert(!"cannot load deref by name");
+        return nullptr;
+    }
+
     void cjsruntime::push(js_value::weak_ref value) {
         current_stack->stack.push_back(std::move(value));
     }
@@ -725,9 +794,11 @@ namespace clib {
 #if DUMP_STEP
         dump_step3();
 #endif
-        for (auto i = objs.begin(); i != objs.end(); i++) {
+        for (auto i = objs.begin(); i != objs.end();) {
             if ((*i)->marked == 0)
                 i = objs.erase(i);
+            else
+                i++;
         }
     }
 
@@ -757,9 +828,23 @@ namespace clib {
                 os << "regex: " << n->re << std::endl;
             }
                 break;
-            case r_array:
+            case r_array: {
+                auto n = std::dynamic_pointer_cast<jsv_array>(value);
+                os << "array: " << std::endl;
+                for (const auto &s : n->arr) {
+                    print(s.lock(), level + 1, os);
+                }
+            }
                 break;
-            case r_object:
+            case r_object: {
+                auto n = std::dynamic_pointer_cast<jsv_object>(value);
+                os << "object: " << std::endl;
+                for (const auto &s : n->obj) {
+                    os << std::setfill(' ') << std::setw(level) << "";
+                    os << s.first << ": ";
+                    print(s.second.lock(), level + 1, os);
+                }
+            }
                 break;
             case r_function: {
                 auto n = std::dynamic_pointer_cast<jsv_function>(value);

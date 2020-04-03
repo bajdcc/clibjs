@@ -10,7 +10,8 @@ int main() {
     //std::ifstream file("..\\test\\vue.min.js");
     //std::ifstream file("..\\test\\test_1.js");
     //std::ifstream file("..\\test\\test_2.js");
-    std::ifstream file("..\\test\\test_3.js");
+    //std::ifstream file("..\\test\\test_3.js");
+    std::ifstream file("..\\test\\test_4.js");
     if (file) {
         std::stringstream buffer;
         buffer << file.rdbuf();

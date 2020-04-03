@@ -78,6 +78,7 @@ namespace clib {
         runtime_t get_type() override;
         js_value::ref binary_op(int code, js_value::ref op) override;
         void mark(int n) override;
+        std::vector<js_value::weak_ref> arr;
     };
 
     class jsv_object : public js_value {
@@ -88,6 +89,7 @@ namespace clib {
         runtime_t get_type() override;
         js_value::ref binary_op(int code, js_value::ref op) override;
         void mark(int n) override;
+        std::unordered_map<std::string, js_value::weak_ref> obj;
     };
 
     class cjs_function_info;
@@ -96,12 +98,13 @@ namespace clib {
     public:
         using ref = std::shared_ptr<jsv_function>;
         using weak_ref = std::weak_ptr<jsv_function>;
-        explicit jsv_function(sym_code_t::weak_ref c);
+        explicit jsv_function(sym_code_t::ref c);
         js_value::ref clone() const override;
         runtime_t get_type() override;
         js_value::ref binary_op(int code, js_value::ref op) override;
         void mark(int n) override;
         std::shared_ptr<cjs_function_info> code;
+        jsv_object::weak_ref closure;
         std::string name;
     };
 
@@ -109,7 +112,7 @@ namespace clib {
     public:
         using ref = std::shared_ptr<cjs_function_info>;
         using weak_ref = std::weak_ptr<cjs_function_info>;
-        explicit cjs_function_info(const sym_code_t::ref& code);
+        explicit cjs_function_info(const sym_code_t::ref &code);
         static js_value::ref load_const(const cjs_consts &c, int op);
         std::string fullname;
         std::vector<std::string> args;
@@ -135,6 +138,7 @@ namespace clib {
         std::vector<js_value::weak_ref> stack;
         js_value::weak_ref ret_value;
         std::unordered_map<std::string, js_value::weak_ref> envs;
+        std::unordered_map<std::string, js_value::weak_ref> closure;
     };
 
     class cjsruntime {
@@ -153,6 +157,8 @@ namespace clib {
         js_value::ref load_fast(int op);
         js_value::ref load_name(int op);
         js_value::ref load_global(int op);
+        js_value::ref load_closure(const std::string &name);
+        js_value::ref load_deref(const std::string &name);
         void push(js_value::weak_ref value);
         const js_value::weak_ref &top() const;
         js_value::weak_ref pop();

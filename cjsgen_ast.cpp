@@ -959,6 +959,8 @@ namespace clib {
             gen.enter(sp_param);
         auto id = gen.push_function(std::dynamic_pointer_cast<sym_code_t>(shared_from_this()));
         body->gen_rvalue(gen);
+        if (body->get_base_type() == s_expression)
+            gen.emit(nullptr, RETURN_VALUE);
         gen.pop_function();
         uint32_t flag = 0;
         if (!closure.empty()) {
@@ -967,7 +969,7 @@ namespace clib {
                         s->node->data._identifier, cjs_consts::get_string_t::gs_name));
             }
             flag |= 8U;
-            gen.emit(nullptr, BUILD_LIST, closure.size());
+            gen.emit(nullptr, BUILD_MAP, closure.size());
         }
         fullname = gen.get_fullname(name ? name->data._identifier : LAMBDA_ID);
         if (name) {

@@ -20,7 +20,7 @@
 #define AST_IS_OP(node) ((node)->flag == a_operator)
 #define AST_IS_OP_K(node, k) ((node)->data._op == (k))
 #define AST_IS_OP_N(node, k) (AST_IS_OP(node) && AST_IS_OP_K(node, k))
-#define AST_IS_ID(node) ((node)->flag == ast_literal)
+#define AST_IS_ID(node) ((node)->flag == a_literal)
 #define AST_IS_COLL(node) ((node)->flag == a_collection)
 #define AST_IS_COLL_K(node, k) ((node)->data._coll == (k))
 #define AST_IS_COLL_N(node, k) (AST_IS_COLL(node) && AST_IS_COLL_K(node, k))
@@ -155,45 +155,34 @@ namespace clib {
 
     void cjs_consts::dump(const std::string *text) const {
         auto i = 0;
-        std::vector<const char *> linksa(names.size());
-        for (const auto &x : names) {
-            linksa[x.second] = x.first.c_str();
-        }
-        for (const auto &x : linksa) {
+        for (const auto &x : names_data) {
             fprintf(stdout, "C [#%03d] [NAME  ] %s\n", i++, x);
         }
         i = 0;
-        std::vector<std::tuple<int, void *>> links(index);
-        for (const auto &x : strings) {
-            links[x.second] = {0, (void *) &x.first};
+        for (const auto &x : globals_data) {
+            fprintf(stdout, "C [#%03d] [GLOBAL] %s\n", i++, x);
         }
-        for (const auto &x : numbers) {
-            links[x.second] = {1, (void *) &x.first};
+        i = 0;
+        for (const auto &x : derefs_data) {
+            fprintf(stdout, "C [#%03d] [DEREF ] %s\n", i++, x);
         }
-        for (const auto &x : functions) {
-            auto f = x.second.lock();
-            auto desc = f->name ? f->name->data._identifier : "[lambda]";
-            links[x.first] = {2, (void *) desc};
-        }
-        for (const auto &x : regexes) {
-            links[x.second] = {3, (void *) &x.first};
-        }
-        for (const auto &x : links) {
-            switch (std::get<0>(x)) {
-                case 0:
-                    fprintf(stdout, "C [#%03d] [STRING] %s\n", i, ((std::string *) std::get<1>(x))->c_str());
+        i = 0;
+        for (const auto &x : consts_data) {
+            switch (consts[i]) {
+                case r_string:
+                    fprintf(stdout, "C [#%03d] [STRING] %s\n", i, ((std::string *) x)->c_str());
                     break;
-                case 1:
-                    fprintf(stdout, "C [#%03d] [NUMBER] %lf\n", i, *(double *) std::get<1>(x));
+                case r_number:
+                    fprintf(stdout, "C [#%03d] [NUMBER] %lf\n", i, *(double *) x);
                     break;
-                case 2: {
+                case r_function: {
                     auto f = functions.at(i).lock();
-                    fprintf(stdout, "C [#%03d] [FUNC  ] %s | %s\n", i, (const char *) std::get<1>(x),
+                    fprintf(stdout, "C [#%03d] [FUNC  ] %s | %s\n", i, f->fullname.c_str(),
                             text->substr(f->start, f->end - f->start).c_str());
                 }
                     break;
-                case 3:
-                    fprintf(stdout, "C [#%03d] [REGEX ] %s\n", i, ((std::string *) std::get<1>(x))->c_str());
+                case r_regex:
+                    fprintf(stdout, "C [#%03d] [REGEX ] %s\n", i, ((std::string *) x)->c_str());
                     break;
                 default:
                     break;
@@ -266,13 +255,13 @@ namespace clib {
 #if PRINT_AST
         print(tmp.front().front(), 0, std::cout);
 #endif
-#if DUMP_CODE
-        dump();
-#endif
         codes.front()->consts.save();
         for (const auto &c : funcs) {
             c->consts.save();
         }
+#if DUMP_CODE
+        dump();
+#endif
         return true;
     }
 
@@ -976,6 +965,9 @@ namespace clib {
                 std::transform(asts.begin() + 1, asts.end(),
                                std::back_inserter(_asts),
                                [this](const auto &x) { return this->primary_node(x); });
+                std::transform(asts.begin() + 1, asts.end(),
+                               std::back_inserter(code->args_str),
+                               [this](const auto &x) { return x->data._identifier; });
                 std::unordered_set<std::string> arg_set;
                 for (const auto &s : _asts) {
                     if (arg_set.find(s->node->data._identifier) != arg_set.end()) {
@@ -990,7 +982,40 @@ namespace clib {
                 tmps.push_back(code);
             }
                 break;
-            case c_arrowFunction:
+            case c_arrowFunction: {
+                auto code = std::make_shared<sym_code_t>();
+                copy_info(code, asts[0]);
+                code->end = asts.back()->end;
+                asts.pop_back();
+                decltype(code->args) _asts;
+                if (AST_IS_ID(asts.front())) { // single ID
+                    _asts.push_back(primary_node(asts.front()));
+                    code->args_str.emplace_back(asts.front()->data._identifier);
+                } else {
+                    asts.erase(asts.begin());
+                    auto i = asts.begin();
+                    for (; i != asts.end(); i++) {
+                        if (AST_IS_OP_N(*i, T_RPARAN)) {
+                            i++;
+                            break;
+                        }
+                        code->args_str.emplace_back((*i)->data._identifier);
+                    }
+                    asts.erase(asts.begin(), i);
+                }
+                std::unordered_set<std::string> arg_set;
+                for (const auto &s : _asts) {
+                    if (arg_set.find(s->node->data._identifier) != arg_set.end()) {
+                        error(s, "conflict arg");
+                    }
+                    arg_set.insert(s->node->data._identifier);
+                }
+                code->args = std::move(_asts);
+                code->body = tmps.front();
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(code);
+            }
                 break;
             case c_functionExpression:
                 break;
@@ -1323,6 +1348,9 @@ namespace clib {
                     switch (n->clazz) {
                         case sym_var_t::local:
                             os << "[LOCAL] ";
+                            break;
+                        case sym_var_t::fast:
+                            os << "[FAST] ";
                             break;
                         case sym_var_t::closure:
                             os << "[CLOSURE] ";
@@ -1716,7 +1744,7 @@ namespace clib {
                 }
                 const auto &args = codes.back()->args;
                 for (const auto &arg : args) {
-                    if (arg->node->data._identifier) {
+                    if (name == arg->node->data._identifier) {
                         return arg;
                     }
                 }

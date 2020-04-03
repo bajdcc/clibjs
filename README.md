@@ -7,6 +7,7 @@ JS-like script engine implemented by C++.
 - [x] Parsing `jquery.js` and `Vue.js` in 1s.
 - [ ] Translate javascript file into **Python Bytecode** temporarily.
 - [ ] Build VM.
+- [x] Closure.
 
 ## Environment
 
@@ -145,6 +146,17 @@ return add(a, b);
 Output:
 
 See [Output3.txt](https://github.com/bajdcc/clibjs/blob/master/test/output3.txt), for parsing and running  `test/test_3.js` file.
+
+Input: (**test/test_4.js**) -- Closure
+
+```javascript
+var a = 1, b = 2;
+return (a => b => a+b)(a)(b);
+```
+
+Output:
+
+See [Output4.txt](https://github.com/bajdcc/clibjs/blob/master/test/output4.txt), for parsing and running  `test/test_3.js` file.
 
 
 ## Grammar

@@ -449,8 +449,8 @@ namespace clib {
         anoymousFunctionDecl = _K_FUNCTION + ~_T_LPARAN + *formalParameterList + ~_T_RPARAN +
                                ~_T_LBRACE + *functionBody + _T_RBRACE;
         arrowFunction = arrowFunctionParameters + ~_T_ARROW + arrowFunctionBody;
-        arrowFunctionParameters = _ID | ~_T_LPARAN + *formalParameterList + ~_T_RPARAN;
-        arrowFunctionBody = singleExpression | _T_LBRACE + *functionBody + _T_RBRACE;
+        arrowFunctionParameters = _ID | _T_LPARAN + *formalParameterList + _T_RPARAN;
+        arrowFunctionBody = singleExpression | ~_T_LBRACE + *functionBody + _T_RBRACE;
         eos = (~~_T_SEMI)((void *) &clear_bk) | _RULE_EOF | _RULE_LINE | _RULE_RBRACE;
         keyword = _K_BREAK
                   | _K_DO
