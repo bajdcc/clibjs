@@ -6,6 +6,7 @@ JS-like script engine implemented by C++.
 
 - [x] Parsing `jquery.js` and `Vue.js` in 1s.
 - [ ] Translate javascript file into **Python Bytecode** temporarily.
+- [ ] Build VM.
 
 ## Environment
 
@@ -20,8 +21,8 @@ JS-like script engine implemented by C++.
 - [ ] AST\(On progress\)
 - [x] IL Design\(**Use [Python Bytecode](https://github.com/python/cpython/blob/master/Include/opcode.h)** temporarily\)
 - [ ] Gen\(On progress\)
-- [ ] GC
-- [ ] Env
+- [ ] GC\(On progress\)
+- [ ] Runtime\(On progress\)
 - [ ] Interface
 
 ## TEST
@@ -131,6 +132,20 @@ function (c) {return function (){return c++ +g;}}
 Output:
 
 See [Output2.txt](https://github.com/bajdcc/clibjs/blob/master/test/output2.txt), for parsing  `test/test_2.js` file.
+
+Input: (**test/test_3.js**)
+
+```javascript
+var a = 1;
+b = 2;
+function add(a,b) {return a+b;}
+return add(a, b);
+```
+
+Output:
+
+See [Output3.txt](https://github.com/bajdcc/clibjs/blob/master/test/output3.txt), for parsing and running  `test/test_3.js` file.
+
 
 ## Grammar
 

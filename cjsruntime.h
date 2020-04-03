@@ -90,6 +90,8 @@ namespace clib {
         void mark(int n) override;
     };
 
+    class cjs_function_info;
+
     class jsv_function : public js_value {
     public:
         using ref = std::shared_ptr<jsv_function>;
@@ -99,17 +101,36 @@ namespace clib {
         runtime_t get_type() override;
         js_value::ref binary_op(int code, js_value::ref op) override;
         void mark(int n) override;
-        sym_code_t::weak_ref code;
-        jsv_string::weak_ref name;
+        std::shared_ptr<cjs_function_info> code;
+        std::string name;
+    };
+
+    class cjs_function_info : public std::enable_shared_from_this<cjs_function_info> {
+    public:
+        using ref = std::shared_ptr<cjs_function_info>;
+        using weak_ref = std::weak_ptr<cjs_function_info>;
+        explicit cjs_function_info(const sym_code_t::ref& code);
+        static js_value::ref load_const(const cjs_consts &c, int op);
+        std::string fullname;
+        std::vector<std::string> args;
+        std::vector<std::string> names;
+        std::vector<std::string> globals;
+        std::vector<std::string> derefs;
+        std::vector<js_value::ref> consts;
+        std::vector<cjs_code> codes;
+        std::vector<std::string> closure;
     };
 
     class cjs_function : public std::enable_shared_from_this<cjs_function> {
     public:
         using ref = std::shared_ptr<cjs_function>;
         using weak_ref = std::weak_ptr<cjs_function>;
-        explicit cjs_function(sym_code_t::ref code, int pc);
+        explicit cjs_function(sym_code_t::ref code);
+        explicit cjs_function(cjs_function_info::ref code);
         void store_name(const std::string &name, js_value::weak_ref obj);
-        sym_code_t::ref code;
+        void store_fast(const std::string &name, js_value::weak_ref obj);
+        cjs_function_info::ref info;
+        std::string name{"UNKNOWN"};
         int pc{0};
         std::vector<js_value::weak_ref> stack;
         js_value::weak_ref ret_value;
@@ -124,19 +145,24 @@ namespace clib {
         cjsruntime(const cjsruntime &) = delete;
         cjsruntime &operator=(const cjsruntime &) = delete;
 
-        void eval(sym_code_t::ref code);
+        void eval(cjs_code_result::ref code);
 
     private:
         int run(const sym_code_t::ref &fun, const cjs_code &code);
-        js_value::ref load_const(const sym_code_t::ref &fun, int op);
-        js_value::ref load_global(const sym_code_t::ref &fun, int op);
+        js_value::ref load_const(int op);
+        js_value::ref load_fast(int op);
+        js_value::ref load_name(int op);
+        js_value::ref load_global(int op);
         void push(js_value::weak_ref value);
         const js_value::weak_ref &top() const;
         js_value::weak_ref pop();
 
         js_value::ref register_value(const js_value::ref &value);
-        void dump_step(const cjs_code &code);
-        void dump_step2(const cjs_code &code);
+        void dump_step(const cjs_code &code) const;
+        void dump_step2(const cjs_code &code) const;
+        void dump_step3() const;
+
+        void gc();
 
         static void print(const js_value::ref &value, int level, std::ostream &os);
 

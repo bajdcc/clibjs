@@ -211,6 +211,8 @@ namespace clib {
         std::fill(names_data.begin(), names_data.end(), nullptr);
         globals_data.resize(globals.size());
         std::fill(globals_data.begin(), globals_data.end(), nullptr);
+        derefs_data.resize(derefs.size());
+        std::fill(derefs_data.begin(), derefs_data.end(), nullptr);
         for (const auto &x : strings) {
             consts[x.second] = r_string;
             consts_data[x.second] = (char *) &x.first;
@@ -221,7 +223,7 @@ namespace clib {
         }
         for (const auto &x : functions) {
             consts[x.first] = r_function;
-            consts_data[x.first] = (char *) &x;
+            consts_data[x.first] = (char *) &x.second;
         }
         for (const auto &x : regexes) {
             consts[x.second] = r_regex;
@@ -233,6 +235,25 @@ namespace clib {
         for (const auto &x : globals) {
             globals_data[x.second] = x.first.c_str();
         }
+        for (const auto &x : derefs) {
+            derefs_data[x.second] = x.first.c_str();
+        }
+    }
+
+    const std::vector<char *> &cjs_consts::get_consts_data() const {
+        return consts_data;
+    }
+
+    const std::vector<const char *> &cjs_consts::get_names_data() const {
+        return names_data;
+    }
+
+    const std::vector<const char *> &cjs_consts::get_globals_data() const {
+        return globals_data;
+    }
+
+    const std::vector<const char *> &cjs_consts::get_derefs_data() const {
+        return derefs_data;
     }
 
     bool cjsgen::gen_code(ast_node *node, const std::string *str) {
@@ -255,8 +276,13 @@ namespace clib {
         return true;
     }
 
-    sym_code_t::ref cjsgen::get_code() const {
-        return codes.empty() ? nullptr : codes.front();
+    cjs_code_result::ref cjsgen::get_code() const {
+        if (codes.empty())
+            return nullptr;
+        auto result = std::make_unique<cjs_code_result>();
+        result->code = codes.front();
+        result->funcs = funcs;
+        return std::move(result);
     }
 
     template<class T>
@@ -785,6 +811,9 @@ namespace clib {
                 std::transform(asts.begin() + 2, asts.end(),
                                std::back_inserter(_asts),
                                [this](const auto &x) { return this->primary_node(x); });
+                std::transform(asts.begin() + 2, asts.end(),
+                               std::back_inserter(code->args_str),
+                               [](const auto &x) { return x->data._identifier; });
                 std::unordered_set<std::string> arg_set;
                 for (const auto &s : _asts) {
                     if (arg_set.find(s->node->data._identifier) != arg_set.end()) {
@@ -1717,6 +1746,7 @@ namespace clib {
     }
 
     void cjsgen::add_closure(std::shared_ptr<sym_var_id_t> c) {
+        codes.back()->closure_str.push_back(c->node->data._identifier);
         codes.back()->closure.push_back(std::move(c));
     }
 

@@ -426,7 +426,7 @@ namespace clib {
         numericLiteral = _NUMBER;
         assignable = _ID | arrayLiteral | objectLiteral;
         arguments = ~_T_LPARAN + *argument + _T_RPARAN;
-        argument = *(argument + ~_T_COMMA) + *~_T_ELLIPSIS + (singleExpression | _ID);
+        argument = *(argument + ~_T_COMMA) + *~_T_ELLIPSIS + singleExpression;
         propertyAssignments = *(propertyAssignments + ~_T_COMMA) + propertyAssignment;
         propertyAssignment = propertyExpressionAssignment
                              | computedPropertyExpressionAssignment

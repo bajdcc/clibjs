@@ -6,7 +6,9 @@
 #include <cassert>
 #include <iostream>
 #include <iomanip>
+#include <algorithm>
 #include "cjsruntime.h"
+#include "cjsast.h"
 
 #define DUMP_STEP 1
 
@@ -175,8 +177,8 @@ namespace clib {
         marked = n;
     }
 
-    jsv_function::jsv_function(sym_code_t::weak_ref c) : code(std::move(c)) {
-
+    jsv_function::jsv_function(sym_code_t::weak_ref c) {
+        code = std::make_shared<cjs_function_info>(c.lock());
     }
 
     js_value::ref jsv_function::clone() const {
@@ -187,14 +189,6 @@ namespace clib {
         return r_function;
     }
 
-    cjs_function::cjs_function(sym_code_t::ref code, int pc) : code(std::move(code)), pc(pc) {
-
-    }
-
-    void cjs_function::store_name(const std::string &name, js_value::weak_ref obj) {
-        envs.insert({name, obj});
-    }
-
     js_value::ref jsv_function::binary_op(int code, js_value::ref op) {
         return nullptr;
     }
@@ -203,14 +197,76 @@ namespace clib {
         marked = n;
     }
 
-    void cjsruntime::eval(sym_code_t::ref code) {
+    cjs_function::cjs_function(sym_code_t::ref code) {
+        info = std::make_shared<cjs_function_info>(std::move(code));
+    }
+
+    cjs_function::cjs_function(cjs_function_info::ref code) : info(std::move(code)) {
+
+    }
+
+    void cjs_function::store_name(const std::string &n, js_value::weak_ref obj) {
+        envs.insert({n, std::move(obj)});
+    }
+
+    void cjs_function::store_fast(const std::string &n, js_value::weak_ref obj) {
+        envs.insert({n, std::move(obj)});
+    }
+
+    cjs_function_info::cjs_function_info(const sym_code_t::ref &code) {
+        fullname = std::move(code->fullname);
+        args = std::move(code->args_str);
+        closure = std::move(code->closure_str);
+        codes = std::move(code->codes);
+        const auto &c = code->consts;
+        std::copy(c.get_names_data().begin(),
+                  c.get_names_data().end(),
+                  std::back_inserter(names));
+        std::copy(c.get_globals_data().begin(),
+                  c.get_globals_data().end(),
+                  std::back_inserter(globals));
+        std::copy(c.get_derefs_data().begin(),
+                  c.get_derefs_data().end(),
+                  std::back_inserter(derefs));
+        consts.resize(c.get_consts_data().size());
+        for (size_t i = 0; i < c.get_consts_data().size(); i++) {
+            consts[i] = load_const(c, i);
+        }
+    }
+
+    js_value::ref cjs_function_info::load_const(const cjs_consts &c, int op) {
+        auto t = c.get_type(op);
+        switch (t) {
+            case r_number:
+                return std::make_shared<jsv_number>(*(double *) c.get_data(op));
+            case r_string:
+                return std::make_shared<jsv_string>(*(std::string *) c.get_data(op));
+            case r_boolean:
+                break;
+            case r_regex:
+                return std::make_shared<jsv_regex>(*(std::string *) c.get_data(op));
+            case r_array:
+                break;
+            case r_object:
+                break;
+            case r_function:
+                return std::make_shared<jsv_function>(*(sym_code_t::weak_ref *) c.get_data(op));
+            default:
+                break;
+        }
+        assert(!"invalid runtime type");
+        return nullptr;
+    }
+
+    void cjsruntime::eval(cjs_code_result::ref code) {
         stack.clear();
-        stack.push_back(std::make_shared<cjs_function>(code, 0));
+        stack.push_back(std::make_shared<cjs_function>(code->code));
+        current_stack = stack.back();
+        code = nullptr;
+        auto r = 0;
         decltype(stack.back()->ret_value) ret;
         while (!stack.empty()) {
-            current_stack = stack.back();
-            const auto &fun = stack.back()->code;
-            const auto &codes = fun->codes;
+            const auto &codes = current_stack->info->codes;
             const auto &pc = current_stack->pc;
             while (true) {
                 if (pc >= (int) codes.size())
@@ -219,15 +275,27 @@ namespace clib {
 #if DUMP_STEP
                 dump_step(c);
 #endif
-                auto r = run(code, c);
+                r = run(code->code, c);
 #if DUMP_STEP
                 dump_step2(c);
 #endif
+                gc();
                 if (r != 0)
                     break;
             }
+            if (r == 1) {
+                current_stack = stack.back();
+                continue;
+            }
+            if (r == 2) {
+                current_stack->ret_value = pop();
+            }
             ret = stack.back()->ret_value;
             stack.pop_back();
+            if (!stack.empty()) {
+                current_stack = stack.back();
+                push(ret);
+            }
         }
         print(ret.lock(), 0, std::cout);
     }
@@ -352,7 +420,7 @@ namespace clib {
             case LIST_TO_TUPLE:
                 break;
             case RETURN_VALUE:
-                break;
+                return 2;
             case IMPORT_STAR:
                 break;
             case SETUP_ANNOTATIONS:
@@ -368,7 +436,7 @@ namespace clib {
             case STORE_NAME: {
                 auto obj = top();
                 auto id = code.op1;
-                auto name = fun->consts.get_name(id);
+                auto name = current_stack->info->names.at(id);
                 current_stack->store_name(name, obj);
             }
                 break;
@@ -387,7 +455,7 @@ namespace clib {
             case STORE_GLOBAL: {
                 auto obj = top();
                 auto id = code.op1;
-                auto name = fun->consts.get_global(id);
+                auto name = current_stack->info->globals.at(id);
                 stack.front()->store_name(name, obj);
             }
                 break;
@@ -395,11 +463,15 @@ namespace clib {
                 break;
             case LOAD_CONST: {
                 auto op = code.op1;
-                auto var = load_const(fun, op);
+                auto var = load_const(op);
                 push(var);
             }
                 break;
-            case LOAD_NAME:
+            case LOAD_NAME: {
+                auto op = code.op1;
+                auto var = load_name(op);
+                push(var);
+            }
                 break;
             case BUILD_TUPLE:
                 break;
@@ -431,7 +503,7 @@ namespace clib {
                 break;
             case LOAD_GLOBAL: {
                 auto op = code.op1;
-                auto var = load_global(fun, op);
+                auto var = load_global(op);
                 push(var);
             }
                 break;
@@ -443,23 +515,49 @@ namespace clib {
                 break;
             case SETUP_FINALLY:
                 break;
-            case LOAD_FAST:
+            case LOAD_FAST: {
+                auto op = code.op1;
+                auto var = load_fast(op);
+                push(var);
+            }
                 break;
-            case STORE_FAST:
+            case STORE_FAST: {
+                auto obj = top();
+                auto id = code.op1;
+                auto name = current_stack->info->names.at(id);
+                current_stack->store_fast(name, obj);
+            }
                 break;
             case DELETE_FAST:
                 break;
             case RAISE_VARARGS:
                 break;
-            case CALL_FUNCTION:
-                break;
+            case CALL_FUNCTION: {
+                auto n = code.op1;
+                assert((int) current_stack->stack.size() > n);
+                std::vector<js_value::weak_ref> args(n);
+                while (n-- > 0) {
+                    args[n] = pop();
+                }
+                auto f = pop();
+                assert(f.lock()->get_type() == r_function);
+                auto func = std::dynamic_pointer_cast<jsv_function>(f.lock());
+                stack.push_back(std::make_shared<cjs_function>(func->code));
+                auto new_stack = stack.back();
+                new_stack->name = func->name;
+                for (auto i = 0; i < code.op1; i++) {
+                    new_stack->envs.insert({func->code->args.at(i), args.at(i)});
+                }
+                current_stack->pc++;
+                return 1;
+            }
             case MAKE_FUNCTION: {
                 auto name = pop();
                 auto f = top();
                 assert(f.lock()->get_type() == r_function);
                 assert(name.lock()->get_type() == r_string);
                 std::dynamic_pointer_cast<jsv_function>(f.lock())->name =
-                        std::dynamic_pointer_cast<jsv_string>(name.lock());
+                        std::dynamic_pointer_cast<jsv_string>(name.lock())->str;
             }
                 break;
             case BUILD_SLICE:
@@ -515,37 +613,38 @@ namespace clib {
         return 0;
     }
 
-    js_value::ref cjsruntime::load_const(const sym_code_t::ref &fun, int op) {
-        auto t = fun->consts.get_type(op);
-        switch (t) {
-            case r_number:
-                return register_value(std::make_shared<jsv_number>(
-                        *(double *) fun->consts.get_data(op)));
-            case r_string:
-                return register_value(std::make_shared<jsv_string>(
-                        *(std::string *) fun->consts.get_data(op)));
-            case r_boolean:
-                break;
-            case r_regex:
-                return register_value(std::make_shared<jsv_regex>(
-                        *(std::string *) fun->consts.get_data(op)));
-            case r_array:
-                break;
-            case r_object:
-                break;
-            case r_function:
-                return register_value(std::make_shared<jsv_function>(
-                        *(sym_code_t::weak_ref *) fun->consts.get_data(op)));
-            default:
-                break;
-        }
+    js_value::ref cjsruntime::load_const(int op) {
+        auto v = current_stack->info->consts.at(op);
+        if (v)
+            return register_value(v);
         assert(!"invalid runtime type");
         return nullptr;
     }
 
-    js_value::ref cjsruntime::load_global(const sym_code_t::ref &fun, int op) {
-        auto t = fun->consts.get_type(op);
-        auto g = fun->consts.get_global(op);
+    js_value::ref cjsruntime::load_fast(int op) {
+        auto name = current_stack->info->names.at(op);
+        auto L = current_stack->envs.find(name);
+        if (L != current_stack->envs.end()) {
+            return L->second.lock();
+        }
+        assert(!"cannot find value by name");
+        return nullptr;
+    }
+
+    js_value::ref cjsruntime::load_name(int op) {
+        auto name = current_stack->info->names.at(op);
+        for (auto i = stack.rbegin(); i != stack.rend(); i++) {
+            auto L = (*i)->envs.find(name);
+            if (L != (*i)->envs.end()) {
+                return L->second.lock();
+            }
+        }
+        assert(!"cannot find value by name");
+        return nullptr;
+    }
+
+    js_value::ref cjsruntime::load_global(int op) {
+        auto g = current_stack->info->globals.at(op);
         auto G = stack.front()->envs.find(g);
         if (G != stack.front()->envs.end()) {
             return G->second.lock();
@@ -574,14 +673,15 @@ namespace clib {
         return value;
     }
 
-    void cjsruntime::dump_step(const cjs_code &c) {
+    void cjsruntime::dump_step(const cjs_code &c) const {
         fprintf(stdout, "R [%04d] %s\n", current_stack->pc, c.desc.c_str());
     }
 
-    void cjsruntime::dump_step2(const cjs_code &c) {
+    void cjsruntime::dump_step2(const cjs_code &c) const {
         if (!stack.empty() && !stack.front()->stack.empty())
             std::cout << std::setfill('=') << std::setw(60) << "" << std::endl;
         for (auto s = stack.rbegin(); s != stack.rend(); s++) {
+            fprintf(stdout, "**** Stack [%p] \"%.100s\"\n", s->get(), (*s)->name.c_str());
             const auto &st = (*s)->stack;
             auto sti = (int) st.size();
             for (auto s2 = st.rbegin(); s2 != st.rend(); s2++) {
@@ -589,11 +689,45 @@ namespace clib {
                 print(s2->lock(), 0, std::cout);
             }
             const auto &env = (*s)->envs;
-            for (const auto &e : env) {
-                fprintf(stdout, " Env | [%p] \"%.100s\" ", e.second.lock().get(), e.first.c_str());
-                print(e.second.lock(), 0, std::cout);
+            if (!env.empty()) {
+                std::cout << std::setfill('-') << std::setw(60) << "" << std::endl;
+                for (const auto &e : env) {
+                    fprintf(stdout, " Env | [%p] \"%.100s\" ", e.second.lock().get(), e.first.c_str());
+                    print(e.second.lock(), 0, std::cout);
+                }
             }
             std::cout << std::setfill('-') << std::setw(60) << "" << std::endl;
+        }
+    }
+
+    void cjsruntime::dump_step3() const {
+        if (objs.empty())
+            return;
+        for (const auto &s : objs) {
+            fprintf(stdout, " GC  | [%p] Mark: %d, ", s.get(), s->marked);
+            print(s, 0, std::cout);
+        }
+        std::cout << std::setfill('#') << std::setw(60) << "" << std::endl;
+    }
+
+    void cjsruntime::gc() {
+        std::for_each(objs.begin(), objs.end(), [](auto &x) { x->mark(0); });
+        for (const auto &s : stack) {
+            const auto &st = s->stack;
+            const auto &env = s->envs;
+            for (const auto &s2 : st) {
+                s2.lock()->mark(1);
+            }
+            for (const auto &s2 : env) {
+                s2.second.lock()->mark(2);
+            }
+        }
+#if DUMP_STEP
+        dump_step3();
+#endif
+        for (auto i = objs.begin(); i != objs.end(); i++) {
+            if ((*i)->marked == 0)
+                i = objs.erase(i);
         }
     }
 
@@ -627,7 +761,10 @@ namespace clib {
                 break;
             case r_object:
                 break;
-            case r_function:
+            case r_function: {
+                auto n = std::dynamic_pointer_cast<jsv_function>(value);
+                os << "function: " << n->code->fullname << std::endl;
+            }
                 break;
             default:
                 break;

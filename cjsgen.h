@@ -355,6 +355,10 @@ namespace clib {
         const char *get_global(int n) const;
         void dump(const std::string *text) const;
         void save();
+        const std::vector<char *> &get_consts_data() const;
+        const std::vector<const char *> &get_names_data() const;
+        const std::vector<const char *> &get_globals_data() const;
+        const std::vector<const char *> &get_derefs_data() const;
     private:
         std::unordered_map<double, int> numbers;
         std::unordered_map<std::string, int> strings;
@@ -367,6 +371,7 @@ namespace clib {
         std::vector<char *> consts_data;
         std::vector<const char *> names_data;
         std::vector<const char *> globals_data;
+        std::vector<const char *> derefs_data;
         int index{0};
     };
 
@@ -404,6 +409,7 @@ namespace clib {
     class sym_code_t : public sym_exp_t {
     public:
         using ref = std::shared_ptr<sym_code_t>;
+        using weak_ref = std::weak_ptr<sym_code_t>;
         symbol_t get_type() const override;
         std::string to_string() const override;
         int gen_rvalue(ijsgen &gen) override;
@@ -411,11 +417,19 @@ namespace clib {
         ast_node *name{nullptr};
         std::string fullname;
         std::vector<sym_var_t::ref> args;
+        std::vector<std::string> args_str;
         sym_t::ref body;
         cjs_consts consts;
         std::vector<cjs_scope> scopes;
         std::vector<cjs_code> codes;
         std::vector<sym_var_id_t::ref> closure;
+        std::vector<std::string> closure_str;
+    };
+
+    struct cjs_code_result {
+        using ref = std::unique_ptr<cjs_code_result>;
+        sym_code_t::ref code;
+        std::vector<sym_code_t::ref> funcs;
     };
 
     class cjsgen : public ijsgen {
@@ -427,7 +441,7 @@ namespace clib {
         cjsgen &operator=(const cjsgen &) = delete;
 
         bool gen_code(ast_node *node, const std::string *str);
-        sym_code_t::ref get_code() const;
+        cjs_code_result::ref get_code() const;
 
         static void print(const sym_t::ref &node, int level, std::ostream &os);
 
