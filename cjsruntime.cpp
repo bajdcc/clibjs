@@ -7,6 +7,7 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
+#include <iterator>
 #include "cjsruntime.h"
 #include "cjsast.h"
 
@@ -36,22 +37,44 @@ namespace clib {
                 break;
             case BINARY_ADD: {
                 switch (op->get_type()) {
-                    case r_number:
+                    case r_number: {
+                        const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
+                        if (s == 0.0)
+                            return shared_from_this();
                         return std::make_shared<jsv_number>(
                                 number +
                                 std::dynamic_pointer_cast<jsv_number>(op)->number);
-                    case r_string:
-                        break;
+                    }
+                    case r_string: {
+                        const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
+                        if (s.empty())
+                            return shared_from_this();
+                        std::stringstream ss;
+                        ss << number;
+                        return std::make_shared<jsv_string>(
+                                ss.str() +
+                                std::dynamic_pointer_cast<jsv_string>(op)->str);
+                    }
                     case r_boolean:
-                        break;
+                        return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
+                               std::make_shared<jsv_number>(
+                                       number + 1.0) :
+                               shared_from_this();
                     case r_regex:
                         break;
                     case r_array:
                         break;
-                    case r_object:
-                        break;
-                    case r_function:
-                        break;
+                    case r_object: {
+                        std::stringstream ss;
+                        ss << number << "[object Object]";
+                        return std::make_shared<jsv_string>(ss.str());
+                    }
+                    case r_function: {
+                        const auto &s = std::dynamic_pointer_cast<jsv_function>(op)->code->text;
+                        std::stringstream ss;
+                        ss << number << s;
+                        return std::make_shared<jsv_string>(ss.str());
+                    }
                     default:
                         break;
                 }
@@ -85,6 +108,10 @@ namespace clib {
         marked = n;
     }
 
+    void jsv_number::print(std::ostream &os) {
+        os << number;
+    }
+
     jsv_string::jsv_string(std::string s) : str(std::move(s)) {
 
     }
@@ -103,6 +130,10 @@ namespace clib {
 
     void jsv_string::mark(int n) {
         marked = n;
+    }
+
+    void jsv_string::print(std::ostream &os) {
+        os << str;
     }
 
     jsv_boolean::jsv_boolean(bool flag) : b(flag) {
@@ -125,6 +156,10 @@ namespace clib {
         marked = n;
     }
 
+    void jsv_boolean::print(std::ostream &os) {
+        os << std::boolalpha << b;
+    }
+
     jsv_regex::jsv_regex(std::string s) : re(std::move(s)) {
 
     }
@@ -145,6 +180,10 @@ namespace clib {
         marked = n;
     }
 
+    void jsv_regex::print(std::ostream &os) {
+        os << re;
+    }
+
     js_value::ref jsv_array::clone() const {
         return nullptr;
     }
@@ -163,6 +202,18 @@ namespace clib {
             s.lock()->mark(n);
     }
 
+    void jsv_array::print(std::ostream &os) {
+        os << "[";
+        std::transform(arr.begin(), arr.end(),
+                       std::ostream_iterator<std::string>(os, ","),
+                       [](auto x) {
+                           std::stringstream ss;
+                           x.lock()->print(ss);
+                           return ss.str();
+                       });
+        os << "]";
+    }
+
     js_value::ref jsv_object::clone() const {
         return nullptr;
     }
@@ -177,6 +228,10 @@ namespace clib {
 
     void jsv_object::mark(int n) {
         marked = n;
+    }
+
+    void jsv_object::print(std::ostream &os) {
+        os << "[object Object]";
     }
 
     jsv_function::jsv_function(sym_code_t::ref c) {
@@ -202,6 +257,10 @@ namespace clib {
         }
     }
 
+    void jsv_function::print(std::ostream &os) {
+        os << code->text;
+    }
+
     cjs_function::cjs_function(sym_code_t::ref code) {
         info = std::make_shared<cjs_function_info>(std::move(code));
     }
@@ -223,6 +282,7 @@ namespace clib {
         args = std::move(code->args_str);
         closure = std::move(code->closure_str);
         codes = std::move(code->codes);
+        text = std::move(code->text);
         const auto &c = code->consts;
         std::copy(c.get_names_data().begin(),
                   c.get_names_data().end(),
@@ -357,9 +417,12 @@ namespace clib {
             case BINARY_AND:
             case BINARY_XOR:
             case BINARY_OR: {
-                auto op2 = pop();
-                auto op1 = pop();
-                push(register_value(op1.lock()->binary_op(code.code, op2.lock())));
+                auto op2 = pop().lock();
+                auto op1 = pop().lock();
+                auto result = op1->binary_op(code.code, op2);
+                if (!(result == op1 || result == op2))
+                    register_value(result);
+                push(result);
             }
                 break;
             case BINARY_SUBSCR:
@@ -481,7 +544,15 @@ namespace clib {
                 break;
             case BUILD_TUPLE:
                 break;
-            case BUILD_LIST:
+            case BUILD_LIST: {
+                auto n = code.op1;
+                assert(current_stack->stack.size() >= n);
+                auto arr = std::make_shared<jsv_array>();
+                for (auto i = 0; i < n; i++) {
+                    arr->arr.push_back(pop());
+                }
+                push(register_value(std::move(arr)));
+            }
                 break;
             case BUILD_SET:
                 break;
@@ -502,7 +573,7 @@ namespace clib {
                         continue;
                     }
                 }
-                push(register_value(obj));
+                push(register_value(std::move(obj)));
             }
                 break;
             case LOAD_ATTR:

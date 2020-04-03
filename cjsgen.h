@@ -416,6 +416,7 @@ namespace clib {
         int set_parent(sym_t::ref node) override;
         ast_node *name{nullptr};
         std::string fullname;
+        std::string text;
         std::vector<sym_var_t::ref> args;
         std::vector<std::string> args_str;
         sym_t::ref body;

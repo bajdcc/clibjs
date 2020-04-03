@@ -255,9 +255,12 @@ namespace clib {
 #if PRINT_AST
         print(tmp.front().front(), 0, std::cout);
 #endif
-        codes.front()->consts.save();
-        for (const auto &c : funcs) {
+        decltype(codes) _codes(1 + funcs.size());
+        _codes[0] = codes.front();
+        std::copy(funcs.begin(), funcs.end(), _codes.begin() + 1);
+        for (auto &c : _codes) {
             c->consts.save();
+            c->text = text->substr(c->start, c->end - c->start);
         }
 #if DUMP_CODE
         dump();
