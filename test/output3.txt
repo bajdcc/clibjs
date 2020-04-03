@@ -117,23 +117,21 @@ C [#001] [NUMBER] 2.000000
 C [#002] [FUNC  ] add | function add(a,b) {return a+b;}
 C [#003] [STRING] add
 C [0001:009]          0 LOAD_CONST                  0          (1)
-C [0001:005]          1 DUP_TOP                                (a)
-C [0001:005]          2 STORE_NAME                  0          (a)
-C [0001:005]          3 POP_TOP                                (a = 1)
-C [0002:005]          4 LOAD_CONST                  1          (2)
-C [0002:001]          5 DUP_TOP                                (b)
-C [0002:001]          6 STORE_GLOBAL                0          (b)
-C [0002:001]          7 POP_TOP                                (b = 2)
-C [0003:010]          8 LOAD_CONST                  2          (add)
-C [0003:010]          9 LOAD_CONST                  3          (add)
-C [0003:001]         10 MAKE_FUNCTION               0          (function add(a,b) {return a+b;})
-C [0003:010]         11 STORE_NAME                  1          (add)
-C [0003:001]         12 POP_TOP                                (function add(a,b) {return a+b;})
-C [0004:008]         13 LOAD_GLOBAL                 1          (add)
-C [0004:012]         14 LOAD_NAME                   0          (a)
-C [0004:015]         15 LOAD_GLOBAL                 0          (b)
-C [0004:008]         16 CALL_FUNCTION               2          (add(a, b))
-C [0004:001]         17 RETURN_VALUE                           (return add(a, b))
+C [0001:005]          1 STORE_NAME                  0          (a)
+C [0001:005]          2 POP_TOP                                (a = 1)
+C [0002:005]          3 LOAD_CONST                  1          (2)
+C [0002:001]          4 STORE_GLOBAL                0          (b)
+C [0002:001]          5 POP_TOP                                (b = 2)
+C [0003:010]          6 LOAD_CONST                  2          (add)
+C [0003:010]          7 LOAD_CONST                  3          (add)
+C [0003:001]          8 MAKE_FUNCTION               0          (function add(a,b) {return a+b;})
+C [0003:010]          9 STORE_NAME                  1          (add)
+C [0003:001]         10 POP_TOP                                (function add(a,b) {return a+b;})
+C [0004:008]         11 LOAD_GLOBAL                 1          (add)
+C [0004:012]         12 LOAD_NAME                   0          (a)
+C [0004:015]         13 LOAD_GLOBAL                 0          (b)
+C [0004:008]         14 CALL_FUNCTION               2          (add(a, b))
+C [0004:001]         15 RETURN_VALUE                           (return add(a, b))
 --== Function: "add" ==--
 C [#000] [NAME  ] a
 C [#001] [NAME  ] b
@@ -143,324 +141,261 @@ C [0003:027]          2 BINARY_ADD                             (a+b)
 C [0003:020]          3 RETURN_VALUE                           (return a+b)
 R [0000] [0001:009]          0 LOAD_CONST                  0          (1)
 ============================================================
-**** Stack [00D0971C] "UNKNOWN"
-   1 | [0111C4C0] number: 1
+**** Stack [00EF986C] "UNKNOWN"
+   1 | [00FDB020] number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 1, number: 1
+ GC  | [00FDB020] Mark: 1, number: 1
 ############################################################
-R [0001] [0001:005]          1 DUP_TOP                                (a)
+R [0001] [0001:005]          1 STORE_NAME                  0          (a)
 ============================================================
-**** Stack [00D0971C] "UNKNOWN"
-   2 | [0111C4C0] number: 1
-   1 | [0111C4C0] number: 1
+**** Stack [00EF986C] "UNKNOWN"
+   1 | [00FDB020] number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 1, number: 1
+ Env | [00FDB020] "a" number: 1
+------------------------------------------------------------
+ GC  | [00FDB020] Mark: 2, number: 1
 ############################################################
-R [0002] [0001:005]          2 STORE_NAME                  0          (a)
-============================================================
-**** Stack [00D0971C] "UNKNOWN"
-   2 | [0111C4C0] number: 1
-   1 | [0111C4C0] number: 1
+R [0002] [0001:005]          2 POP_TOP                                (a = 1)
+**** Stack [00EF986C] "UNKNOWN"
 ------------------------------------------------------------
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 2, number: 1
+ GC  | [00FDB020] Mark: 2, number: 1
 ############################################################
-R [0003] [0001:005]          3 POP_TOP                                (a = 1)
+R [0003] [0002:005]          3 LOAD_CONST                  1          (2)
 ============================================================
-**** Stack [00D0971C] "UNKNOWN"
-   1 | [0111C4C0] number: 1
+**** Stack [00EF986C] "UNKNOWN"
+   1 | [00FDB170] number: 2
 ------------------------------------------------------------
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 2, number: 1
+ GC  | [00FDB020] Mark: 2, number: 1
+ GC  | [00FDB170] Mark: 1, number: 2
 ############################################################
-R [0004] [0002:005]          4 LOAD_CONST                  1          (2)
+R [0004] [0002:001]          4 STORE_GLOBAL                0          (b)
 ============================================================
-**** Stack [00D0971C] "UNKNOWN"
-   2 | [0111C2E0] number: 2
-   1 | [0111C4C0] number: 1
+**** Stack [00EF986C] "UNKNOWN"
+   1 | [00FDB170] number: 2
 ------------------------------------------------------------
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 2, number: 1
- GC  | [0111C2E0] Mark: 1, number: 2
+ GC  | [00FDB020] Mark: 2, number: 1
+ GC  | [00FDB170] Mark: 2, number: 2
 ############################################################
-R [0005] [0002:001]          5 DUP_TOP                                (b)
-============================================================
-**** Stack [00D0971C] "UNKNOWN"
-   3 | [0111C2E0] number: 2
-   2 | [0111C2E0] number: 2
-   1 | [0111C4C0] number: 1
+R [0005] [0002:001]          5 POP_TOP                                (b = 2)
+**** Stack [00EF986C] "UNKNOWN"
 ------------------------------------------------------------
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 2, number: 1
- GC  | [0111C2E0] Mark: 1, number: 2
+ GC  | [00FDB020] Mark: 2, number: 1
+ GC  | [00FDB170] Mark: 2, number: 2
 ############################################################
-R [0006] [0002:001]          6 STORE_GLOBAL                0          (b)
+R [0006] [0003:010]          6 LOAD_CONST                  2          (add)
 ============================================================
-**** Stack [00D0971C] "UNKNOWN"
-   3 | [0111C2E0] number: 2
-   2 | [0111C2E0] number: 2
-   1 | [0111C4C0] number: 1
+**** Stack [00EF986C] "UNKNOWN"
+   1 | [010445AC] function: add
 ------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 2, number: 1
- GC  | [0111C2E0] Mark: 2, number: 2
+ GC  | [00FDB020] Mark: 2, number: 1
+ GC  | [00FDB170] Mark: 2, number: 2
+ GC  | [010445AC] Mark: 1, function: add
 ############################################################
-R [0007] [0002:001]          7 POP_TOP                                (b = 2)
+R [0007] [0003:010]          7 LOAD_CONST                  3          (add)
 ============================================================
-**** Stack [00D0971C] "UNKNOWN"
-   2 | [0111C2E0] number: 2
-   1 | [0111C4C0] number: 1
+**** Stack [00EF986C] "UNKNOWN"
+   2 | [01037E3C] string: add
+   1 | [010445AC] function: add
 ------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 2, number: 1
- GC  | [0111C2E0] Mark: 2, number: 2
+ GC  | [00FDB020] Mark: 2, number: 1
+ GC  | [00FDB170] Mark: 2, number: 2
+ GC  | [010445AC] Mark: 1, function: add
+ GC  | [01037E3C] Mark: 1, string: add
 ############################################################
-R [0008] [0003:010]          8 LOAD_CONST                  2          (add)
+R [0008] [0003:001]          8 MAKE_FUNCTION               0          (function add(a,b) {return a+b;})
 ============================================================
-**** Stack [00D0971C] "UNKNOWN"
-   3 | [01184434] function: add
-   2 | [0111C2E0] number: 2
-   1 | [0111C4C0] number: 1
+**** Stack [00EF986C] "UNKNOWN"
+   1 | [010445AC] function: add
 ------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 2, number: 1
- GC  | [0111C2E0] Mark: 2, number: 2
- GC  | [01184434] Mark: 1, function: add
+ GC  | [00FDB020] Mark: 2, number: 1
+ GC  | [00FDB170] Mark: 2, number: 2
+ GC  | [010445AC] Mark: 1, function: add
+ GC  | [01037E3C] Mark: 0, string: add
 ############################################################
-R [0009] [0003:010]          9 LOAD_CONST                  3          (add)
+R [0009] [0003:010]          9 STORE_NAME                  1          (add)
 ============================================================
-**** Stack [00D0971C] "UNKNOWN"
-   4 | [011778F4] string: add
-   3 | [01184434] function: add
-   2 | [0111C2E0] number: 2
-   1 | [0111C4C0] number: 1
+**** Stack [00EF986C] "UNKNOWN"
+   1 | [010445AC] function: add
 ------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [010445AC] "add" function: add
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 2, number: 1
- GC  | [0111C2E0] Mark: 2, number: 2
- GC  | [01184434] Mark: 1, function: add
- GC  | [011778F4] Mark: 1, string: add
+ GC  | [00FDB020] Mark: 2, number: 1
+ GC  | [00FDB170] Mark: 2, number: 2
+ GC  | [010445AC] Mark: 2, function: add
 ############################################################
-R [0010] [0003:001]         10 MAKE_FUNCTION               0          (function add(a,b) {return a+b;})
-============================================================
-**** Stack [00D0971C] "UNKNOWN"
-   3 | [01184434] function: add
-   2 | [0111C2E0] number: 2
-   1 | [0111C4C0] number: 1
+R [0010] [0003:001]         10 POP_TOP                                (function add(a,b) {return a+b;})
+**** Stack [00EF986C] "UNKNOWN"
 ------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [010445AC] "add" function: add
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 2, number: 1
- GC  | [0111C2E0] Mark: 2, number: 2
- GC  | [01184434] Mark: 1, function: add
- GC  | [011778F4] Mark: 0, string: add
+ GC  | [00FDB020] Mark: 2, number: 1
+ GC  | [00FDB170] Mark: 2, number: 2
+ GC  | [010445AC] Mark: 2, function: add
 ############################################################
-R [0011] [0003:010]         11 STORE_NAME                  1          (add)
+R [0011] [0004:008]         11 LOAD_GLOBAL                 1          (add)
 ============================================================
-**** Stack [00D0971C] "UNKNOWN"
-   3 | [01184434] function: add
-   2 | [0111C2E0] number: 2
-   1 | [0111C4C0] number: 1
+**** Stack [00EF986C] "UNKNOWN"
+   1 | [010445AC] function: add
 ------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [01184434] "add" function: add
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [010445AC] "add" function: add
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 2, number: 1
- GC  | [0111C2E0] Mark: 2, number: 2
- GC  | [01184434] Mark: 2, function: add
+ GC  | [00FDB020] Mark: 2, number: 1
+ GC  | [00FDB170] Mark: 2, number: 2
+ GC  | [010445AC] Mark: 2, function: add
 ############################################################
-R [0012] [0003:001]         12 POP_TOP                                (function add(a,b) {return a+b;})
+R [0012] [0004:012]         12 LOAD_NAME                   0          (a)
 ============================================================
-**** Stack [00D0971C] "UNKNOWN"
-   2 | [0111C2E0] number: 2
-   1 | [0111C4C0] number: 1
+**** Stack [00EF986C] "UNKNOWN"
+   2 | [00FDB020] number: 1
+   1 | [010445AC] function: add
 ------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [01184434] "add" function: add
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [010445AC] "add" function: add
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 2, number: 1
- GC  | [0111C2E0] Mark: 2, number: 2
- GC  | [01184434] Mark: 2, function: add
+ GC  | [00FDB020] Mark: 2, number: 1
+ GC  | [00FDB170] Mark: 2, number: 2
+ GC  | [010445AC] Mark: 2, function: add
 ############################################################
-R [0013] [0004:008]         13 LOAD_GLOBAL                 1          (add)
+R [0013] [0004:015]         13 LOAD_GLOBAL                 0          (b)
 ============================================================
-**** Stack [00D0971C] "UNKNOWN"
-   3 | [01184434] function: add
-   2 | [0111C2E0] number: 2
-   1 | [0111C4C0] number: 1
+**** Stack [00EF986C] "UNKNOWN"
+   3 | [00FDB170] number: 2
+   2 | [00FDB020] number: 1
+   1 | [010445AC] function: add
 ------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [01184434] "add" function: add
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [010445AC] "add" function: add
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 2, number: 1
- GC  | [0111C2E0] Mark: 2, number: 2
- GC  | [01184434] Mark: 2, function: add
+ GC  | [00FDB020] Mark: 2, number: 1
+ GC  | [00FDB170] Mark: 2, number: 2
+ GC  | [010445AC] Mark: 2, function: add
 ############################################################
-R [0014] [0004:012]         14 LOAD_NAME                   0          (a)
-============================================================
-**** Stack [00D0971C] "UNKNOWN"
-   4 | [0111C4C0] number: 1
-   3 | [01184434] function: add
-   2 | [0111C2E0] number: 2
-   1 | [0111C4C0] number: 1
+R [0014] [0004:008]         14 CALL_FUNCTION               2          (add(a, b))
+**** Stack [00EF9A9C] "add"
 ------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [01184434] "add" function: add
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 2, number: 1
- GC  | [0111C2E0] Mark: 2, number: 2
- GC  | [01184434] Mark: 2, function: add
-############################################################
-R [0015] [0004:015]         15 LOAD_GLOBAL                 0          (b)
-============================================================
-**** Stack [00D0971C] "UNKNOWN"
-   5 | [0111C2E0] number: 2
-   4 | [0111C4C0] number: 1
-   3 | [01184434] function: add
-   2 | [0111C2E0] number: 2
-   1 | [0111C4C0] number: 1
+**** Stack [00EF986C] "UNKNOWN"
 ------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [01184434] "add" function: add
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [010445AC] "add" function: add
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 2, number: 1
- GC  | [0111C2E0] Mark: 2, number: 2
- GC  | [01184434] Mark: 2, function: add
-############################################################
-R [0016] [0004:008]         16 CALL_FUNCTION               2          (add(a, b))
-============================================================
-**** Stack [00D09CCC] "add"
-------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [0111C4C0] "a" number: 1
-------------------------------------------------------------
-**** Stack [00D0971C] "UNKNOWN"
-   2 | [0111C2E0] number: 2
-   1 | [0111C4C0] number: 1
-------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [01184434] "add" function: add
- Env | [0111C4C0] "a" number: 1
-------------------------------------------------------------
- GC  | [0111C4C0] Mark: 2, number: 1
- GC  | [0111C2E0] Mark: 2, number: 2
- GC  | [01184434] Mark: 2, function: add
+ GC  | [00FDB020] Mark: 2, number: 1
+ GC  | [00FDB170] Mark: 2, number: 2
+ GC  | [010445AC] Mark: 2, function: add
 ############################################################
 R [0000] [0003:027]          0 LOAD_FAST                   0          (a)
-============================================================
-**** Stack [00D09CCC] "add"
-   1 | [0111C4C0] number: 1
+**** Stack [00EF9A9C] "add"
+   1 | [00FDB020] number: 1
 ------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
-**** Stack [00D0971C] "UNKNOWN"
-   2 | [0111C2E0] number: 2
-   1 | [0111C4C0] number: 1
+**** Stack [00EF986C] "UNKNOWN"
 ------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [01184434] "add" function: add
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [010445AC] "add" function: add
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 2, number: 1
- GC  | [0111C2E0] Mark: 2, number: 2
- GC  | [01184434] Mark: 2, function: add
+ GC  | [00FDB020] Mark: 2, number: 1
+ GC  | [00FDB170] Mark: 2, number: 2
+ GC  | [010445AC] Mark: 2, function: add
 ############################################################
 R [0001] [0003:029]          1 LOAD_FAST                   1          (b)
-============================================================
-**** Stack [00D09CCC] "add"
-   2 | [0111C2E0] number: 2
-   1 | [0111C4C0] number: 1
+**** Stack [00EF9A9C] "add"
+   2 | [00FDB170] number: 2
+   1 | [00FDB020] number: 1
 ------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
-**** Stack [00D0971C] "UNKNOWN"
-   2 | [0111C2E0] number: 2
-   1 | [0111C4C0] number: 1
+**** Stack [00EF986C] "UNKNOWN"
 ------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [01184434] "add" function: add
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [010445AC] "add" function: add
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 2, number: 1
- GC  | [0111C2E0] Mark: 2, number: 2
- GC  | [01184434] Mark: 2, function: add
+ GC  | [00FDB020] Mark: 2, number: 1
+ GC  | [00FDB170] Mark: 2, number: 2
+ GC  | [010445AC] Mark: 2, function: add
 ############################################################
 R [0002] [0003:027]          2 BINARY_ADD                             (a+b)
-============================================================
-**** Stack [00D09CCC] "add"
-   1 | [0111CE50] number: 3
+**** Stack [00EF9A9C] "add"
+   1 | [00FDBBC0] number: 3
 ------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
-**** Stack [00D0971C] "UNKNOWN"
-   2 | [0111C2E0] number: 2
-   1 | [0111C4C0] number: 1
+**** Stack [00EF986C] "UNKNOWN"
 ------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [01184434] "add" function: add
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [010445AC] "add" function: add
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 2, number: 1
- GC  | [0111C2E0] Mark: 2, number: 2
- GC  | [01184434] Mark: 2, function: add
- GC  | [0111CE50] Mark: 1, number: 3
+ GC  | [00FDB020] Mark: 2, number: 1
+ GC  | [00FDB170] Mark: 2, number: 2
+ GC  | [010445AC] Mark: 2, function: add
+ GC  | [00FDBBC0] Mark: 1, number: 3
 ############################################################
 R [0003] [0003:020]          3 RETURN_VALUE                           (return a+b)
-============================================================
-**** Stack [00D09CCC] "add"
-   1 | [0111CE50] number: 3
+**** Stack [00EF9A9C] "add"
+   1 | [00FDBBC0] number: 3
 ------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
-**** Stack [00D0971C] "UNKNOWN"
-   2 | [0111C2E0] number: 2
-   1 | [0111C4C0] number: 1
+**** Stack [00EF986C] "UNKNOWN"
 ------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [01184434] "add" function: add
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [010445AC] "add" function: add
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 2, number: 1
- GC  | [0111C2E0] Mark: 2, number: 2
- GC  | [01184434] Mark: 2, function: add
- GC  | [0111CE50] Mark: 1, number: 3
+ GC  | [00FDB020] Mark: 2, number: 1
+ GC  | [00FDB170] Mark: 2, number: 2
+ GC  | [010445AC] Mark: 2, function: add
+ GC  | [00FDBBC0] Mark: 1, number: 3
 ############################################################
-R [0017] [0004:001]         17 RETURN_VALUE                           (return add(a, b))
+R [0015] [0004:001]         15 RETURN_VALUE                           (return add(a, b))
 ============================================================
-**** Stack [00D0971C] "UNKNOWN"
-   3 | [0111CE50] number: 3
-   2 | [0111C2E0] number: 2
-   1 | [0111C4C0] number: 1
+**** Stack [00EF986C] "UNKNOWN"
+   1 | [00FDBBC0] number: 3
 ------------------------------------------------------------
- Env | [0111C2E0] "b" number: 2
- Env | [01184434] "add" function: add
- Env | [0111C4C0] "a" number: 1
+ Env | [00FDB170] "b" number: 2
+ Env | [010445AC] "add" function: add
+ Env | [00FDB020] "a" number: 1
 ------------------------------------------------------------
- GC  | [0111C4C0] Mark: 2, number: 1
- GC  | [0111C2E0] Mark: 2, number: 2
- GC  | [01184434] Mark: 2, function: add
- GC  | [0111CE50] Mark: 1, number: 3
+ GC  | [00FDB020] Mark: 2, number: 1
+ GC  | [00FDB170] Mark: 2, number: 2
+ GC  | [010445AC] Mark: 2, function: add
+ GC  | [00FDBBC0] Mark: 1, number: 3
 ############################################################
 number: 3

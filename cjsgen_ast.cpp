@@ -127,7 +127,6 @@ namespace clib {
     int sym_var_t::gen_lvalue(ijsgen &gen) {
         switch (node->flag) {
             case a_literal:
-                gen.emit(this, DUP_TOP);
                 if (clazz == local) {
                     gen.emit(this, STORE_NAME, gen.load_string(node->data._string, cjs_consts::get_string_t::gs_name));
                     if (parent.lock()->get_type() == s_id) {
