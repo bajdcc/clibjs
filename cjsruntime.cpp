@@ -784,10 +784,14 @@ namespace clib {
         for (const auto &s : stack) {
             const auto &st = s->stack;
             const auto &env = s->envs;
+            const auto &closure = s->closure;
             for (const auto &s2 : st) {
                 s2.lock()->mark(1);
             }
             for (const auto &s2 : env) {
+                s2.second.lock()->mark(2);
+            }
+            for (const auto &s2 : closure) {
                 s2.second.lock()->mark(2);
             }
         }
@@ -841,7 +845,7 @@ namespace clib {
                 os << "object: " << std::endl;
                 for (const auto &s : n->obj) {
                     os << std::setfill(' ') << std::setw(level) << "";
-                    os << s.first << ": ";
+                    os << s.first << ": " << std::endl;
                     print(s.second.lock(), level + 1, os);
                 }
             }
