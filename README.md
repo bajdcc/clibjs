@@ -8,6 +8,7 @@ JS-like script engine implemented by C++.
 - [ ] Translate javascript file into **Python Bytecode** temporarily.
 - [ ] Build VM.
 - [x] Closure.
+- [x] GC, cache unused object
 
 ## Environment
 

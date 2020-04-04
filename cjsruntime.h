@@ -11,13 +11,38 @@
 
 namespace clib {
 
+    class jsv_number;
+
+    class jsv_string;
+
+    class jsv_boolean;
+
+    class jsv_regex;
+
+    class jsv_array;
+
+    class jsv_object;
+
+    class jsv_function;
+
+    class js_value_new {
+    public:
+        virtual std::shared_ptr<jsv_number> new_number(double n) = 0;
+        virtual std::shared_ptr<jsv_string> new_string(const std::string &s) = 0;
+        virtual std::shared_ptr<jsv_boolean> new_boolean(bool b) = 0;
+        virtual std::shared_ptr<jsv_regex> new_regex(const std::string &s) = 0;
+        virtual std::shared_ptr<jsv_array> new_array() = 0;
+        virtual std::shared_ptr<jsv_object> new_object() = 0;
+        virtual std::shared_ptr<jsv_function> new_function() = 0;
+    };
+
     class js_value : public std::enable_shared_from_this<js_value> {
     public:
         using ref = std::shared_ptr<js_value>;
         using weak_ref = std::weak_ptr<js_value>;
         virtual js_value::ref clone() const = 0;
         virtual runtime_t get_type() = 0;
-        virtual js_value::ref binary_op(int code, js_value::ref op) = 0;
+        virtual js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) = 0;
         virtual void mark(int n) = 0;
         virtual void print(std::ostream &os) = 0;
         int marked{0};
@@ -30,7 +55,7 @@ namespace clib {
         explicit jsv_number(double n);
         js_value::ref clone() const override;
         runtime_t get_type() override;
-        js_value::ref binary_op(int code, js_value::ref op) override;
+        js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
         void mark(int n) override;
         void print(std::ostream &os) override;
         double number;
@@ -43,7 +68,7 @@ namespace clib {
         explicit jsv_string(std::string s);
         js_value::ref clone() const override;
         runtime_t get_type() override;
-        js_value::ref binary_op(int code, js_value::ref op) override;
+        js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
         void mark(int n) override;
         void print(std::ostream &os) override;
         std::string str;
@@ -56,7 +81,7 @@ namespace clib {
         explicit jsv_boolean(bool flag);
         js_value::ref clone() const override;
         runtime_t get_type() override;
-        js_value::ref binary_op(int code, js_value::ref op) override;
+        js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
         void mark(int n) override;
         void print(std::ostream &os) override;
         bool b{false};
@@ -69,9 +94,10 @@ namespace clib {
         explicit jsv_regex(std::string s);
         js_value::ref clone() const override;
         runtime_t get_type() override;
-        js_value::ref binary_op(int code, js_value::ref op) override;
+        js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
         void mark(int n) override;
         void print(std::ostream &os) override;
+        ref clear();
         std::string re;
     };
 
@@ -81,9 +107,10 @@ namespace clib {
         using weak_ref = std::weak_ptr<jsv_array>;
         js_value::ref clone() const override;
         runtime_t get_type() override;
-        js_value::ref binary_op(int code, js_value::ref op) override;
+        js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
         void mark(int n) override;
         void print(std::ostream &os) override;
+        ref clear();
         std::vector<js_value::weak_ref> arr;
     };
 
@@ -93,9 +120,10 @@ namespace clib {
         using weak_ref = std::weak_ptr<jsv_object>;
         js_value::ref clone() const override;
         runtime_t get_type() override;
-        js_value::ref binary_op(int code, js_value::ref op) override;
+        js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
         void mark(int n) override;
         void print(std::ostream &os) override;
+        ref clear();
         std::unordered_map<std::string, js_value::weak_ref> obj;
     };
 
@@ -105,12 +133,14 @@ namespace clib {
     public:
         using ref = std::shared_ptr<jsv_function>;
         using weak_ref = std::weak_ptr<jsv_function>;
+        jsv_function() = default;
         explicit jsv_function(sym_code_t::ref c);
         js_value::ref clone() const override;
         runtime_t get_type() override;
-        js_value::ref binary_op(int code, js_value::ref op) override;
+        js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
         void mark(int n) override;
         void print(std::ostream &os) override;
+        ref clear();
         std::shared_ptr<cjs_function_info> code;
         jsv_object::weak_ref closure;
         std::string name;
@@ -150,7 +180,17 @@ namespace clib {
         std::unordered_map<std::string, js_value::weak_ref> closure;
     };
 
-    class cjsruntime {
+    struct cjs_runtime_reuse {
+        std::vector<jsv_number::ref> reuse_numbers;
+        std::vector<jsv_string::ref> reuse_strings;
+        std::vector<jsv_boolean::ref> reuse_booleans;
+        std::vector<jsv_regex::ref> reuse_regexes;
+        std::vector<jsv_array::ref> reuse_arrays;
+        std::vector<jsv_object::ref> reuse_objects;
+        std::vector<jsv_function::ref> reuse_functions;
+    };
+
+    class cjsruntime : public js_value_new {
     public:
         cjsruntime() = default;
         ~cjsruntime() = default;
@@ -159,6 +199,14 @@ namespace clib {
         cjsruntime &operator=(const cjsruntime &) = delete;
 
         void eval(cjs_code_result::ref code);
+
+        jsv_number::ref new_number(double n) override;
+        jsv_string::ref new_string(const std::string &s) override;
+        jsv_boolean::ref new_boolean(bool b) override;
+        jsv_regex::ref new_regex(const std::string &s) override;
+        jsv_array::ref new_array() override;
+        jsv_object::ref new_object() override;
+        jsv_function::ref new_function() override;
 
     private:
         int run(const sym_code_t::ref &fun, const cjs_code &code);
@@ -177,6 +225,8 @@ namespace clib {
         void dump_step2(const cjs_code &code) const;
         void dump_step3() const;
 
+        void reuse_value(const js_value::ref &);
+
         void gc();
 
         static void print(const js_value::ref &value, int level, std::ostream &os);
@@ -185,6 +235,7 @@ namespace clib {
         std::vector<cjs_function::ref> stack;
         cjs_function::ref current_stack;
         std::list<js_value::ref> objs;
+        cjs_runtime_reuse reuse;
     };
 }
 

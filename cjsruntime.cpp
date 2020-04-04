@@ -27,7 +27,7 @@ namespace clib {
         return r_number;
     }
 
-    js_value::ref jsv_number::binary_op(int code, js_value::ref op) {
+    js_value::ref jsv_number::binary_op(js_value_new &n, int code, js_value::ref op) {
         switch (code) {
             case BINARY_POWER:
                 break;
@@ -41,7 +41,7 @@ namespace clib {
                         const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
                         if (s == 0.0)
                             return shared_from_this();
-                        return std::make_shared<jsv_number>(
+                        return n.new_number(
                                 number +
                                 std::dynamic_pointer_cast<jsv_number>(op)->number);
                     }
@@ -51,13 +51,13 @@ namespace clib {
                             return shared_from_this();
                         std::stringstream ss;
                         ss << number;
-                        return std::make_shared<jsv_string>(
+                        return n.new_string(
                                 ss.str() +
                                 std::dynamic_pointer_cast<jsv_string>(op)->str);
                     }
                     case r_boolean:
                         return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
-                               std::make_shared<jsv_number>(
+                               n.new_number(
                                        number + 1.0) :
                                shared_from_this();
                     case r_regex:
@@ -67,13 +67,13 @@ namespace clib {
                     case r_object: {
                         std::stringstream ss;
                         ss << number << "[object Object]";
-                        return std::make_shared<jsv_string>(ss.str());
+                        return n.new_string(ss.str());
                     }
                     case r_function: {
                         const auto &s = std::dynamic_pointer_cast<jsv_function>(op)->code->text;
                         std::stringstream ss;
                         ss << number << s;
-                        return std::make_shared<jsv_string>(ss.str());
+                        return n.new_string(ss.str());
                     }
                     default:
                         break;
@@ -124,7 +124,8 @@ namespace clib {
         return r_string;
     }
 
-    js_value::ref jsv_string::binary_op(int code, js_value::ref op) {
+    js_value::ref jsv_string::binary_op(js_value_new &n, int code, js_value::ref
+    op) {
         return nullptr;
     }
 
@@ -148,7 +149,8 @@ namespace clib {
         return r_boolean;
     }
 
-    js_value::ref jsv_boolean::binary_op(int code, js_value::ref op) {
+    js_value::ref jsv_boolean::binary_op(js_value_new &n, int code, js_value::ref
+    op) {
         return nullptr;
     }
 
@@ -172,7 +174,8 @@ namespace clib {
         return r_regex;
     }
 
-    js_value::ref jsv_regex::binary_op(int code, js_value::ref op) {
+    js_value::ref jsv_regex::binary_op(js_value_new &n, int code, js_value::ref
+    op) {
         return nullptr;
     }
 
@@ -184,6 +187,11 @@ namespace clib {
         os << re;
     }
 
+    jsv_regex::ref jsv_regex::clear() {
+        re.clear();
+        return std::dynamic_pointer_cast<jsv_regex>(shared_from_this());
+    }
+
     js_value::ref jsv_array::clone() const {
         return nullptr;
     }
@@ -192,7 +200,8 @@ namespace clib {
         return r_array;
     }
 
-    js_value::ref jsv_array::binary_op(int code, js_value::ref op) {
+    js_value::ref jsv_array::binary_op(js_value_new &n, int code, js_value::ref
+    op) {
         return nullptr;
     }
 
@@ -214,6 +223,11 @@ namespace clib {
         os << "]";
     }
 
+    jsv_array::ref jsv_array::clear() {
+        arr.clear();
+        return std::dynamic_pointer_cast<jsv_array>(shared_from_this());
+    }
+
     js_value::ref jsv_object::clone() const {
         return nullptr;
     }
@@ -222,7 +236,8 @@ namespace clib {
         return r_object;
     }
 
-    js_value::ref jsv_object::binary_op(int code, js_value::ref op) {
+    js_value::ref jsv_object::binary_op(js_value_new &n, int code, js_value::ref
+    op) {
         return nullptr;
     }
 
@@ -232,6 +247,11 @@ namespace clib {
 
     void jsv_object::print(std::ostream &os) {
         os << "[object Object]";
+    }
+
+    jsv_object::ref jsv_object::clear() {
+        obj.clear();
+        return std::dynamic_pointer_cast<jsv_object>(shared_from_this());
     }
 
     jsv_function::jsv_function(sym_code_t::ref c) {
@@ -246,7 +266,8 @@ namespace clib {
         return r_function;
     }
 
-    js_value::ref jsv_function::binary_op(int code, js_value::ref op) {
+    js_value::ref jsv_function::binary_op(js_value_new &n, int code, js_value::ref
+    op) {
         return nullptr;
     }
 
@@ -259,6 +280,13 @@ namespace clib {
 
     void jsv_function::print(std::ostream &os) {
         os << code->text;
+    }
+
+    jsv_function::ref jsv_function::clear() {
+        code = nullptr;
+        closure.reset();
+        name.clear();
+        return std::dynamic_pointer_cast<jsv_function>(shared_from_this());
     }
 
     cjs_function::cjs_function(sym_code_t::ref code) {
@@ -419,7 +447,7 @@ namespace clib {
             case BINARY_OR: {
                 auto op2 = pop().lock();
                 auto op1 = pop().lock();
-                auto result = op1->binary_op(code.code, op2);
+                auto result = op1->binary_op(*this, code.code, op2);
                 if (!(result == op1 || result == op2))
                     register_value(result);
                 push(result);
@@ -850,6 +878,110 @@ namespace clib {
         std::cout << std::setfill('#') << std::setw(60) << "" << std::endl;
     }
 
+    jsv_number::ref cjsruntime::new_number(double n) {
+        if (reuse.reuse_numbers.empty()) {
+            return std::make_shared<jsv_number>(n);
+        }
+        auto r = reuse.reuse_numbers.back();
+        r->number = n;
+        reuse.reuse_numbers.pop_back();
+        return std::move(r);
+    }
+
+    jsv_string::ref cjsruntime::new_string(const std::string &s) {
+        if (reuse.reuse_strings.empty()) {
+            return std::make_shared<jsv_string>(s);
+        }
+        auto r = reuse.reuse_strings.back();
+        r->str = s;
+        reuse.reuse_strings.pop_back();
+        return std::move(r);
+    }
+
+    jsv_boolean::ref cjsruntime::new_boolean(bool b) {
+        if (reuse.reuse_booleans.empty()) {
+            return std::make_shared<jsv_boolean>(b);
+        }
+        auto r = reuse.reuse_booleans.back();
+        r->b = b;
+        reuse.reuse_booleans.pop_back();
+        return std::move(r);
+    }
+
+    jsv_regex::ref cjsruntime::new_regex(const std::string &s) {
+        if (reuse.reuse_regexes.empty()) {
+            return std::make_shared<jsv_regex>(s);
+        }
+        auto r = reuse.reuse_regexes.back();
+        r->re = s;
+        reuse.reuse_regexes.pop_back();
+        return std::move(r);
+    }
+
+    jsv_array::ref cjsruntime::new_array() {
+        if (reuse.reuse_arrays.empty()) {
+            return std::make_shared<jsv_array>();
+        }
+        auto r = reuse.reuse_arrays.back();
+        reuse.reuse_arrays.pop_back();
+        return std::move(r);
+    }
+
+    jsv_object::ref cjsruntime::new_object() {
+        if (reuse.reuse_objects.empty()) {
+            return std::make_shared<jsv_object>();
+        }
+        auto r = reuse.reuse_objects.back();
+        reuse.reuse_objects.pop_back();
+        return std::move(r);
+    }
+
+    jsv_function::ref cjsruntime::new_function() {
+        if (reuse.reuse_functions.empty()) {
+            return std::make_shared<jsv_function>();
+        }
+        auto r = reuse.reuse_functions.back();
+        reuse.reuse_functions.pop_back();
+        return std::move(r);
+    }
+
+    void cjsruntime::reuse_value(const js_value::ref &v) {
+        if (!v)
+            return;
+        switch (v->get_type()) {
+            case r_number:
+                reuse.reuse_numbers.push_back(
+                        std::dynamic_pointer_cast<jsv_number>(v));
+                break;
+            case r_string:
+                reuse.reuse_strings.push_back(
+                        std::dynamic_pointer_cast<jsv_string>(v));
+                break;
+            case r_boolean:
+                reuse.reuse_booleans.push_back(
+                        std::dynamic_pointer_cast<jsv_boolean>(v));
+                break;
+            case r_regex:
+                reuse.reuse_regexes.push_back(
+                        std::dynamic_pointer_cast<jsv_regex>(v)->clear());
+                break;
+            case r_array:
+                reuse.reuse_arrays.push_back(
+                        std::dynamic_pointer_cast<jsv_array>(v)->clear());
+                break;
+            case r_object:
+                reuse.reuse_objects.push_back(
+                        std::dynamic_pointer_cast<jsv_object>(v)->clear());
+                break;
+            case r_function:
+                reuse.reuse_functions.push_back(
+                        std::dynamic_pointer_cast<jsv_function>(v)->clear());
+                break;
+            default:
+                break;
+        }
+    }
+
     void cjsruntime::gc() {
         std::for_each(objs.begin(), objs.end(), [](auto &x) { x->mark(0); });
         for (const auto &s : stack) {
@@ -870,9 +1002,10 @@ namespace clib {
         dump_step3();
 #endif
         for (auto i = objs.begin(); i != objs.end();) {
-            if ((*i)->marked == 0)
+            if ((*i)->marked == 0) {
+                reuse_value(*i);
                 i = objs.erase(i);
-            else
+            } else
                 i++;
         }
     }
@@ -930,4 +1063,5 @@ namespace clib {
                 break;
         }
     }
+
 }
