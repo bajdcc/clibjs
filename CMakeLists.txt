@@ -23,4 +23,14 @@ add_executable(clibjs
         cjsgen.h
         cjsgen_ast.cpp
         cjsruntime.cpp
-        cjsruntime.h)
+        cjsruntime.h
+        cjsrt_array.cpp
+        cjsrt_boolean.cpp
+        cjsrt_function.cpp
+        cjsrt_null.cpp
+        cjsrt_number.cpp
+        cjsrt_object.cpp
+        cjsrt_regex.cpp
+        cjsrt_string.cpp
+        cjsrt_undefined.cpp
+        )

@@ -45,6 +45,7 @@ namespace clib {
             K_DEFAULT,
             K_CASE,
             K_NULL,
+            K_UNDEFINED,
             K_TRUE,
             K_FALSE,
             K_INSTANCEOF,
@@ -419,6 +420,8 @@ namespace clib {
             r_array,
             r_object,
             r_function,
+            r_null,
+            r_undefined,
             r__end,
         };
         const char *runtime_string(runtime_t t);

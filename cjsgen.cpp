@@ -1331,7 +1331,8 @@ namespace clib {
             case a_number:
                 return std::make_shared<sym_var_t>(node);
             case a_keyword: {
-                if (AST_IS_KEYWORD_K(node, K_TRUE) || AST_IS_KEYWORD_K(node, K_FALSE))
+                if (AST_IS_KEYWORD_K(node, K_TRUE) || AST_IS_KEYWORD_K(node, K_FALSE) ||
+                    AST_IS_KEYWORD_K(node, K_NULL) || AST_IS_KEYWORD_K(node, K_UNDEFINED))
                     return std::make_shared<sym_var_t>(node);
                 else
                     error(node, "invalid var keyword type: ", true);
@@ -1774,7 +1775,7 @@ namespace clib {
     }
 
     int cjsgen::load_string(const std::string &s, int type) {
-        return codes.back()->consts.get_string(s, (cjs_consts::get_string_t) (type));
+        return codes.back()->consts.get_string(s, (cjs_consts::get_string_t)(type));
     }
 
     int cjsgen::push_function(std::shared_ptr<sym_code_t> code) {

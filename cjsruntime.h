@@ -11,6 +11,10 @@
 
 namespace clib {
 
+    std::string trim(std::string s);
+
+    double fix(const double &d);
+
     class jsv_number;
 
     class jsv_string;
@@ -25,6 +29,10 @@ namespace clib {
 
     class jsv_function;
 
+    class jsv_undefined;
+
+    class jsv_null;
+
     class js_value_new {
     public:
         virtual std::shared_ptr<jsv_number> new_number(double n) = 0;
@@ -34,6 +42,8 @@ namespace clib {
         virtual std::shared_ptr<jsv_array> new_array() = 0;
         virtual std::shared_ptr<jsv_object> new_object() = 0;
         virtual std::shared_ptr<jsv_function> new_function() = 0;
+        virtual std::shared_ptr<jsv_null> new_null() = 0;
+        virtual std::shared_ptr<jsv_undefined> new_undefined() = 0;
     };
 
     class js_value : public std::enable_shared_from_this<js_value> {
@@ -134,6 +144,30 @@ namespace clib {
         std::unordered_map<std::string, js_value::weak_ref> obj;
     };
 
+    class jsv_null : public js_value {
+    public:
+        using ref = std::shared_ptr<jsv_null>;
+        using weak_ref = std::weak_ptr<jsv_null>;
+        js_value::ref clone() const override;
+        runtime_t get_type() override;
+        js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
+        bool to_bool() const override;
+        void mark(int n) override;
+        void print(std::ostream &os) override;
+    };
+
+    class jsv_undefined : public js_value {
+    public:
+        using ref = std::shared_ptr<jsv_undefined>;
+        using weak_ref = std::weak_ptr<jsv_undefined>;
+        js_value::ref clone() const override;
+        runtime_t get_type() override;
+        js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
+        bool to_bool() const override;
+        void mark(int n) override;
+        void print(std::ostream &os) override;
+    };
+
     class cjs_function_info;
 
     class jsv_function : public js_value {
@@ -215,6 +249,8 @@ namespace clib {
         jsv_array::ref new_array() override;
         jsv_object::ref new_object() override;
         jsv_function::ref new_function() override;
+        jsv_null::ref new_null() override;
+        jsv_undefined::ref new_undefined() override;
 
     private:
         int run(const sym_code_t::ref &fun, const cjs_code &code);
@@ -244,9 +280,16 @@ namespace clib {
         cjs_function::ref current_stack;
         std::list<js_value::ref> objs;
         struct _permanents_t {
-            js_value::ref _null;
+            jsv_null::ref _null;
+            jsv_undefined::ref _undefined;
             jsv_boolean::ref _true;
             jsv_boolean::ref _false;
+            jsv_number::ref __nan;
+            jsv_number::ref _inf;
+            jsv_number::ref _minus_inf;
+            jsv_number::ref _zero;
+            jsv_number::ref _one;
+            jsv_number::ref _minus_one;
         } permanents;
         cjs_runtime_reuse reuse;
     };

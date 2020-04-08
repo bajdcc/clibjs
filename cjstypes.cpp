@@ -44,6 +44,7 @@ namespace clib {
                     "K_DEFAULT",
                     "K_CASE",
                     "K_NULL",
+                    "K_UNDEFINED",
                     "K_TRUE",
                     "K_FALSE",
                     "K_INSTANCEOF",
@@ -396,6 +397,8 @@ namespace clib {
                     "array",
                     "object",
                     "function",
+                    "null",
+                    "undefined",
             };
             return p.at(t);
         }

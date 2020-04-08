@@ -88,6 +88,7 @@ namespace clib {
         DEF_LEXER(K_DEFAULT)
         DEF_LEXER(K_CASE)
         DEF_LEXER(K_NULL)
+        DEF_LEXER(K_UNDEFINED)
         DEF_LEXER(K_TRUE)
         DEF_LEXER(K_FALSE)
         DEF_LEXER(K_INSTANCEOF)
@@ -416,7 +417,7 @@ namespace clib {
                                        ternaryExpression;
         assignmentExpression = *(assignmentExpression + _T_ASSIGN) + assignmentOperatorExpression;
         singleExpression = assignmentExpression;
-        literal = _K_NULL | _K_TRUE | _K_FALSE | _STRING | _REGEX | _NUMBER;
+        literal = _K_NULL | _K_UNDEFINED | _K_TRUE | _K_FALSE | _STRING | _REGEX | _NUMBER;
         arrayLiteral = _T_LSQUARE + *elementList + _T_RSQUARE;
         elementList = *(elementList + ~_T_COMMA) + arrayElement;
         arrayElement = *_T_ELLIPSIS + singleExpression;
