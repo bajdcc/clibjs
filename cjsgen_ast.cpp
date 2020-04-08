@@ -920,6 +920,43 @@ namespace clib {
 
     // ----
 
+    symbol_t sym_stmt_if_t::get_type() const {
+        return s_statement_if;
+    }
+
+    std::string sym_stmt_if_t::to_string() const {
+        return sym_stmt_t::to_string();
+    }
+
+    int sym_stmt_if_t::gen_rvalue(ijsgen &gen) {
+        if (seq)
+            seq->gen_rvalue(gen);
+        auto idx = gen.code_length();
+        gen.emit(nullptr, POP_JUMP_IF_FALSE, 0);
+        true_stmt->gen_rvalue(gen);
+        if (false_stmt) {
+            auto idx2 = gen.code_length();
+            gen.emit(nullptr, JUMP_FORWARD, 0);
+            gen.edit(idx, 1, gen.code_length());
+            false_stmt->gen_rvalue(gen);
+            gen.edit(idx2, 1, gen.code_length() - idx2);
+        }else{
+            gen.edit(idx, 1, gen.code_length());
+        }
+        return sym_stmt_t::gen_rvalue(gen);
+    }
+
+    int sym_stmt_if_t::set_parent(sym_t::ref node) {
+        seq->set_parent(shared_from_this());
+        if (true_stmt)
+            true_stmt->set_parent(shared_from_this());
+        if (false_stmt)
+            false_stmt->set_parent(shared_from_this());
+        return sym_stmt_t::set_parent(node);
+    }
+
+    // ----
+
     symbol_t sym_block_t::get_type() const {
         return s_block;
     }

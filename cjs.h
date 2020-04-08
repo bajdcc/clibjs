@@ -8,6 +8,7 @@
 
 #include <string>
 #include "cjsparser.h"
+#include "cjsruntime.h"
 
 namespace clib {
 
@@ -23,6 +24,9 @@ namespace clib {
         void error_handler(int, const std::vector<pda_trans>&, int&) override;
 
         void exec(const std::string &filename, const std::string& input);
+
+    private:
+        cjsruntime rt;
     };
 }
 

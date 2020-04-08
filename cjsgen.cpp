@@ -722,7 +722,31 @@ namespace clib {
                 }
             }
                 break;
-            case c_ifStatement:
+            case c_ifStatement: {
+                auto _if = std::make_shared<sym_stmt_if_t>();
+                copy_info(_if, asts.front());
+                _if->end = tmps.back()->end;
+                assert(tmps.front()->get_base_type() == s_expression);
+                if (tmps.front()->get_type() == s_expression_seq) {
+                    _if->seq = std::dynamic_pointer_cast<sym_exp_seq_t>(tmps.front());
+                } else {
+                    _if->seq = std::make_shared<sym_exp_seq_t>();
+                    copy_info(_if->seq, tmps.front());
+                    _if->seq->exps.push_back(to_exp(tmps.front()));
+                }
+                if (tmps.size() < 3) {
+                    assert(tmps.back()->get_base_type() == s_statement);
+                    _if->true_stmt = std::dynamic_pointer_cast<sym_stmt_t>(tmps.back());
+                } else {
+                    assert(tmps[1]->get_base_type() == s_statement);
+                    _if->true_stmt = std::dynamic_pointer_cast<sym_stmt_t>(tmps[1]);
+                    assert(tmps[2]->get_base_type() == s_statement);
+                    _if->false_stmt = std::dynamic_pointer_cast<sym_stmt_t>(tmps[2]);
+                }
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(_if);
+            }
                 break;
             case c_iterationStatement:
                 break;
@@ -1833,7 +1857,7 @@ namespace clib {
                         jumps_set.insert(c.op1);
                         break;
                     case JUMP_FORWARD:
-                        jumps_set.insert(idx + c.op1 + 2);
+                        jumps_set.insert(idx + c.op1);
                         break;
                     default:
                         break;

@@ -27,6 +27,10 @@ JS-like script engine implemented by C++.
 - [ ] Runtime\(On progress\)
 - [ ] Interface
 
+## Control Flow
+
+- [x] if
+
 ## TEST
 
 Scanned js files successfully, ~~but spent more time~~ **BECAUSE IT IS BACKTRACE LALR1 PARSER**, now HARDCORE FIXED.

@@ -285,7 +285,7 @@ namespace clib {
         variableDeclaration = assignable + *(~_T_ASSIGN + singleExpression);
         emptyStatement = _T_SEMI;
         expressionStatement = expressionSequence + eos;
-        ifStatement = _K_IF + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement + *(_K_ELSE + statement);
+        ifStatement = _K_IF + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement + *(~_K_ELSE + statement);
         iterationStatement = doStatement | whileStatement | forStatement | forInStatement;
         doStatement = _K_DO + statement + _K_WHILE + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + eos;
         whileStatement = _K_WHILE + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement;

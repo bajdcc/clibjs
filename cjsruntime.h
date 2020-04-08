@@ -43,6 +43,7 @@ namespace clib {
         virtual js_value::ref clone() const = 0;
         virtual runtime_t get_type() = 0;
         virtual js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) = 0;
+        virtual bool to_bool() const = 0;
         virtual void mark(int n) = 0;
         virtual void print(std::ostream &os) = 0;
         int marked{0};
@@ -56,6 +57,7 @@ namespace clib {
         js_value::ref clone() const override;
         runtime_t get_type() override;
         js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
+        bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
         double number;
@@ -69,6 +71,7 @@ namespace clib {
         js_value::ref clone() const override;
         runtime_t get_type() override;
         js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
+        bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
         std::string str;
@@ -82,6 +85,7 @@ namespace clib {
         js_value::ref clone() const override;
         runtime_t get_type() override;
         js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
+        bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
         bool b{false};
@@ -95,6 +99,7 @@ namespace clib {
         js_value::ref clone() const override;
         runtime_t get_type() override;
         js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
+        bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
         ref clear();
@@ -108,6 +113,7 @@ namespace clib {
         js_value::ref clone() const override;
         runtime_t get_type() override;
         js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
+        bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
         ref clear();
@@ -121,6 +127,7 @@ namespace clib {
         js_value::ref clone() const override;
         runtime_t get_type() override;
         js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
+        bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
         ref clear();
@@ -138,6 +145,7 @@ namespace clib {
         js_value::ref clone() const override;
         runtime_t get_type() override;
         js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
+        bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
         ref clear();

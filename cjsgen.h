@@ -40,6 +40,7 @@ namespace clib {
         s_statement_var,
         s_statement_exp,
         s_statement_return,
+        s_statement_if,
         s_block,
         s_code,
     };
@@ -322,6 +323,18 @@ namespace clib {
         int gen_rvalue(ijsgen &gen) override;
         int set_parent(sym_t::ref node) override;
         sym_exp_seq_t::ref seq;
+    };
+
+    class sym_stmt_if_t : public sym_stmt_t {
+    public:
+        using ref = std::shared_ptr<sym_stmt_if_t>;
+        symbol_t get_type() const override;
+        std::string to_string() const override;
+        int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
+        sym_exp_seq_t::ref seq;
+        sym_stmt_t::ref true_stmt;
+        sym_stmt_t::ref false_stmt;
     };
 
     class sym_block_t : public sym_stmt_t {

@@ -9,7 +9,6 @@
 #include "cjs.h"
 #include "cjsparser.h"
 #include "cjsgen.h"
-#include "cjsruntime.h"
 
 #define LOG_FILE 0
 
@@ -37,7 +36,6 @@ namespace clib {
         auto code = std::move(g->get_code());
         assert(code);
         g = nullptr;
-        cjsruntime rt;
         rt.eval(std::move(code));
     }
 }
