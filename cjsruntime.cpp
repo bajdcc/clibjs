@@ -473,6 +473,11 @@ namespace clib {
         return nullptr;
     }
 
+    cjsruntime::cjsruntime() {
+        permanents._true = std::make_shared<jsv_boolean>(true);
+        permanents._false = std::make_shared<jsv_boolean>(false);
+    }
+
     void cjsruntime::eval(cjs_code_result::ref code) {
         stack.clear();
         stack.push_back(std::make_shared<cjs_function>(code->code));
@@ -522,8 +527,10 @@ namespace clib {
             case LOAD_UNDEFINED:
                 break;
             case LOAD_TRUE:
+                push(permanents._true);
                 break;
             case LOAD_FALSE:
+                push(permanents._false);
                 break;
             case POP_TOP:
                 pop();
@@ -739,8 +746,11 @@ namespace clib {
                 break;
             case JUMP_IF_TRUE_OR_POP:
                 break;
-            case JUMP_ABSOLUTE:
-                break;
+            case JUMP_ABSOLUTE: {
+                auto jmp = code.op1;
+                current_stack->pc = jmp;
+                return 0;
+            }
             case POP_JUMP_IF_FALSE: {
                 auto jmp = code.op1;
                 auto t = pop();
@@ -1028,13 +1038,8 @@ namespace clib {
     }
 
     jsv_boolean::ref cjsruntime::new_boolean(bool b) {
-        if (reuse.reuse_booleans.empty()) {
-            return std::make_shared<jsv_boolean>(b);
-        }
-        auto r = reuse.reuse_booleans.back();
-        r->b = b;
-        reuse.reuse_booleans.pop_back();
-        return std::move(r);
+        if (b) return permanents._true;
+        return permanents._false;
     }
 
     jsv_regex::ref cjsruntime::new_regex(const std::string &s) {
@@ -1162,7 +1167,7 @@ namespace clib {
                 break;
             case r_boolean: {
                 auto n = std::dynamic_pointer_cast<jsv_boolean>(value);
-                os << "boolean: " << n->b << std::endl;
+                os << "boolean: " << std::boolalpha << n->b << std::endl;
             }
                 break;
             case r_regex: {
@@ -1197,5 +1202,4 @@ namespace clib {
                 break;
         }
     }
-
 }

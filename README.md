@@ -30,6 +30,7 @@ JS-like script engine implemented by C++.
 ## Control Flow
 
 - [x] if
+- [x] while
 
 ## TEST
 

@@ -699,7 +699,12 @@ namespace clib {
                 tmps.push_back(id);
             }
                 break;
-            case c_emptyStatement:
+            case c_emptyStatement: {
+                auto empty = std::make_shared<sym_stmt_t>();
+                copy_info(empty, asts.front());
+                asts.clear();
+                tmps.push_back(empty);
+            }
                 break;
             case c_expressionStatement: {
                 if (tmps.front()->get_type() == s_expression_seq) {
@@ -752,7 +757,24 @@ namespace clib {
                 break;
             case c_doStatement:
                 break;
-            case c_whileStatement:
+            case c_whileStatement: {
+                auto _while = std::make_shared<sym_stmt_while_t>();
+                copy_info(_while, asts.front());
+                _while->end = tmps.back()->end;
+                assert(tmps.front()->get_base_type() == s_expression);
+                if (tmps.front()->get_type() == s_expression_seq) {
+                    _while->seq = std::dynamic_pointer_cast<sym_exp_seq_t>(tmps.front());
+                } else {
+                    _while->seq = std::make_shared<sym_exp_seq_t>();
+                    copy_info(_while->seq, tmps.front());
+                    _while->seq->exps.push_back(to_exp(tmps.front()));
+                }
+                assert(tmps.back()->get_base_type() == s_statement);
+                _while->stmt = std::dynamic_pointer_cast<sym_stmt_t>(tmps.back());
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(_while);
+            }
                 break;
             case c_forStatement:
                 break;
@@ -1637,6 +1659,32 @@ namespace clib {
                     auto n = std::dynamic_pointer_cast<sym_stmt_return_t>(node);
                     if (n->seq)
                         print(n->seq, level + 1, os);
+                }
+                break;
+            case s_statement_if:
+                os << "if"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_stmt_if_t>(node);
+                    print(n->seq, level + 1, os);
+                    print(n->true_stmt, level + 1, os);
+                    if (n->false_stmt)
+                        print(n->false_stmt, level + 1, os);
+                }
+                break;
+            case s_statement_while:
+                os << "while"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_stmt_while_t>(node);
+                    print(n->seq, level + 1, os);
+                    print(n->stmt, level + 1, os);
                 }
                 break;
             case s_block:

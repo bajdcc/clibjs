@@ -180,6 +180,16 @@ namespace clib {
             case a_regex:
                 gen.emit(this, LOAD_CONST, gen.load_string(node->data._string, cjs_consts::get_string_t::gs_regex));
                 break;
+            case a_keyword:
+                if (node->data._keyword == K_TRUE)
+                    gen.emit(this, LOAD_TRUE);
+                else if (node->data._keyword == K_FALSE)
+                    gen.emit(this, LOAD_FALSE);
+                else if (node->data._keyword == K_NULL)
+                    gen.emit(this, LOAD_NULL);
+                else
+                    gen.error(this, "unsupported var type");
+                break;
             default:
                 gen.error(this, "unsupported var type");
                 break;
@@ -929,10 +939,9 @@ namespace clib {
     }
 
     int sym_stmt_if_t::gen_rvalue(ijsgen &gen) {
-        if (seq)
-            seq->gen_rvalue(gen);
+        seq->gen_rvalue(gen);
         auto idx = gen.code_length();
-        gen.emit(nullptr, POP_JUMP_IF_FALSE, 0);
+        gen.emit(this, POP_JUMP_IF_FALSE, 0);
         true_stmt->gen_rvalue(gen);
         if (false_stmt) {
             auto idx2 = gen.code_length();
@@ -940,7 +949,7 @@ namespace clib {
             gen.edit(idx, 1, gen.code_length());
             false_stmt->gen_rvalue(gen);
             gen.edit(idx2, 1, gen.code_length() - idx2);
-        }else{
+        } else {
             gen.edit(idx, 1, gen.code_length());
         }
         return sym_stmt_t::gen_rvalue(gen);
@@ -948,10 +957,36 @@ namespace clib {
 
     int sym_stmt_if_t::set_parent(sym_t::ref node) {
         seq->set_parent(shared_from_this());
-        if (true_stmt)
-            true_stmt->set_parent(shared_from_this());
+        true_stmt->set_parent(shared_from_this());
         if (false_stmt)
             false_stmt->set_parent(shared_from_this());
+        return sym_stmt_t::set_parent(node);
+    }
+
+    // ----
+
+    symbol_t sym_stmt_while_t::get_type() const {
+        return s_statement_while;
+    }
+
+    std::string sym_stmt_while_t::to_string() const {
+        return sym_stmt_t::to_string();
+    }
+
+    int sym_stmt_while_t::gen_rvalue(ijsgen &gen) {
+        auto idx = gen.code_length();
+        seq->gen_rvalue(gen);
+        auto idx2 = gen.code_length();
+        gen.emit(this, POP_JUMP_IF_FALSE, 0);
+        stmt->gen_rvalue(gen);
+        gen.emit(nullptr, JUMP_ABSOLUTE, idx);
+        gen.edit(idx2, 1, gen.code_length());
+        return sym_stmt_t::gen_rvalue(gen);
+    }
+
+    int sym_stmt_while_t::set_parent(sym_t::ref node) {
+        seq->set_parent(shared_from_this());
+        stmt->set_parent(shared_from_this());
         return sym_stmt_t::set_parent(node);
     }
 

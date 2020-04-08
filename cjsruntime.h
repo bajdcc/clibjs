@@ -200,7 +200,7 @@ namespace clib {
 
     class cjsruntime : public js_value_new {
     public:
-        cjsruntime() = default;
+        cjsruntime();
         ~cjsruntime() = default;
 
         cjsruntime(const cjsruntime &) = delete;
@@ -243,6 +243,11 @@ namespace clib {
         std::vector<cjs_function::ref> stack;
         cjs_function::ref current_stack;
         std::list<js_value::ref> objs;
+        struct _permanents_t {
+            js_value::ref _null;
+            jsv_boolean::ref _true;
+            jsv_boolean::ref _false;
+        } permanents;
         cjs_runtime_reuse reuse;
     };
 }
