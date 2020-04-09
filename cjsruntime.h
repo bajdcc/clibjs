@@ -290,6 +290,7 @@ namespace clib {
             jsv_number::ref _zero;
             jsv_number::ref _one;
             jsv_number::ref _minus_one;
+            jsv_string::ref _empty;
         } permanents;
         cjs_runtime_reuse reuse;
     };

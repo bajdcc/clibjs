@@ -40,6 +40,7 @@ namespace clib {
         permanents._zero = std::make_shared<jsv_number>(0);
         permanents._one = std::make_shared<jsv_number>(1);
         permanents._minus_one = std::make_shared<jsv_number>(-1);
+        permanents._empty = std::make_shared<jsv_string>("");
     }
 
     void cjsruntime::eval(cjs_code_result::ref code) {
@@ -306,11 +307,32 @@ namespace clib {
                 break;
             case IMPORT_FROM:
                 break;
-            case JUMP_FORWARD:
+            case JUMP_FORWARD: {
+                auto jmp = code.op1;
+                current_stack->pc += jmp;
+            }
                 break;
-            case JUMP_IF_FALSE_OR_POP:
+            case JUMP_IF_FALSE_OR_POP: {
+                auto jmp = code.op1;
+                const auto &t = top();
+                if (!t.lock()->to_bool()) {
+                    current_stack->pc = jmp;
+                    return 0;
+                } else {
+                    pop();
+                }
+            }
                 break;
-            case JUMP_IF_TRUE_OR_POP:
+            case JUMP_IF_TRUE_OR_POP: {
+                auto jmp = code.op1;
+                const auto &t = top();
+                if (t.lock()->to_bool()) {
+                    current_stack->pc = jmp;
+                    return 0;
+                } else {
+                    pop();
+                }
+            }
                 break;
             case JUMP_ABSOLUTE: {
                 auto jmp = code.op1;
@@ -326,7 +348,14 @@ namespace clib {
                 }
             }
                 break;
-            case POP_JUMP_IF_TRUE:
+            case POP_JUMP_IF_TRUE: {
+                auto jmp = code.op1;
+                auto t = pop();
+                if (t.lock()->to_bool()) {
+                    current_stack->pc = jmp;
+                    return 0;
+                }
+            }
                 break;
             case LOAD_GLOBAL: {
                 auto op = code.op1;
@@ -610,6 +639,8 @@ namespace clib {
     }
 
     jsv_string::ref cjsruntime::new_string(const std::string &s) {
+        if (s.empty())
+            return permanents._empty;
         if (reuse.reuse_strings.empty()) {
             return std::make_shared<jsv_string>(s);
         }
@@ -713,16 +744,13 @@ namespace clib {
             const auto &env = s->envs;
             const auto &closure = s->closure;
             for (const auto &s2 : st) {
-                if (s2.lock())
-                    s2.lock()->mark(1);
+                s2.lock()->mark(1);
             }
             for (const auto &s2 : env) {
-                if (s2.second.lock())
-                    s2.second.lock()->mark(2);
+                s2.second.lock()->mark(2);
             }
             for (const auto &s2 : closure) {
-                if (s2.second.lock())
-                    s2.second.lock()->mark(2);
+                s2.second.lock()->mark(2);
             }
         }
 #if DUMP_STEP

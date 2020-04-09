@@ -68,10 +68,13 @@ namespace clib {
             return f->second;
         }
         if (type == gs_string) {
-            auto f = strings.find(str);
+            assert(str.size() > 1);
+            auto s = std::string(str.c_str() + 1);
+            s.pop_back();
+            auto f = strings.find(s);
             if (f == strings.end()) {
                 auto idx = index++;
-                strings.insert({str, idx});
+                strings.insert({s, idx});
                 return idx;
             }
             return f->second;

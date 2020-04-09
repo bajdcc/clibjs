@@ -462,14 +462,14 @@ namespace clib {
         switch (op->data._op) {
             case T_LOG_AND: {
                 auto idx = gen.code_length();
-                gen.emit(this, JUMP_IF_TRUE_OR_POP, 0);
+                gen.emit(this, JUMP_IF_FALSE_OR_POP, 0);
                 exp2->gen_rvalue(gen);
                 gen.edit(idx, 1, gen.code_length());
             }
                 return 0;
             case T_LOG_OR: {
                 auto idx = gen.code_length();
-                gen.emit(this, JUMP_IF_FALSE_OR_POP, 0);
+                gen.emit(this, JUMP_IF_TRUE_OR_POP, 0);
                 exp2->gen_rvalue(gen);
                 gen.edit(idx, 1, gen.code_length());
             }
