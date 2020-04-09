@@ -57,27 +57,6 @@ namespace clib {
                         return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
                                shared_from_this() :
                                n.new_number(1.0);
-                    case r_regex:
-                        return n.new_number(NAN);
-                    case r_array: {
-                        const auto &s = std::dynamic_pointer_cast<jsv_array>(op);
-                        std::stringstream ss;
-                        if (s->arr.empty())
-                            return n.new_number(1.0);
-                        ss.str("");
-                        s->print(ss);
-                        ss.str(trim(ss.str()));
-                        double d;
-                        ss >> d;
-                        if (ss.eof() && !ss.fail()) {
-                            if (d == 0.0)
-                                return n.new_number(1.0);
-                            if (d == 1.0)
-                                return shared_from_this();
-                            return n.new_number(pow(number, d));
-                        }
-                        return n.new_number(NAN);
-                    }
                     case r_object: {
                         return n.new_number(NAN);
                     }
@@ -131,29 +110,6 @@ namespace clib {
                         return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
                                shared_from_this() :
                                n.new_number(1.0);
-                    case r_regex:
-                        return n.new_number(NAN);
-                    case r_array: {
-                        const auto &s = std::dynamic_pointer_cast<jsv_array>(op);
-                        std::stringstream ss;
-                        if (s->arr.empty())
-                            return n.new_number(1.0);
-                        ss.str("");
-                        s->print(ss);
-                        ss.str(trim(ss.str()));
-                        double d;
-                        ss >> d;
-                        if (ss.eof() && !ss.fail()) {
-                            if (number == 0.0 || d == 0.0)
-                                return shared_from_this();
-                            if (number == 1.0)
-                                return op;
-                            if (d == 1.0)
-                                return shared_from_this();
-                            return n.new_number(pow(number, d));
-                        }
-                        return n.new_number(NAN);
-                    }
                     case r_object: {
                         return n.new_number(NAN);
                     }
@@ -199,25 +155,6 @@ namespace clib {
                         return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
                                n.new_number(fmod(number, 1.0)) :
                                n.new_number(NAN);
-                    case r_regex:
-                        return n.new_number(NAN);
-                    case r_array: {
-                        const auto &s = std::dynamic_pointer_cast<jsv_array>(op);
-                        std::stringstream ss;
-                        if (s->arr.empty())
-                            return n.new_number(NAN);
-                        ss.str("");
-                        s->print(ss);
-                        ss.str(trim(ss.str()));
-                        double d;
-                        ss >> d;
-                        if (ss.eof() && !ss.fail()) {
-                            if (d == 0.0)
-                                return n.new_number(NAN);
-                            return n.new_number(fmod(number, d));
-                        }
-                        return n.new_number(NAN);
-                    }
                     case r_object: {
                         return n.new_number(NAN);
                     }
@@ -261,29 +198,9 @@ namespace clib {
                                n.new_number(
                                        number + 1.0) :
                                shared_from_this();
-                    case r_regex: {
-                        const auto &s = std::dynamic_pointer_cast<jsv_regex>(op);
-                        std::stringstream ss;
-                        ss << number << s;
-                        return n.new_string(ss.str());
-                    }
-                    case r_array: {
-                        const auto &s = std::dynamic_pointer_cast<jsv_array>(op);
-                        std::stringstream ss;
-                        ss << number;
-                        auto r = ss.str();
-                        if (s->arr.empty())
-                            return n.new_string(r);
-                        ss.str("");
-                        s->print(ss);
-                        auto _s = ss.str();
-                        _s.erase(_s.begin());
-                        _s.pop_back();
-                        return n.new_string(r + _s);
-                    }
                     case r_object: {
                         std::stringstream ss;
-                        ss << number << "[object Object]";
+                        ss << number << jsv_object::_str;
                         return n.new_string(ss.str());
                     }
                     case r_function: {
@@ -333,25 +250,6 @@ namespace clib {
                                n.new_number(
                                        number - 1.0) :
                                shared_from_this();
-                    case r_regex:
-                        return n.new_number(NAN);
-                    case r_array: {
-                        const auto &s = std::dynamic_pointer_cast<jsv_array>(op);
-                        std::stringstream ss;
-                        if (s->arr.empty())
-                            return shared_from_this();
-                        ss.str("");
-                        s->print(ss);
-                        ss.str(trim(ss.str()));
-                        double d;
-                        ss >> d;
-                        if (ss.eof() && !ss.fail()) {
-                            if (d == 0.0)
-                                return shared_from_this();
-                            return n.new_number(number - d);
-                        }
-                        return n.new_number(NAN);
-                    }
                     case r_object: {
                         return n.new_number(NAN);
                     }
@@ -399,25 +297,6 @@ namespace clib {
                         return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
                                shared_from_this() :
                                n.new_number(number > 0 ? INFINITY : -INFINITY);
-                    case r_regex:
-                        return n.new_number(NAN);
-                    case r_array: {
-                        const auto &s = std::dynamic_pointer_cast<jsv_array>(op);
-                        std::stringstream ss;
-                        if (s->arr.empty())
-                            return shared_from_this();
-                        ss.str("");
-                        s->print(ss);
-                        ss.str(trim(ss.str()));
-                        double d;
-                        ss >> d;
-                        if (ss.eof() && !ss.fail()) {
-                            if (d == 0.0)
-                                return n.new_number(number > 0 ? INFINITY : -INFINITY);
-                            return n.new_number(number / d);
-                        }
-                        return n.new_number(NAN);
-                    }
                     case r_object: {
                         return n.new_number(NAN);
                     }
@@ -468,28 +347,6 @@ namespace clib {
                             return shared_from_this();
                         auto a = uint32_t(fix(number));
                         return n.new_number(double(int(a << 1U)));
-                    }
-                    case r_regex:
-                        return n.new_number(NAN);
-                    case r_array: {
-                        const auto &s = std::dynamic_pointer_cast<jsv_array>(op);
-                        std::stringstream ss;
-                        if (s->arr.empty())
-                            return shared_from_this();
-                        ss.str("");
-                        s->print(ss);
-                        ss.str(trim(ss.str()));
-                        double d;
-                        ss >> d;
-                        if (ss.eof() && !ss.fail()) {
-                            if (d == 0.0)
-                                return shared_from_this();
-                            auto a = uint32_t(fix(number));
-                            auto b = fix(d);
-                            auto c = b > 0 ? (uint32_t(b) % 32) : uint32_t(int(fmod(b, 32)) + 32);
-                            return n.new_number(double(int(a << c)));
-                        }
-                        return n.new_number(NAN);
                     }
                     case r_object: {
                         return n.new_number(NAN);
@@ -542,28 +399,6 @@ namespace clib {
                         auto a = int(fix(number));
                         return n.new_number(double(int(a >> 1U)));
                     }
-                    case r_regex:
-                        return n.new_number(NAN);
-                    case r_array: {
-                        const auto &s = std::dynamic_pointer_cast<jsv_array>(op);
-                        std::stringstream ss;
-                        if (s->arr.empty())
-                            return shared_from_this();
-                        ss.str("");
-                        s->print(ss);
-                        ss.str(trim(ss.str()));
-                        double d;
-                        ss >> d;
-                        if (ss.eof() && !ss.fail()) {
-                            if (d == 0.0)
-                                return shared_from_this();
-                            auto a = int(fix(number));
-                            auto b = fix(d);
-                            auto c = b > 0 ? (uint32_t(b) % 32) : uint32_t(int(fmod(b, 32)) + 32);
-                            return n.new_number(double(int(a >> c)));
-                        }
-                        return n.new_number(NAN);
-                    }
                     case r_object: {
                         return n.new_number(NAN);
                     }
@@ -614,28 +449,6 @@ namespace clib {
                             return shared_from_this();
                         auto a = uint32_t(fix(number));
                         return n.new_number(double(int(a >> 1U)));
-                    }
-                    case r_regex:
-                        return n.new_number(NAN);
-                    case r_array: {
-                        const auto &s = std::dynamic_pointer_cast<jsv_array>(op);
-                        std::stringstream ss;
-                        if (s->arr.empty())
-                            return shared_from_this();
-                        ss.str("");
-                        s->print(ss);
-                        ss.str(trim(ss.str()));
-                        double d;
-                        ss >> d;
-                        if (ss.eof() && !ss.fail()) {
-                            if (d == 0.0)
-                                return shared_from_this();
-                            auto a = uint32_t(fix(number));
-                            auto b = fix(d);
-                            auto c = b > 0 ? (uint32_t(b) % 32) : uint32_t(int(fmod(b, 32)) + 32);
-                            return n.new_number(double(int(a >> c)));
-                        }
-                        return n.new_number(NAN);
                     }
                     case r_object: {
                         return n.new_number(NAN);
@@ -688,28 +501,6 @@ namespace clib {
                         auto a = uint32_t(fix(number));
                         return n.new_number(double(int(a & 1U)));
                     }
-                    case r_regex:
-                        return n.new_number(NAN);
-                    case r_array: {
-                        const auto &s = std::dynamic_pointer_cast<jsv_array>(op);
-                        std::stringstream ss;
-                        if (s->arr.empty())
-                            return shared_from_this();
-                        ss.str("");
-                        s->print(ss);
-                        ss.str(trim(ss.str()));
-                        double d;
-                        ss >> d;
-                        if (ss.eof() && !ss.fail()) {
-                            if (d == 0.0)
-                                return shared_from_this();
-                            auto a = uint32_t(fix(number));
-                            auto b = fix(d);
-                            auto c = b > 0 ? (uint32_t(b) % 32) : uint32_t(int(fmod(b, 32)) + 32);
-                            return n.new_number(double(int(a & c)));
-                        }
-                        return n.new_number(NAN);
-                    }
                     case r_object: {
                         return n.new_number(NAN);
                     }
@@ -761,28 +552,6 @@ namespace clib {
                         auto a = uint32_t(fix(number));
                         return n.new_number(double(int(a ^ 1U)));
                     }
-                    case r_regex:
-                        return n.new_number(NAN);
-                    case r_array: {
-                        const auto &s = std::dynamic_pointer_cast<jsv_array>(op);
-                        std::stringstream ss;
-                        if (s->arr.empty())
-                            return shared_from_this();
-                        ss.str("");
-                        s->print(ss);
-                        ss.str(trim(ss.str()));
-                        double d;
-                        ss >> d;
-                        if (ss.eof() && !ss.fail()) {
-                            if (d == 0.0)
-                                return shared_from_this();
-                            auto a = uint32_t(fix(number));
-                            auto b = fix(d);
-                            auto c = b > 0 ? (uint32_t(b) % 32) : uint32_t(int(fmod(b, 32)) + 32);
-                            return n.new_number(double(int(a ^ c)));
-                        }
-                        return n.new_number(NAN);
-                    }
                     case r_object: {
                         return n.new_number(NAN);
                     }
@@ -833,28 +602,6 @@ namespace clib {
                             return shared_from_this();
                         auto a = uint32_t(fix(number));
                         return n.new_number(double(int(a | 1U)));
-                    }
-                    case r_regex:
-                        return n.new_number(NAN);
-                    case r_array: {
-                        const auto &s = std::dynamic_pointer_cast<jsv_array>(op);
-                        std::stringstream ss;
-                        if (s->arr.empty())
-                            return shared_from_this();
-                        ss.str("");
-                        s->print(ss);
-                        ss.str(trim(ss.str()));
-                        double d;
-                        ss >> d;
-                        if (ss.eof() && !ss.fail()) {
-                            if (d == 0.0)
-                                return shared_from_this();
-                            auto a = uint32_t(fix(number));
-                            auto b = fix(d);
-                            auto c = b > 0 ? (uint32_t(b) % 32) : uint32_t(int(fmod(b, 32)) + 32);
-                            return n.new_number(double(int(a | c)));
-                        }
-                        return n.new_number(NAN);
                     }
                     case r_object: {
                         return n.new_number(NAN);

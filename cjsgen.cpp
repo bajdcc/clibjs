@@ -184,9 +184,6 @@ namespace clib {
                             text->substr(f->start, f->end - f->start).c_str());
                 }
                     break;
-                case r_regex:
-                    fprintf(stdout, "C [#%03d] [REGEX ] %s\n", i, ((std::string *) x)->c_str());
-                    break;
                 default:
                     break;
             }
@@ -489,6 +486,8 @@ namespace clib {
             case c_elementList:
                 break;
             case c_arrayElement:
+                break;
+            case c_commaList:
                 break;
             case c_objectLiteral:
                 break;
@@ -904,9 +903,24 @@ namespace clib {
                 auto array = std::make_shared<sym_array_t>();
                 copy_info(array, asts.front());
                 array->end = asts.back()->end;
-                for (const auto &s : tmps) {
-                    assert(s->get_base_type() == s_expression);
-                    array->exps.push_back(to_exp(s));
+                if (AST_IS_COLL_K(nodes[1], c_elementList)) {
+                    auto i = 0;
+                    auto head = true;
+                    auto n = gen_get_children(nodes[1]->child);
+                    for (const auto &s : n) {
+                        if (AST_IS_COLL_K(s, c_commaList)) {
+                            auto k = gen_get_children(s->child);
+                            if (!head)
+                                k.pop_back();
+                            for (const auto &t : k) {
+                                array->exps.push_back(nullptr);
+                            }
+                        } else {
+                            assert(tmps[i]->get_base_type() == s_expression);
+                            array->exps.push_back(to_exp(tmps[i++]));
+                        }
+                        head = false;
+                    }
                 }
                 asts.clear();
                 tmps.clear();
@@ -916,6 +930,8 @@ namespace clib {
             case c_elementList:
                 break;
             case c_arrayElement:
+                break;
+            case c_commaList:
                 break;
             case c_objectLiteral: {
                 auto obj = std::make_shared<sym_object_t>();
@@ -1550,7 +1566,12 @@ namespace clib {
                 {
                     auto n = std::dynamic_pointer_cast<sym_array_t>(node);
                     for (const auto &s : n->exps) {
-                        print(s, level + 1, os);
+                        if (s)
+                            print(s, level + 1, os);
+                        else {
+                            os << std::setfill(' ') << std::setw(level + 1) << "";
+                            os << "empty" << std::endl;
+                        }
                     }
                 }
                 break;
@@ -1778,7 +1799,7 @@ namespace clib {
     }
 
     int cjsgen::load_string(const std::string &s, int type) {
-        return codes.back()->consts.get_string(s, (cjs_consts::get_string_t)(type));
+        return codes.back()->consts.get_string(s, (cjs_consts::get_string_t) (type));
     }
 
     int cjsgen::push_function(std::shared_ptr<sym_code_t> code) {

@@ -168,6 +168,7 @@ namespace clib {
                     "ArrayLiteral",
                     "ElementList",
                     "ArrayElement",
+                    "CommaList",
                     "ObjectLiteral",
                     "PropertyAssignment",
                     "PropertyAssignments",
@@ -257,6 +258,7 @@ namespace clib {
 
         const char *ins_string(ins_t t) {
             static std::array<const char *, INS_END> p = {
+                    "LOAD_EMPTY",
                     "LOAD_NULL",
                     "LOAD_UNDEFINED",
                     "LOAD_TRUE",

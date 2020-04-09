@@ -21,10 +21,6 @@ namespace clib {
 
     class jsv_boolean;
 
-    class jsv_regex;
-
-    class jsv_array;
-
     class jsv_object;
 
     class jsv_function;
@@ -38,8 +34,6 @@ namespace clib {
         virtual std::shared_ptr<jsv_number> new_number(double n) = 0;
         virtual std::shared_ptr<jsv_string> new_string(const std::string &s) = 0;
         virtual std::shared_ptr<jsv_boolean> new_boolean(bool b) = 0;
-        virtual std::shared_ptr<jsv_regex> new_regex(const std::string &s) = 0;
-        virtual std::shared_ptr<jsv_array> new_array() = 0;
         virtual std::shared_ptr<jsv_object> new_object() = 0;
         virtual std::shared_ptr<jsv_function> new_function() = 0;
         virtual std::shared_ptr<jsv_null> new_null() = 0;
@@ -101,37 +95,9 @@ namespace clib {
         bool b{false};
     };
 
-    class jsv_regex : public js_value {
-    public:
-        using ref = std::shared_ptr<jsv_regex>;
-        using weak_ref = std::weak_ptr<jsv_regex>;
-        explicit jsv_regex(std::string s);
-        js_value::ref clone() const override;
-        runtime_t get_type() override;
-        js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
-        bool to_bool() const override;
-        void mark(int n) override;
-        void print(std::ostream &os) override;
-        ref clear();
-        std::string re;
-    };
-
-    class jsv_array : public js_value {
-    public:
-        using ref = std::shared_ptr<jsv_array>;
-        using weak_ref = std::weak_ptr<jsv_array>;
-        js_value::ref clone() const override;
-        runtime_t get_type() override;
-        js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
-        bool to_bool() const override;
-        void mark(int n) override;
-        void print(std::ostream &os) override;
-        ref clear();
-        std::vector<js_value::weak_ref> arr;
-    };
-
     class jsv_object : public js_value {
     public:
+        static std::string _str;
         using ref = std::shared_ptr<jsv_object>;
         using weak_ref = std::weak_ptr<jsv_object>;
         js_value::ref clone() const override;
@@ -146,6 +112,7 @@ namespace clib {
 
     class jsv_null : public js_value {
     public:
+        static std::string _str;
         using ref = std::shared_ptr<jsv_null>;
         using weak_ref = std::weak_ptr<jsv_null>;
         js_value::ref clone() const override;
@@ -158,6 +125,7 @@ namespace clib {
 
     class jsv_undefined : public js_value {
     public:
+        static std::string _str;
         using ref = std::shared_ptr<jsv_undefined>;
         using weak_ref = std::weak_ptr<jsv_undefined>;
         js_value::ref clone() const override;
@@ -226,8 +194,6 @@ namespace clib {
         std::vector<jsv_number::ref> reuse_numbers;
         std::vector<jsv_string::ref> reuse_strings;
         std::vector<jsv_boolean::ref> reuse_booleans;
-        std::vector<jsv_regex::ref> reuse_regexes;
-        std::vector<jsv_array::ref> reuse_arrays;
         std::vector<jsv_object::ref> reuse_objects;
         std::vector<jsv_function::ref> reuse_functions;
     };
@@ -245,8 +211,6 @@ namespace clib {
         jsv_number::ref new_number(double n) override;
         jsv_string::ref new_string(const std::string &s) override;
         jsv_boolean::ref new_boolean(bool b) override;
-        jsv_regex::ref new_regex(const std::string &s) override;
-        jsv_array::ref new_array() override;
         jsv_object::ref new_object() override;
         jsv_function::ref new_function() override;
         jsv_null::ref new_null() override;
@@ -278,6 +242,7 @@ namespace clib {
     private:
         std::vector<cjs_function::ref> stack;
         cjs_function::ref current_stack;
+        std::unordered_map<std::string, js_value::weak_ref> global_env;
         std::list<js_value::ref> objs;
         struct _permanents_t {
             jsv_null::ref _null;

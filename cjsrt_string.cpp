@@ -50,19 +50,6 @@ namespace clib {
                         const auto &b = std::dynamic_pointer_cast<jsv_boolean>(op)->b;
                         return n.new_string(str + (b ? "true" : "false"));
                     }
-                    case r_regex:
-                        break;
-                    case r_array: {
-                        const auto &s = std::dynamic_pointer_cast<jsv_array>(op);
-                        if (s->arr.empty())
-                            return shared_from_this();
-                        std::stringstream ss;
-                        s->print(ss);
-                        auto _s = ss.str();
-                        _s.erase(_s.begin());
-                        _s.pop_back();
-                        return n.new_string(str + _s);
-                    }
                     case r_object: {
                         return n.new_string(str + "[object Object]");
                     }

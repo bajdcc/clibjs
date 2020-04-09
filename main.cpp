@@ -12,11 +12,11 @@ int main() {
     //std::ifstream file("..\\test\\test_2.js");
     //std::ifstream file("..\\test\\test_3.js");
     std::ifstream file("..\\test\\test_4.js");
+    clib::cjs js;
     if (file) {
         std::stringstream buffer;
         buffer << file.rdbuf();
         auto str = buffer.str();
-        clib::cjs js;
         try {
             js.exec("output.txt", str);
         } catch (const clib::cexception &e) {
@@ -24,6 +24,13 @@ int main() {
         } catch (const std::exception &e) {
             std::cout << e.what() << std::endl;
         }
+    }
+    while (true) {
+        std::string input;
+        std::getline(std::cin, input);
+        if (input.empty() || input == "exit")
+            break;
+        js.exec("console.txt", input);
     }
     return 0;
 }

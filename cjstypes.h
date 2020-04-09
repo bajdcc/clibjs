@@ -193,6 +193,7 @@ namespace clib {
             c_arrayLiteral,
             c_elementList,
             c_arrayElement,
+            c_commaList,
             c_objectLiteral,
             c_propertyAssignment,
             c_propertyAssignments,
@@ -281,6 +282,7 @@ namespace clib {
 
         // Refer: https://github.com/python/cpython/blob/master/Include/opcode.h
         enum ins_t {
+            LOAD_EMPTY,
             LOAD_NULL,
             LOAD_UNDEFINED,
             LOAD_TRUE,

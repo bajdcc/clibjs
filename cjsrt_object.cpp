@@ -10,6 +10,8 @@
 
 namespace clib {
 
+    std::string jsv_object::_str = "[object Object]";
+
     js_value::ref jsv_object::clone() const {
         return nullptr;
     }
@@ -31,7 +33,7 @@ namespace clib {
     }
 
     void jsv_object::print(std::ostream &os) {
-        os << "[object Object]";
+        os << _str;
     }
 
     jsv_object::ref jsv_object::clear() {

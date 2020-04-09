@@ -98,10 +98,6 @@ namespace clib {
                 return std::make_shared<jsv_string>(*(std::string *) c.get_data(op));
             case r_boolean:
                 break;
-            case r_regex:
-                return std::make_shared<jsv_regex>(*(std::string *) c.get_data(op));
-            case r_array:
-                break;
             case r_object:
                 break;
             case r_function:

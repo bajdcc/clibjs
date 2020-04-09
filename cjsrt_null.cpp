@@ -12,6 +12,8 @@
 
 namespace clib {
 
+    std::string jsv_null::_str = "null";
+
     js_value::ref jsv_null::clone() const {
         return nullptr;
     }
@@ -32,6 +34,6 @@ namespace clib {
     }
 
     void jsv_null::print(std::ostream &os) {
-        os << "null";
+        os << _str;
     }
 }

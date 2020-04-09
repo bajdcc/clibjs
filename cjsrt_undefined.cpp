@@ -12,6 +12,8 @@
 
 namespace clib {
 
+    std::string jsv_undefined::_str = "undefined";
+
     js_value::ref jsv_undefined::clone() const {
         return nullptr;
     }
@@ -32,6 +34,6 @@ namespace clib {
     }
 
     void jsv_undefined::print(std::ostream &os) {
-        os << "undefined";
+        os << _str;
     }
 }

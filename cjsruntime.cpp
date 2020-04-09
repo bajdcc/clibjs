@@ -47,6 +47,7 @@ namespace clib {
         stack.clear();
         stack.push_back(std::make_shared<cjs_function>(code->code));
         current_stack = stack.back();
+        std::swap(global_env, current_stack->envs);
         code = nullptr;
         auto r = 0;
         decltype(stack.back()->ret_value) ret;
@@ -57,6 +58,10 @@ namespace clib {
                 if (pc >= (int) codes.size())
                     break;
                 const auto &c = codes.at(pc);
+                if (pc + 1 == (int) codes.size() && c.code == POP_TOP) {
+                    r = 2;
+                    break;
+                }
 #if DUMP_STEP
                 dump_step(c);
 #endif
@@ -76,10 +81,14 @@ namespace clib {
                 current_stack->ret_value = pop();
             }
             ret = stack.back()->ret_value;
-            stack.pop_back();
-            if (!stack.empty()) {
+            if (stack.size() > 1) {
+                stack.pop_back();
                 current_stack = stack.back();
                 push(ret);
+            } else {
+                global_env.clear();
+                std::swap(global_env, current_stack->envs);
+                stack.pop_back();
             }
         }
         print(ret.lock(), 0, std::cout);
@@ -87,6 +96,11 @@ namespace clib {
 
     int cjsruntime::run(const sym_code_t::ref &fun, const cjs_code &code) {
         switch (code.code) {
+            case LOAD_EMPTY: {
+                js_value::ref v;
+                push(v);
+            }
+                break;
             case LOAD_NULL:
                 push(permanents._null);
                 break;
@@ -143,8 +157,6 @@ namespace clib {
                 auto op2 = pop().lock();
                 auto op1 = pop().lock();
                 auto result = op1->binary_op(*this, code.code, op2);
-                if (!(result == op1 || result == op2))
-                    register_value(result);
                 push(result);
             }
                 break;
@@ -270,11 +282,18 @@ namespace clib {
             case BUILD_LIST: {
                 auto n = code.op1;
                 assert(current_stack->stack.size() >= n);
-                auto arr = std::make_shared<jsv_array>();
+                auto obj = new_object();
+                std::stringstream ss;
                 for (auto i = 0; i < n; i++) {
-                    arr->arr.push_back(pop());
+                    auto v = pop().lock();
+                    if (v) {
+                        ss.str("");
+                        ss << i;
+                        obj->obj.insert({ss.str(), v});
+                    }
                 }
-                push(register_value(std::move(arr)));
+                obj->obj.insert({"length", new_number(n)});
+                push(obj);
             }
                 break;
             case BUILD_SET:
@@ -282,7 +301,7 @@ namespace clib {
             case BUILD_MAP: {
                 auto n = code.op1;
                 assert(current_stack->stack.size() >= n * 2);
-                auto obj = std::make_shared<jsv_object>();
+                auto obj = new_object();
                 for (auto i = 0; i < n; i++) {
                     auto v = pop();
                     auto k = pop().lock();
@@ -296,7 +315,7 @@ namespace clib {
                         continue;
                     }
                 }
-                push(register_value(std::move(obj)));
+                push(obj);
             }
                 break;
             case LOAD_ATTR:
@@ -437,7 +456,7 @@ namespace clib {
             case LOAD_CLOSURE: {
                 auto op = code.op1;
                 auto var = current_stack->info->names.at(op);
-                push(register_value(std::make_shared<jsv_string>(var)));
+                push(new_string(var));
                 push(load_closure(var));
             }
                 break;
@@ -617,7 +636,7 @@ namespace clib {
         if (std::isnan(n)) {
             return permanents.__nan;
         }
-        if (std::isfinite(n)) {
+        if (std::isinf(n)) {
             return std::signbit(n) ? permanents._inf : permanents._minus_inf;
         }
         if (n == 0.0) {
@@ -630,9 +649,12 @@ namespace clib {
             return permanents._minus_one;
         }
         if (reuse.reuse_numbers.empty()) {
-            return std::make_shared<jsv_number>(n);
+            auto s = std::make_shared<jsv_number>(n);
+            register_value(s);
+            return s;
         }
         auto r = reuse.reuse_numbers.back();
+        register_value(r);
         r->number = n;
         reuse.reuse_numbers.pop_back();
         return std::move(r);
@@ -642,9 +664,12 @@ namespace clib {
         if (s.empty())
             return permanents._empty;
         if (reuse.reuse_strings.empty()) {
-            return std::make_shared<jsv_string>(s);
+            auto t = std::make_shared<jsv_string>(s);
+            register_value(t);
+            return t;
         }
         auto r = reuse.reuse_strings.back();
+        register_value(r);
         r->str = s;
         reuse.reuse_strings.pop_back();
         return std::move(r);
@@ -655,39 +680,26 @@ namespace clib {
         return permanents._false;
     }
 
-    jsv_regex::ref cjsruntime::new_regex(const std::string &s) {
-        if (reuse.reuse_regexes.empty()) {
-            return std::make_shared<jsv_regex>(s);
-        }
-        auto r = reuse.reuse_regexes.back();
-        r->re = s;
-        reuse.reuse_regexes.pop_back();
-        return std::move(r);
-    }
-
-    jsv_array::ref cjsruntime::new_array() {
-        if (reuse.reuse_arrays.empty()) {
-            return std::make_shared<jsv_array>();
-        }
-        auto r = reuse.reuse_arrays.back();
-        reuse.reuse_arrays.pop_back();
-        return std::move(r);
-    }
-
     jsv_object::ref cjsruntime::new_object() {
         if (reuse.reuse_objects.empty()) {
-            return std::make_shared<jsv_object>();
+            auto s = std::make_shared<jsv_object>();
+            register_value(s);
+            return s;
         }
         auto r = reuse.reuse_objects.back();
+        register_value(r);
         reuse.reuse_objects.pop_back();
         return std::move(r);
     }
 
     jsv_function::ref cjsruntime::new_function() {
         if (reuse.reuse_functions.empty()) {
-            return std::make_shared<jsv_function>();
+            auto s = std::make_shared<jsv_function>();
+            register_value(s);
+            return s;
         }
         auto r = reuse.reuse_functions.back();
+        register_value(r);
         reuse.reuse_functions.pop_back();
         return std::move(r);
     }
@@ -716,14 +728,6 @@ namespace clib {
                 reuse.reuse_booleans.push_back(
                         std::dynamic_pointer_cast<jsv_boolean>(v));
                 break;
-            case r_regex:
-                reuse.reuse_regexes.push_back(
-                        std::dynamic_pointer_cast<jsv_regex>(v)->clear());
-                break;
-            case r_array:
-                reuse.reuse_arrays.push_back(
-                        std::dynamic_pointer_cast<jsv_array>(v)->clear());
-                break;
             case r_object:
                 reuse.reuse_objects.push_back(
                         std::dynamic_pointer_cast<jsv_object>(v)->clear());
@@ -744,7 +748,8 @@ namespace clib {
             const auto &env = s->envs;
             const auto &closure = s->closure;
             for (const auto &s2 : st) {
-                s2.lock()->mark(1);
+                if (s2.lock())
+                    s2.lock()->mark(1);
             }
             for (const auto &s2 : env) {
                 s2.second.lock()->mark(2);
@@ -786,19 +791,6 @@ namespace clib {
             case r_boolean: {
                 auto n = std::dynamic_pointer_cast<jsv_boolean>(value);
                 os << "boolean: " << std::boolalpha << n->b << std::endl;
-            }
-                break;
-            case r_regex: {
-                auto n = std::dynamic_pointer_cast<jsv_regex>(value);
-                os << "regex: " << n->re << std::endl;
-            }
-                break;
-            case r_array: {
-                auto n = std::dynamic_pointer_cast<jsv_array>(value);
-                os << "array: " << std::endl;
-                for (const auto &s : n->arr) {
-                    print(s.lock(), level + 1, os);
-                }
             }
                 break;
             case r_object: {

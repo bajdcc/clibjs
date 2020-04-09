@@ -722,7 +722,10 @@ namespace clib {
 
     int sym_array_t::gen_rvalue(ijsgen &gen) {
         for (const auto &s : exps) {
-            s->gen_rvalue(gen);
+            if (s)
+                s->gen_rvalue(gen);
+            else
+                gen.emit(nullptr, LOAD_EMPTY);
         }
         gen.emit(this, BUILD_LIST, exps.size());
         return sym_t::gen_rvalue(gen);
@@ -730,7 +733,8 @@ namespace clib {
 
     int sym_array_t::set_parent(sym_t::ref node) {
         for (const auto &s : exps) {
-            s->set_parent(shared_from_this());
+            if (s)
+                s->set_parent(shared_from_this());
         }
         return sym_t::set_parent(node);
     }

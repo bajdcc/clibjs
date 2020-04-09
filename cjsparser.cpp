@@ -209,6 +209,7 @@ namespace clib {
         DEF_RULE(arrayLiteral)
         DEF_RULE(elementList)
         DEF_RULE(arrayElement)
+        DEF_RULE(commaList)
         DEF_RULE(objectLiteral)
         DEF_RULE(propertyAssignment)
         DEF_RULE(propertyAssignments)
@@ -418,8 +419,9 @@ namespace clib {
         assignmentExpression = *(assignmentExpression + _T_ASSIGN) + assignmentOperatorExpression;
         singleExpression = assignmentExpression;
         literal = _K_NULL | _K_UNDEFINED | _K_TRUE | _K_FALSE | _STRING | _REGEX | _NUMBER;
+        commaList = *commaList + _T_COMMA;
         arrayLiteral = _T_LSQUARE + *elementList + _T_RSQUARE;
-        elementList = *(elementList + ~_T_COMMA) + arrayElement;
+        elementList = *(elementList) + *commaList + arrayElement + *commaList;
         arrayElement = *_T_ELLIPSIS + singleExpression;
         objectLiteral = _T_LBRACE + *propertyAssignments + *~_T_COMMA + _T_RBRACE;
         identifierName = _ID | reservedWord;
