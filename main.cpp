@@ -30,7 +30,13 @@ int main() {
         std::getline(std::cin, input);
         if (input.empty() || input == "exit")
             break;
-        js.exec("console.txt", input);
+        try {
+            js.exec("console.txt", input);
+        } catch (const clib::cexception &e) {
+            std::cout << e.message() << std::endl;
+        } catch (const std::exception &e) {
+            std::cout << e.what() << std::endl;
+        }
     }
     return 0;
 }
