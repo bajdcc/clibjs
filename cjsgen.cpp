@@ -11,8 +11,10 @@
 #include "cjsgen.h"
 #include "cjsast.h"
 
-#define DUMP_CODE 1
-#define PRINT_AST 1
+#define PRINT_CODE 0
+#define DUMP_CODE 0
+#define DUMP_CODE2 1
+#define PRINT_AST 0
 
 #define AST_IS_KEYWORD(node) ((node)->flag == a_keyword)
 #define AST_IS_KEYWORD_K(node, k) ((node)->data._keyword == (k))
@@ -262,7 +264,7 @@ namespace clib {
             c->consts.save();
             c->text = text->substr(c->start, c->end - c->start);
         }
-#if DUMP_CODE
+#if DUMP_CODE2
         dump();
 #endif
         return true;
@@ -862,7 +864,9 @@ namespace clib {
                     arg_set.insert(s->node->data._identifier);
                 }
                 code->args = std::move(_asts);
-                code->body = tmps.front();
+                if (!tmps.empty()) {
+                    code->body = tmps.front();
+                }
                 asts.clear();
                 tmps.clear();
                 tmps.push_back(code);
@@ -1044,7 +1048,9 @@ namespace clib {
                     arg_set.insert(s->node->data._identifier);
                 }
                 code->args = std::move(_asts);
-                code->body = tmps.front();
+                if (!tmps.empty()) {
+                    code->body = tmps.front();
+                }
                 asts.clear();
                 tmps.clear();
                 tmps.push_back(code);
@@ -1079,7 +1085,9 @@ namespace clib {
                     arg_set.insert(s->node->data._identifier);
                 }
                 code->args = std::move(_asts);
-                code->body = tmps.front();
+                if (!tmps.empty()) {
+                    code->body = tmps.front();
+                }
                 asts.clear();
                 tmps.clear();
                 tmps.push_back(code);
@@ -1745,7 +1753,8 @@ namespace clib {
                             print(s, level + 2, os);
                         }
                     }
-                    print(n->body, level + 1, os);
+                    if (n->body)
+                        print(n->body, level + 1, os);
                 }
                 break;
             default:
@@ -1906,16 +1915,25 @@ namespace clib {
     }
 
     void cjsgen::dump() const {
+#if PRINT_CODE
         fprintf(stdout, "--== Main Function ==--\n");
-        dump(codes.front());
+        dump(codes.front(), true);
+#else
+        dump(codes.front(), false);
+#endif
         for (const auto &c : funcs) {
+#if PRINT_CODE
             fprintf(stdout, "--== Function: \"%s\" ==--\n", c->fullname.c_str());
-            dump(c);
+            dump(c, true);
+#else
+            dump(c, false);
+#endif
         }
     }
 
-    void cjsgen::dump(sym_code_t::ref code) const {
-        code->consts.dump(text);
+    void cjsgen::dump(sym_code_t::ref code, bool print) const {
+        if (print)
+            code->consts.dump(text);
         auto idx = 0;
         std::vector<int> jumps;
         {
@@ -1966,7 +1984,8 @@ namespace clib {
                 snprintf(buf, sizeof(buf), "[%04d:%03d]  %s   %4d %-20s %8d %8d (%.100s)",
                          c.line, c.column, jmp, idx, ins_string(ins_t(c.code)), c.op1, c.op2,
                          c.line == 0 ? "..." : text->substr(c.start, c.end - c.start).c_str());
-            fprintf(stdout, "C %s\n", buf);
+            if (print)
+                fprintf(stdout, "C %s\n", buf);
             c.desc = buf;
             idx++;
         }

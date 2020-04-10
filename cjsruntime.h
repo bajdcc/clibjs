@@ -42,6 +42,10 @@ namespace clib {
 
     class js_value : public std::enable_shared_from_this<js_value> {
     public:
+        enum attr_t {
+            at_const = 1,
+        };
+
         using ref = std::shared_ptr<js_value>;
         using weak_ref = std::weak_ptr<js_value>;
         virtual js_value::ref clone() const = 0;
@@ -50,7 +54,10 @@ namespace clib {
         virtual bool to_bool() const = 0;
         virtual void mark(int n) = 0;
         virtual void print(std::ostream &os) = 0;
-        int marked{0};
+        uint8_t marked{0};
+        uint8_t attr{0};
+        uint8_t reserved1{0};
+        uint8_t reserved2{0};
     };
 
     class jsv_number : public js_value {
@@ -261,6 +268,7 @@ namespace clib {
             jsv_number::ref _inf;
             jsv_number::ref _minus_inf;
             jsv_number::ref _zero;
+            jsv_number::ref _minus_zero;
             jsv_number::ref _one;
             jsv_number::ref _minus_one;
             jsv_string::ref _empty;

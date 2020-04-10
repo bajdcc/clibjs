@@ -62,7 +62,7 @@ namespace clib {
                     case r_function:
                         return n.new_number(NAN);
                     case r_null:
-                        return shared_from_this();
+                        return n.new_number(1.0);
                     case r_undefined:
                         return n.new_number(NAN);
                     default:
@@ -73,8 +73,10 @@ namespace clib {
                 switch (op->get_type()) {
                     case r_number: {
                         const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
-                        if (number == 0.0 || s == 0.0)
-                            return shared_from_this();
+                        if (number == 0.0)
+                            return n.new_number(s > 0 ? 0.0 : -0.0);
+                        if (s == 0.0)
+                            return n.new_number(number > 0 ? 0.0 : -0.0);
                         if (number == 1.0)
                             return op;
                         if (s == 1.0)
@@ -84,16 +86,18 @@ namespace clib {
                     case r_string: {
                         const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
                         if (s.empty())
-                            return n.new_number(0.0);
+                            return n.new_number(number > 0 ? 0.0 : -0.0);
                         std::stringstream ss;
                         ss << trim(s);
                         if (ss.str().empty())
-                            return n.new_number(0.0);
+                            return n.new_number(number > 0 ? 0.0 : -0.0);
                         double d;
                         ss >> d;
                         if (ss.eof() && !ss.fail()) {
-                            if (number == 0.0 || d == 0.0)
+                            if (number == 0.0)
                                 return shared_from_this();
+                            if (d == 0.0)
+                                return n.new_number(number > 0 ? 0.0 : -0.0);
                             if (number == 1.0)
                                 return op;
                             if (d == 1.0)
@@ -105,7 +109,7 @@ namespace clib {
                     case r_boolean:
                         return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
                                shared_from_this() :
-                               n.new_number(1.0);
+                               n.new_number(number > 0 ? 0.0 : -0.0);
                     case r_object:
                         return n.new_number(NAN);
                     case r_function:
@@ -124,7 +128,7 @@ namespace clib {
                         const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
                         if (s == 0.0)
                             return n.new_number(NAN);
-                        return n.new_number(fmod(number, s));
+                        return n.new_number(number > 0 ? fmod(number, s) : -fmod(number, s));
                     }
                     case r_string: {
                         const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
@@ -252,22 +256,26 @@ namespace clib {
                     case r_number: {
                         const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
                         if (s == 0.0)
-                            return n.new_number(number > 0 ? INFINITY : -INFINITY);
+                            return number == 0.0 ? n.new_number(NAN) :
+                                   n.new_number(number > 0 ? INFINITY : -INFINITY);
                         return n.new_number(number / s);
                     }
                     case r_string: {
                         const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
                         if (s.empty())
-                            return n.new_number(number > 0 ? INFINITY : -INFINITY);
+                            return number == 0.0 ? n.new_number(NAN) :
+                                   n.new_number(number > 0 ? INFINITY : -INFINITY);
                         std::stringstream ss;
                         ss << trim(s);
                         if (ss.str().empty())
-                            return n.new_number(number > 0 ? INFINITY : -INFINITY);
+                            return number == 0.0 ? n.new_number(NAN) :
+                                   n.new_number(number > 0 ? INFINITY : -INFINITY);
                         double d;
                         ss >> d;
                         if (ss.eof() && !ss.fail()) {
                             if (d == 0.0)
-                                return n.new_number(number > 0 ? INFINITY : -INFINITY);
+                                return number == 0.0 ? n.new_number(NAN) :
+                                       n.new_number(number > 0 ? INFINITY : -INFINITY);
                             return n.new_number(number / d);
                         }
                         return n.new_number(NAN);
@@ -275,13 +283,15 @@ namespace clib {
                     case r_boolean:
                         return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
                                shared_from_this() :
-                               n.new_number(number > 0 ? INFINITY : -INFINITY);
+                               (number == 0.0 ? n.new_number(NAN) :
+                                n.new_number(number > 0 ? INFINITY : -INFINITY));
                     case r_object:
                         return n.new_number(NAN);
                     case r_function:
                         return n.new_number(NAN);
                     case r_null:
-                        return n.new_number(INFINITY);
+                        return number == 0.0 ? n.new_number(NAN) :
+                               n.new_number(number > 0 ? INFINITY : -INFINITY);
                     case r_undefined:
                         return n.new_number(NAN);
                     default:
@@ -317,7 +327,7 @@ namespace clib {
                             auto c = b > 0 ? (uint32_t(b) % 32) : uint32_t(int(fmod(b, 32)) + 32);
                             return n.new_number(double(int(a << c)));
                         }
-                        return n.new_number(NAN);
+                        return shared_from_this();
                     }
                     case r_boolean: {
                         if (!std::dynamic_pointer_cast<jsv_boolean>(op)->b)
@@ -326,9 +336,9 @@ namespace clib {
                         return n.new_number(double(int(a << 1U)));
                     }
                     case r_object:
-                        return n.new_number(NAN);
+                        return shared_from_this();
                     case r_function:
-                        return n.new_number(NAN);
+                        return shared_from_this();
                     case r_null:
                         return shared_from_this();
                     case r_undefined:
@@ -366,7 +376,7 @@ namespace clib {
                             auto c = b > 0 ? (uint32_t(b) % 32) : uint32_t(int(fmod(b, 32)) + 32);
                             return n.new_number(double(int(a >> c)));
                         }
-                        return n.new_number(NAN);
+                        return shared_from_this();
                     }
                     case r_boolean: {
                         if (!std::dynamic_pointer_cast<jsv_boolean>(op)->b)
@@ -375,9 +385,9 @@ namespace clib {
                         return n.new_number(double(int(a >> 1U)));
                     }
                     case r_object:
-                        return n.new_number(NAN);
+                        return shared_from_this();
                     case r_function:
-                        return n.new_number(NAN);
+                        return shared_from_this();
                     case r_null:
                         return shared_from_this();
                     case r_undefined:
@@ -395,7 +405,7 @@ namespace clib {
                         auto a = uint32_t(fix(number));
                         auto b = fix(s);
                         auto c = b > 0 ? (uint32_t(b) % 32) : uint32_t(int(fmod(b, 32)) + 32);
-                        return n.new_number(double(int(a >> c)));
+                        return n.new_number(double(uint32_t(a >> c)));
                     }
                     case r_string: {
                         const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
@@ -413,20 +423,20 @@ namespace clib {
                             auto a = uint32_t(fix(number));
                             auto b = fix(d);
                             auto c = b > 0 ? (uint32_t(b) % 32) : uint32_t(int(fmod(b, 32)) + 32);
-                            return n.new_number(double(int(a >> c)));
+                            return n.new_number(double(uint32_t(a >> c)));
                         }
-                        return n.new_number(NAN);
+                        return shared_from_this();
                     }
                     case r_boolean: {
                         if (!std::dynamic_pointer_cast<jsv_boolean>(op)->b)
                             return shared_from_this();
                         auto a = uint32_t(fix(number));
-                        return n.new_number(double(int(a >> 1U)));
+                        return n.new_number(double(uint32_t(a >> 1U)));
                     }
                     case r_object:
-                        return n.new_number(NAN);
+                        return shared_from_this();
                     case r_function:
-                        return n.new_number(NAN);
+                        return shared_from_this();
                     case r_null:
                         return shared_from_this();
                     case r_undefined:
@@ -440,7 +450,7 @@ namespace clib {
                     case r_number: {
                         const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
                         if (s == 0.0)
-                            return shared_from_this();
+                            return op;
                         auto a = uint32_t(fix(number));
                         auto b = uint32_t(fix(s));
                         return n.new_number(double(int(a & b)));
@@ -462,18 +472,18 @@ namespace clib {
                             auto b = uint32_t(fix(d));
                             return n.new_number(double(int(a & b)));
                         }
-                        return n.new_number(NAN);
+                        return n.new_number(0.0);
                     }
                     case r_boolean: {
                         if (!std::dynamic_pointer_cast<jsv_boolean>(op)->b)
-                            return shared_from_this();
+                            return n.new_number(0.0);
                         auto a = uint32_t(fix(number));
                         return n.new_number(double(int(a & 1U)));
                     }
                     case r_object:
-                        return n.new_number(NAN);
+                        return n.new_number(0.0);
                     case r_function:
-                        return n.new_number(NAN);
+                        return n.new_number(0.0);
                     case r_null:
                         return n.new_number(0.0);
                     case r_undefined:
@@ -509,7 +519,7 @@ namespace clib {
                             auto b = uint32_t(fix(d));
                             return n.new_number(double(int(a ^ b)));
                         }
-                        return n.new_number(NAN);
+                        return shared_from_this();
                     }
                     case r_boolean: {
                         if (!std::dynamic_pointer_cast<jsv_boolean>(op)->b)
@@ -518,9 +528,9 @@ namespace clib {
                         return n.new_number(double(int(a ^ 1U)));
                     }
                     case r_object:
-                        return n.new_number(NAN);
+                        return shared_from_this();
                     case r_function:
-                        return n.new_number(NAN);
+                        return shared_from_this();
                     case r_null:
                         return shared_from_this();
                     case r_undefined:
@@ -556,7 +566,7 @@ namespace clib {
                             auto b = uint32_t(fix(d));
                             return n.new_number(double(int(a | b)));
                         }
-                        return n.new_number(NAN);
+                        return shared_from_this();
                     }
                     case r_boolean: {
                         if (!std::dynamic_pointer_cast<jsv_boolean>(op)->b)
@@ -565,9 +575,9 @@ namespace clib {
                         return n.new_number(double(int(a | 1U)));
                     }
                     case r_object:
-                        return n.new_number(NAN);
+                        return shared_from_this();
                     case r_function:
-                        return n.new_number(NAN);
+                        return shared_from_this();
                     case r_null:
                         return shared_from_this();
                     case r_undefined:

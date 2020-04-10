@@ -1036,9 +1036,11 @@ namespace clib {
         if (!args.empty())
             gen.enter(sp_param);
         auto id = gen.push_function(std::dynamic_pointer_cast<sym_code_t>(shared_from_this()));
-        body->gen_rvalue(gen);
-        if (body->get_base_type() == s_expression)
-            gen.emit(nullptr, RETURN_VALUE);
+        if (body) {
+            body->gen_rvalue(gen);
+            if (body->get_base_type() == s_expression)
+                gen.emit(nullptr, RETURN_VALUE);
+        }
         gen.pop_function();
         uint32_t flag = 0;
         if (!closure.empty()) {
@@ -1067,7 +1069,8 @@ namespace clib {
     }
 
     int sym_code_t::set_parent(sym_t::ref node) {
-        body->set_parent(shared_from_this());
+        if (body)
+            body->set_parent(shared_from_this());
         return sym_t::set_parent(node);
     }
 }

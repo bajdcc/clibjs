@@ -88,6 +88,7 @@ namespace clib {
         consts.resize(c.get_consts_data().size());
         for (size_t i = 0; i < c.get_consts_data().size(); i++) {
             consts[i] = load_const(c, i);
+            consts[i]->attr |= js_value::at_const;
         }
     }
 

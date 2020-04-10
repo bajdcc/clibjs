@@ -73,7 +73,7 @@ namespace clib {
                     case r_number: {
                         const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
                         if (s == 0.0)
-                            return n.new_number(1.0);
+                            return op;
                         return n.new_number(0.0);
                     }
                     case r_string: {
@@ -218,7 +218,7 @@ namespace clib {
                     case r_number: {
                         const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
                         if (s == 0.0)
-                            return n.new_number(INFINITY);
+                            return n.new_number(NAN);
                         return n.new_number(0.0);
                     }
                     case r_string: {

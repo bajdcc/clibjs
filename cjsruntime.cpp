@@ -9,10 +9,14 @@
 #include <algorithm>
 #include <cmath>
 #include <iterator>
+#include <fstream>
 #include "cjsruntime.h"
 #include "cjsast.h"
 
-#define DUMP_STEP 1
+#define DUMP_STEP 0
+#define DUMP_GC 0
+#define DUMP_PRINT_FILE_ENABLE 1
+#define DUMP_PRINT_FILE "debug_print.txt"
 
 namespace clib {
 
@@ -39,19 +43,24 @@ namespace clib {
         permanents._inf = std::make_shared<jsv_number>(INFINITY);
         permanents._minus_inf = std::make_shared<jsv_number>(-INFINITY);
         permanents._zero = std::make_shared<jsv_number>(0);
+        permanents._minus_zero = std::make_shared<jsv_number>(-0.0);
         permanents._one = std::make_shared<jsv_number>(1);
         permanents._minus_one = std::make_shared<jsv_number>(-1);
         permanents._empty = std::make_shared<jsv_string>("");
         permanents._debug_print = std::make_shared<jsv_function>();
         permanents._debug_print->name = "debug_print";
         permanents._debug_print->builtin = [](auto &func, auto &args, auto &js) {
+#if DUMP_PRINT_FILE_ENABLE
+            std::ofstream ofs(DUMP_PRINT_FILE, std::ios::app);
             std::transform(args.begin(), args.end(),
-                           std::ostream_iterator<std::string>(std::cout, " "),
+                           std::ostream_iterator<std::string>(ofs, " "),
                            [](const auto &x) {
                                std::stringstream ss;
                                x.lock()->print(ss);
                                return ss.str();
                            });
+            ofs << std::endl;
+#endif
             func->stack.push_back(js.new_undefined());
         };
         global_env.insert({permanents._debug_print->name, permanents._debug_print});
@@ -171,6 +180,7 @@ namespace clib {
                 auto op2 = pop().lock();
                 auto op1 = pop().lock();
                 auto result = op1->binary_op(*this, code.code, op2);
+                assert(result);
                 push(result);
             }
                 break;
@@ -647,7 +657,6 @@ namespace clib {
             fprintf(stdout, " GC  | [%p] Mark: %d, ", s.get(), s->marked);
             print(s, 0, std::cout);
         }
-        std::cout << std::setfill('#') << std::setw(60) << "" << std::endl;
     }
 
     jsv_number::ref cjsruntime::new_number(double n) {
@@ -655,10 +664,13 @@ namespace clib {
             return permanents.__nan;
         }
         if (std::isinf(n)) {
-            return std::signbit(n) ? permanents._inf : permanents._minus_inf;
+            return n > 0 ? permanents._inf : permanents._minus_inf;
         }
         if (n == 0.0) {
             return permanents._zero;
+        }
+        if (n == -0.0) {
+            return permanents._minus_zero;
         }
         if (n == 1.0) {
             return permanents._one;
@@ -733,6 +745,8 @@ namespace clib {
     void cjsruntime::reuse_value(const js_value::ref &v) {
         if (!v)
             return;
+        if (v->marked == 4)
+            return;
         switch (v->get_type()) {
             case r_number:
                 reuse.reuse_numbers.push_back(
@@ -781,11 +795,20 @@ namespace clib {
 #endif
         for (auto i = objs.begin(); i != objs.end();) {
             if ((*i)->marked == 0) {
-                reuse_value(*i);
+                if (!((*i)->attr & js_value::at_const)) {
+#if DUMP_GC
+                    fprintf(stdout, " GC  | [%p] Reuse, ", (*i).get());
+                    print(*i, 0, std::cout);
+#endif
+                    reuse_value(*i);
+                }
                 i = objs.erase(i);
             } else
                 i++;
         }
+#if DUMP_STEP
+        std::cout << std::setfill('#') << std::setw(60) << "" << std::endl;
+#endif
     }
 
     void cjsruntime::print(const js_value::ref &value, int level, std::ostream &os) {
@@ -798,7 +821,7 @@ namespace clib {
         switch (type) {
             case r_number: {
                 auto n = std::dynamic_pointer_cast<jsv_number>(value);
-                os << "number: " << n->number << std::endl;
+                os << "number: " << std::fixed << n->number << std::endl;
             }
                 break;
             case r_string: {

@@ -10,6 +10,7 @@
 #include "cjsparser.h"
 #include "cjsgen.h"
 
+#define LOG_AST 0
 #define LOG_FILE 0
 
 namespace clib {
@@ -24,7 +25,9 @@ namespace clib {
     void cjs::exec(const std::string &filename, const std::string &input) {
         auto p = std::make_unique<cjsparser>();
         p->parse(input, this);
+#if LOG_AST
         cjsast::print(p->root(), 0, input, std::cout);
+#endif
         auto g = std::make_unique<cjsgen>();
         g->gen_code(p->root(), &input);
         p = nullptr;

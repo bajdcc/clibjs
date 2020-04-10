@@ -504,7 +504,7 @@ namespace clib {
         sym_var_t::ref primary_node(ast_node *node);
 
         void dump() const;
-        void dump(sym_code_t::ref) const;
+        void dump(sym_code_t::ref, bool print) const;
 
     private:
         const std::string *text{nullptr};
