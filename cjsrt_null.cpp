@@ -37,24 +37,33 @@ namespace clib {
                     }
                     case r_string: {
                         const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
-                        return n.new_string(_str + s);
+                        if (s.empty())
+                            return n.new_number(1.0);
+                        std::stringstream ss;
+                        ss << trim(s);
+                        if (ss.str().empty())
+                            return n.new_number(1.0);
+                        double d;
+                        ss >> d;
+                        if (ss.eof() && !ss.fail()) {
+                            if (d == 0.0)
+                                return n.new_number(1.0);
+                            return n.new_number(0.0);
+                        }
+                        return n.new_number(NAN);
                     }
                     case r_boolean:
                         return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
                                n.new_number(0.0) :
                                n.new_number(1.0);
-                    case r_object: {
+                    case r_object:
                         return n.new_number(NAN);
-                    }
-                    case r_function: {
+                    case r_function:
                         return n.new_number(NAN);
-                    }
-                    case r_null: {
+                    case r_null:
                         return n.new_number(1.0);
-                    }
-                    case r_undefined: {
+                    case r_undefined:
                         return n.new_number(NAN);
-                    }
                     default:
                         break;
                 }
@@ -65,29 +74,33 @@ namespace clib {
                         const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
                         if (s == 0.0)
                             return n.new_number(1.0);
-                        if (s > 0.0)
-                            return n.new_number(0.0);
-                        else
-                            return n.new_number(INFINITY);
+                        return n.new_number(0.0);
                     }
                     case r_string: {
                         const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
-                        return n.new_string(_str + s);
+                        if (s.empty())
+                            return n.new_number(0.0);
+                        std::stringstream ss;
+                        ss << trim(s);
+                        if (ss.str().empty())
+                            return n.new_number(0.0);
+                        double d;
+                        ss >> d;
+                        if (ss.eof() && !ss.fail()) {
+                            return n.new_number(0.0);
+                        }
+                        return n.new_number(NAN);
                     }
                     case r_boolean:
                         return n.new_number(0.0);
-                    case r_object: {
+                    case r_object:
                         return n.new_number(NAN);
-                    }
-                    case r_function: {
+                    case r_function:
                         return n.new_number(NAN);
-                    }
-                    case r_null: {
-                        return n.new_number(1.0);
-                    }
-                    case r_undefined: {
+                    case r_null:
+                        return n.new_number(0.0);
+                    case r_undefined:
                         return n.new_number(NAN);
-                    }
                     default:
                         break;
                 }
@@ -121,18 +134,14 @@ namespace clib {
                         return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
                                n.new_number(0.0) :
                                n.new_number(NAN);
-                    case r_object: {
+                    case r_object:
                         return n.new_number(NAN);
-                    }
-                    case r_function: {
+                    case r_function:
                         return n.new_number(NAN);
-                    }
-                    case r_null: {
+                    case r_null:
                         return n.new_number(NAN);
-                    }
-                    case r_undefined: {
+                    case r_undefined:
                         return n.new_number(NAN);
-                    }
                     default:
                         break;
                 }
@@ -153,12 +162,10 @@ namespace clib {
                         const auto &s = std::dynamic_pointer_cast<jsv_function>(op)->code->text;
                         return n.new_string(_str + s);
                     }
-                    case r_null: {
+                    case r_null:
                         return n.new_number(0.0);
-                    }
-                    case r_undefined: {
+                    case r_undefined:
                         return n.new_number(NAN);
-                    }
                     default:
                         break;
                 }
@@ -192,18 +199,14 @@ namespace clib {
                         return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
                                n.new_number(-1.0) :
                                n.new_number(0.0);
-                    case r_object: {
+                    case r_object:
                         return n.new_number(NAN);
-                    }
-                    case r_function: {
+                    case r_function:
                         return n.new_number(NAN);
-                    }
-                    case r_null: {
+                    case r_null:
                         return n.new_number(0.0);
-                    }
-                    case r_undefined: {
+                    case r_undefined:
                         return n.new_number(NAN);
-                    }
                     default:
                         break;
                 }
@@ -239,18 +242,14 @@ namespace clib {
                         return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
                                n.new_number(0.0) :
                                n.new_number(NAN);
-                    case r_object: {
+                    case r_object:
                         return n.new_number(NAN);
-                    }
-                    case r_function: {
+                    case r_function:
                         return n.new_number(NAN);
-                    }
-                    case r_null: {
+                    case r_null:
                         return n.new_number(NAN);
-                    }
-                    case r_undefined: {
+                    case r_undefined:
                         return n.new_number(NAN);
-                    }
                     default:
                         break;
                 }
@@ -289,7 +288,7 @@ namespace clib {
                         ss >> d;
                         if (ss.eof() && !ss.fail()) {
                             if (d == 0.0)
-                                return shared_from_this();
+                                return n.new_number(0.0);
                             return n.new_number(d);
                         }
                         return n.new_number(0.0);

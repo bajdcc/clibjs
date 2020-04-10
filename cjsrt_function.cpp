@@ -32,6 +32,8 @@ namespace clib {
     }
 
     void jsv_function::mark(int n) {
+        if (builtin)
+            return;
         marked = n;
         if (closure.lock()) {
             closure.lock()->mark(n);

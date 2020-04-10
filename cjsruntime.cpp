@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <cmath>
+#include <iterator>
 #include "cjsruntime.h"
 #include "cjsast.h"
 
@@ -41,6 +42,19 @@ namespace clib {
         permanents._one = std::make_shared<jsv_number>(1);
         permanents._minus_one = std::make_shared<jsv_number>(-1);
         permanents._empty = std::make_shared<jsv_string>("");
+        permanents._debug_print = std::make_shared<jsv_function>();
+        permanents._debug_print->name = "debug_print";
+        permanents._debug_print->builtin = [](auto &func, auto &args, auto &js) {
+            std::transform(args.begin(), args.end(),
+                           std::ostream_iterator<std::string>(std::cout, " "),
+                           [](const auto &x) {
+                               std::stringstream ss;
+                               x.lock()->print(ss);
+                               return ss.str();
+                           });
+            func->stack.push_back(js.new_undefined());
+        };
+        global_env.insert({permanents._debug_print->name, permanents._debug_print});
     }
 
     void cjsruntime::eval(cjs_code_result::ref code) {
@@ -417,6 +431,10 @@ namespace clib {
                 auto f = pop();
                 assert(f.lock()->get_type() == r_function);
                 auto func = std::dynamic_pointer_cast<jsv_function>(f.lock());
+                if (func->builtin) {
+                    func->builtin(current_stack, args, *this);
+                    break;
+                }
                 stack.push_back(std::make_shared<cjs_function>(func->code));
                 auto new_stack = stack.back();
                 new_stack->name = func->name;
@@ -805,7 +823,10 @@ namespace clib {
                 break;
             case r_function: {
                 auto n = std::dynamic_pointer_cast<jsv_function>(value);
-                os << "function: " << n->code->fullname << std::endl;
+                if (n->builtin)
+                    os << "function: builtin " << n->name << std::endl;
+                else
+                    os << "function: " << n->code->fullname << std::endl;
             }
                 break;
             case r_null: {

@@ -83,6 +83,8 @@ namespace clib {
 
     class jsv_boolean : public js_value {
     public:
+        static std::string _str_t;
+        static std::string _str_f;
         using ref = std::shared_ptr<jsv_boolean>;
         using weak_ref = std::weak_ptr<jsv_boolean>;
         explicit jsv_boolean(bool flag);
@@ -93,6 +95,9 @@ namespace clib {
         void mark(int n) override;
         void print(std::ostream &os) override;
         bool b{false};
+    private:
+        js_value::ref binary_true(js_value_new &n, int code, js_value::ref op);
+        js_value::ref binary_false(js_value_new &n, int code, js_value::ref op);
     };
 
     class jsv_object : public js_value {
@@ -138,6 +143,8 @@ namespace clib {
 
     class cjs_function_info;
 
+    class cjs_function;
+
     class jsv_function : public js_value {
     public:
         using ref = std::shared_ptr<jsv_function>;
@@ -152,6 +159,7 @@ namespace clib {
         void print(std::ostream &os) override;
         ref clear();
         std::shared_ptr<cjs_function_info> code;
+        std::function<void(std::shared_ptr<cjs_function> &, std::vector<js_value::weak_ref> &, js_value_new &)> builtin;
         jsv_object::weak_ref closure;
         std::string name;
     };
@@ -256,6 +264,7 @@ namespace clib {
             jsv_number::ref _one;
             jsv_number::ref _minus_one;
             jsv_string::ref _empty;
+            jsv_function::ref _debug_print;
         } permanents;
         cjs_runtime_reuse reuse;
     };

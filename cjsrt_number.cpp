@@ -37,7 +37,7 @@ namespace clib {
                     case r_string: {
                         const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
                         if (s.empty())
-                            return shared_from_this();
+                            return n.new_number(1.0);
                         std::stringstream ss;
                         ss << trim(s);
                         if (ss.str().empty())
@@ -57,18 +57,14 @@ namespace clib {
                         return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
                                shared_from_this() :
                                n.new_number(1.0);
-                    case r_object: {
+                    case r_object:
                         return n.new_number(NAN);
-                    }
-                    case r_function: {
+                    case r_function:
                         return n.new_number(NAN);
-                    }
-                    case r_null: {
+                    case r_null:
                         return shared_from_this();
-                    }
-                    case r_undefined: {
+                    case r_undefined:
                         return n.new_number(NAN);
-                    }
                     default:
                         break;
                 }
@@ -110,18 +106,14 @@ namespace clib {
                         return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
                                shared_from_this() :
                                n.new_number(1.0);
-                    case r_object: {
+                    case r_object:
                         return n.new_number(NAN);
-                    }
-                    case r_function: {
+                    case r_function:
                         return n.new_number(NAN);
-                    }
-                    case r_null: {
+                    case r_null:
                         return n.new_number(0);
-                    }
-                    case r_undefined: {
+                    case r_undefined:
                         return n.new_number(NAN);
-                    }
                     default:
                         break;
                 }
@@ -155,18 +147,14 @@ namespace clib {
                         return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
                                n.new_number(fmod(number, 1.0)) :
                                n.new_number(NAN);
-                    case r_object: {
+                    case r_object:
                         return n.new_number(NAN);
-                    }
-                    case r_function: {
+                    case r_function:
                         return n.new_number(NAN);
-                    }
-                    case r_null: {
+                    case r_null:
                         return n.new_number(NAN);
-                    }
-                    case r_undefined: {
+                    case r_undefined:
                         return n.new_number(NAN);
-                    }
                     default:
                         break;
                 }
@@ -207,12 +195,10 @@ namespace clib {
                         ss << number << s;
                         return n.new_string(ss.str());
                     }
-                    case r_null: {
+                    case r_null:
                         return shared_from_this();
-                    }
-                    case r_undefined: {
+                    case r_undefined:
                         return n.new_number(NAN);
-                    }
                     default:
                         break;
                 }
@@ -247,18 +233,14 @@ namespace clib {
                                n.new_number(
                                        number - 1.0) :
                                shared_from_this();
-                    case r_object: {
+                    case r_object:
                         return n.new_number(NAN);
-                    }
-                    case r_function: {
+                    case r_function:
                         return n.new_number(NAN);
-                    }
-                    case r_null: {
+                    case r_null:
                         return shared_from_this();
-                    }
-                    case r_undefined: {
+                    case r_undefined:
                         return n.new_number(NAN);
-                    }
                     default:
                         break;
                 }
@@ -294,18 +276,14 @@ namespace clib {
                         return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
                                shared_from_this() :
                                n.new_number(number > 0 ? INFINITY : -INFINITY);
-                    case r_object: {
+                    case r_object:
                         return n.new_number(NAN);
-                    }
-                    case r_function: {
+                    case r_function:
                         return n.new_number(NAN);
-                    }
-                    case r_null: {
+                    case r_null:
                         return n.new_number(INFINITY);
-                    }
-                    case r_undefined: {
+                    case r_undefined:
                         return n.new_number(NAN);
-                    }
                     default:
                         break;
                 }
@@ -347,18 +325,14 @@ namespace clib {
                         auto a = uint32_t(fix(number));
                         return n.new_number(double(int(a << 1U)));
                     }
-                    case r_object: {
+                    case r_object:
                         return n.new_number(NAN);
-                    }
-                    case r_function: {
+                    case r_function:
                         return n.new_number(NAN);
-                    }
-                    case r_null: {
+                    case r_null:
                         return shared_from_this();
-                    }
-                    case r_undefined: {
+                    case r_undefined:
                         return shared_from_this();
-                    }
                     default:
                         break;
                 }
@@ -400,18 +374,14 @@ namespace clib {
                         auto a = int(fix(number));
                         return n.new_number(double(int(a >> 1U)));
                     }
-                    case r_object: {
+                    case r_object:
                         return n.new_number(NAN);
-                    }
-                    case r_function: {
+                    case r_function:
                         return n.new_number(NAN);
-                    }
-                    case r_null: {
+                    case r_null:
                         return shared_from_this();
-                    }
-                    case r_undefined: {
+                    case r_undefined:
                         return shared_from_this();
-                    }
                     default:
                         break;
                 }
@@ -453,18 +423,14 @@ namespace clib {
                         auto a = uint32_t(fix(number));
                         return n.new_number(double(int(a >> 1U)));
                     }
-                    case r_object: {
+                    case r_object:
                         return n.new_number(NAN);
-                    }
-                    case r_function: {
+                    case r_function:
                         return n.new_number(NAN);
-                    }
-                    case r_null: {
+                    case r_null:
                         return shared_from_this();
-                    }
-                    case r_undefined: {
+                    case r_undefined:
                         return shared_from_this();
-                    }
                     default:
                         break;
                 }
@@ -504,18 +470,14 @@ namespace clib {
                         auto a = uint32_t(fix(number));
                         return n.new_number(double(int(a & 1U)));
                     }
-                    case r_object: {
+                    case r_object:
                         return n.new_number(NAN);
-                    }
-                    case r_function: {
+                    case r_function:
                         return n.new_number(NAN);
-                    }
-                    case r_null: {
+                    case r_null:
                         return n.new_number(0.0);
-                    }
-                    case r_undefined: {
+                    case r_undefined:
                         return n.new_number(0.0);
-                    }
                     default:
                         break;
                 }
@@ -555,18 +517,14 @@ namespace clib {
                         auto a = uint32_t(fix(number));
                         return n.new_number(double(int(a ^ 1U)));
                     }
-                    case r_object: {
+                    case r_object:
                         return n.new_number(NAN);
-                    }
-                    case r_function: {
+                    case r_function:
                         return n.new_number(NAN);
-                    }
-                    case r_null: {
+                    case r_null:
                         return shared_from_this();
-                    }
-                    case r_undefined: {
+                    case r_undefined:
                         return shared_from_this();
-                    }
                     default:
                         break;
                 }
@@ -606,18 +564,14 @@ namespace clib {
                         auto a = uint32_t(fix(number));
                         return n.new_number(double(int(a | 1U)));
                     }
-                    case r_object: {
+                    case r_object:
                         return n.new_number(NAN);
-                    }
-                    case r_function: {
+                    case r_function:
                         return n.new_number(NAN);
-                    }
-                    case r_null: {
+                    case r_null:
                         return shared_from_this();
-                    }
-                    case r_undefined: {
+                    case r_undefined:
                         return shared_from_this();
-                    }
                     default:
                         break;
                 }
