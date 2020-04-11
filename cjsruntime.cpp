@@ -58,13 +58,11 @@ namespace clib {
         permanents._debug_print->builtin = [](auto &func, auto &args, auto &js) {
 #if DUMP_PRINT_FILE_ENABLE
             std::ofstream ofs(DUMP_PRINT_FILE, std::ios::app);
-            std::transform(args.begin(), args.end(),
-                           std::ostream_iterator<std::string>(ofs, " "),
-                           [](const auto &x) {
-                               std::stringstream ss;
-                               x.lock()->print(ss);
-                               return ss.str();
-                           });
+            for (size_t i = 0; i < args.size(); i++) {
+                args[i].lock()->print(ofs);
+                if (i + 1 < args.size())
+                    ofs << " ";
+            }
             ofs << std::endl;
 #endif
             func->stack.push_back(js.new_undefined());
@@ -120,7 +118,9 @@ namespace clib {
                 stack.pop_back();
             }
         }
-        print(ret.lock(), 0, std::cout);
+        assert(ret.lock());
+        ret.lock()->print(std::cout);
+        std::cout << std::endl;
     }
 
     int cjsruntime::run(const sym_code_t::ref &fun, const cjs_code &code) {
