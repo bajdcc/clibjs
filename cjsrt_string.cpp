@@ -99,4 +99,8 @@ namespace clib {
     void jsv_string::print(std::ostream &os) {
         os << str;
     }
+
+    std::string jsv_string::to_string() const {
+        return str;
+    }
 }

@@ -36,6 +36,10 @@ namespace clib {
         os << _str;
     }
 
+    std::string jsv_object::to_string() const {
+        return _str;
+    }
+
     jsv_object::ref jsv_object::clear() {
         obj.clear();
         return std::dynamic_pointer_cast<jsv_object>(shared_from_this());

@@ -165,8 +165,11 @@ namespace clib {
             case BINARY_XOR:
             case BINARY_OR:
                 switch (op->get_type()) {
-                    case r_number:
-                        return op;
+                    case r_number: {
+                        auto d = fix(std::dynamic_pointer_cast<jsv_number>(op)->number);
+                        if (d == 0.0)d = 0.0;
+                        return n.new_number(d);
+                    }
                     case r_string: {
                         const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
                         if (s.empty())
@@ -212,5 +215,9 @@ namespace clib {
 
     void jsv_undefined::print(std::ostream &os) {
         os << _str;
+    }
+
+    std::string jsv_undefined::to_string() const {
+        return _str;
     }
 }

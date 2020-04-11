@@ -4,6 +4,7 @@
 //
 
 #include <utility>
+#include <cmath>
 
 #include "cjsgen.h"
 #include "cjsast.h"
@@ -175,7 +176,14 @@ namespace clib {
                 gen.emit(this, LOAD_CONST, gen.load_string(node->data._string, cjs_consts::get_string_t::gs_string));
                 break;
             case a_number:
-                gen.emit(this, LOAD_CONST, gen.load_number(node->data._number));
+                if (node->data._number != 0) {
+                    gen.emit(this, LOAD_CONST, gen.load_number(node->data._number));
+                } else {
+                    if (std::signbit(node->data._number) == 0)
+                        gen.emit(this, LOAD_ZERO, 0);
+                    else
+                        gen.emit(this, LOAD_ZERO, 1);
+                }
                 break;
             case a_regex:
                 gen.emit(this, LOAD_CONST, gen.load_string(node->data._string, cjs_consts::get_string_t::gs_regex));

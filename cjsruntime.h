@@ -54,6 +54,7 @@ namespace clib {
         virtual bool to_bool() const = 0;
         virtual void mark(int n) = 0;
         virtual void print(std::ostream &os) = 0;
+        virtual std::string to_string() const = 0;
         uint8_t marked{0};
         uint8_t attr{0};
         uint8_t reserved1{0};
@@ -71,6 +72,8 @@ namespace clib {
         bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
+        std::string to_string() const override;
+        static std::string number_to_string(double d);
         double number;
     };
 
@@ -85,6 +88,7 @@ namespace clib {
         bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
+        std::string to_string() const override;
         std::string str;
     };
 
@@ -101,6 +105,7 @@ namespace clib {
         bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
+        std::string to_string() const override;
         bool b{false};
     private:
         js_value::ref binary_true(js_value_new &n, int code, js_value::ref op);
@@ -118,6 +123,7 @@ namespace clib {
         bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
+        std::string to_string() const override;
         ref clear();
         std::unordered_map<std::string, js_value::weak_ref> obj;
     };
@@ -133,6 +139,7 @@ namespace clib {
         bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
+        std::string to_string() const override;
     };
 
     class jsv_undefined : public js_value {
@@ -146,6 +153,7 @@ namespace clib {
         bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
+        std::string to_string() const override;
     };
 
     class cjs_function_info;
@@ -164,6 +172,7 @@ namespace clib {
         bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
+        std::string to_string() const override;
         ref clear();
         std::shared_ptr<cjs_function_info> code;
         std::function<void(std::shared_ptr<cjs_function> &, std::vector<js_value::weak_ref> &, js_value_new &)> builtin;

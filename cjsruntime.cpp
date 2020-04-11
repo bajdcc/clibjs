@@ -31,6 +31,9 @@ namespace clib {
     }
 
     double fix(const double &d) {
+        if (d == 0) {
+            return std::signbit(d) == 0 ? 0.0 : -0.0;
+        }
         if (d >= 0)return floor(d);
         return ceil(d);
     }
@@ -141,6 +144,9 @@ namespace clib {
                 break;
             case LOAD_FALSE:
                 push(permanents._false);
+                break;
+            case LOAD_ZERO:
+                push(code.op1 == 0 ? permanents._zero : permanents._minus_zero);
                 break;
             case POP_TOP:
                 pop();

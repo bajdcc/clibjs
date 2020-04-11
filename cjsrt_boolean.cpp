@@ -108,7 +108,7 @@ namespace clib {
                             return n.new_number(NAN);
                         if (s == 1.0 || s == -1.0)
                             return n.new_number(0.0);
-                        return n.new_number(1.0);
+                        return n.new_number(fmod(1.0, s));
                     }
                     case r_string: {
                         const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
@@ -213,7 +213,7 @@ namespace clib {
                     case r_number: {
                         const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
                         if (s == 0.0)
-                            return n.new_number(INFINITY);
+                            return n.new_number(std::signbit(s) == 0 ? INFINITY : -INFINITY);
                         return n.new_number(1.0 / s);
                     }
                     case r_string: {
@@ -382,7 +382,7 @@ namespace clib {
                     case r_number: {
                         const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
                         if (s == 0.0)
-                            return op;
+                            return n.new_number(0.0);
                         auto a = uint32_t(fix(s));
                         return n.new_number(double(int(1U & a)));
                     }
@@ -551,9 +551,9 @@ namespace clib {
                 break;
             case BINARY_MULTIPLY:
                 switch (op->get_type()) {
-                    case r_number:{
+                    case r_number: {
                         const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
-                        return n.new_number(s >= 0.0 ? 0.0 : -0.0);
+                        return n.new_number(std::signbit(s) == 0 ? 0.0 : -0.0);
                     }
                     case r_string: {
                         const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
@@ -627,8 +627,12 @@ namespace clib {
                 break;
             case BINARY_ADD:
                 switch (op->get_type()) {
-                    case r_number:
+                    case r_number: {
+                        const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
+                        if (s == 0.0)
+                            return n.new_number(0.0);
                         return op;
+                    }
                     case r_string:
                         return n.new_string(_str_f + std::dynamic_pointer_cast<jsv_string>(op)->str);
                     case r_boolean:
@@ -654,7 +658,7 @@ namespace clib {
                     case r_number: {
                         const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
                         if (s == 0.0)
-                            return op;
+                            return n.new_number(0.0);
                         return n.new_number(0.0 - s);
                     }
                     case r_string: {
@@ -698,7 +702,7 @@ namespace clib {
                         const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
                         if (s == 0.0)
                             return n.new_number(NAN);
-                        return n.new_number(s >= 0.0 ? 0.0 : -0.0);
+                        return n.new_number(std::signbit(s) == 0 ? 0.0 : -0.0);
                     }
                     case r_string: {
                         const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
@@ -753,8 +757,13 @@ namespace clib {
             case BINARY_XOR:
             case BINARY_OR:
                 switch (op->get_type()) {
-                    case r_number:
-                        return op;
+                    case r_number: {
+                        const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
+                        auto d = fix(s);
+                        if (d == 0.0)
+                            return n.new_number(0.0);
+                        return n.new_number(d);
+                    }
                     case r_string: {
                         const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
                         if (s.empty())
@@ -800,5 +809,9 @@ namespace clib {
 
     void jsv_boolean::print(std::ostream &os) {
         os << std::boolalpha << b;
+    }
+
+    std::string jsv_boolean::to_string() const {
+        return b ? _str_t : _str_f;
     }
 }

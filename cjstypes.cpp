@@ -263,6 +263,7 @@ namespace clib {
                     "LOAD_UNDEFINED",
                     "LOAD_TRUE",
                     "LOAD_FALSE",
+                    "LOAD_ZERO",
                     "POP_TOP",
                     "ROT_TWO",
                     "ROT_THREE",
