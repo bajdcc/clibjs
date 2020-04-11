@@ -98,15 +98,13 @@ namespace clib {
                     case r_number:
                         return n.new_number(NAN);
                     case r_string:
-                        return n.new_string(_str + std::dynamic_pointer_cast<jsv_string>(op)->str);
+                        return n.new_string(to_string() + op->to_string());
                     case r_boolean:
                         return n.new_number(NAN);
                     case r_object:
-                        return n.new_string(_str + jsv_object::_str);
-                    case r_function: {
-                        const auto &s = std::dynamic_pointer_cast<jsv_function>(op)->code->text;
-                        return n.new_string(_str + s);
-                    }
+                        return n.new_string(to_string() + op->to_string());
+                    case r_function:
+                        return n.new_string(to_string() + op->to_string());
                     case r_null:
                         return n.new_number(NAN);
                     case r_undefined:
