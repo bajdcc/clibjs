@@ -2,6 +2,8 @@
 
 JS-like script engine implemented by C++.
 
+Reference: quickjs
+
 ## Features
 
 - [x] Parsing `jquery.js` and `Vue.js` in 1s.

@@ -16,6 +16,7 @@
 #define DUMP_STEP 0
 #define DUMP_GC 0
 #define DUMP_PRINT_FILE_ENABLE 1
+#define DUMP_PRINT_FILE_AUTO_CLEAR 1
 #define DUMP_PRINT_FILE "debug_print.txt"
 
 namespace clib {
@@ -48,7 +49,12 @@ namespace clib {
         permanents._minus_one = std::make_shared<jsv_number>(-1);
         permanents._empty = std::make_shared<jsv_string>("");
         permanents._debug_print = std::make_shared<jsv_function>();
+#if DUMP_PRINT_FILE_ENABLE && DUMP_PRINT_FILE_AUTO_CLEAR
         permanents._debug_print->name = "debug_print";
+        {
+            std::ofstream ofs(DUMP_PRINT_FILE);
+        }
+#endif
         permanents._debug_print->builtin = [](auto &func, auto &args, auto &js) {
 #if DUMP_PRINT_FILE_ENABLE
             std::ofstream ofs(DUMP_PRINT_FILE, std::ios::app);
@@ -664,13 +670,10 @@ namespace clib {
             return permanents.__nan;
         }
         if (std::isinf(n)) {
-            return n > 0 ? permanents._inf : permanents._minus_inf;
+            return std::signbit(n) == 0 ? permanents._inf : permanents._minus_inf;
         }
         if (n == 0.0) {
-            return permanents._zero;
-        }
-        if (n == -0.0) {
-            return permanents._minus_zero;
+            return std::signbit(n) == 0 ? permanents._zero : permanents._minus_zero;
         }
         if (n == 1.0) {
             return permanents._one;
