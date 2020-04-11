@@ -89,7 +89,13 @@ namespace clib {
         void mark(int n) override;
         void print(std::ostream &os) override;
         std::string to_string() const override;
+        ref clear();
         std::string str;
+        double number{0};
+        int number_state{0};
+        bool calc_number{false};
+    private:
+        void calc();
     };
 
     class jsv_boolean : public js_value {

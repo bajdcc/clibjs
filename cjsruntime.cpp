@@ -32,7 +32,7 @@ namespace clib {
 
     double fix(const double &d) {
         if (d == 0) {
-            return std::signbit(d) == 0 ? 0.0 : -0.0;
+            return d;
         }
         if (d >= 0)return floor(d);
         return ceil(d);
@@ -763,7 +763,7 @@ namespace clib {
                 break;
             case r_string:
                 reuse.reuse_strings.push_back(
-                        std::dynamic_pointer_cast<jsv_string>(v));
+                        std::dynamic_pointer_cast<jsv_string>(v)->clear());
                 break;
             case r_boolean:
                 reuse.reuse_booleans.push_back(

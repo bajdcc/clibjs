@@ -1,0 +1,4560 @@
+true **true    ->     1
+true * true    ->     1
+true % true    ->     0
+true + true    ->     2
+true - true    ->     0
+true / true    ->     1
+true<< true    ->     2
+true>> true    ->     0
+true>>>true    ->     0
+true & true    ->     1
+true ^ true    ->     0
+true | true    ->     1
+true **false    ->     1
+true * false    ->     0
+true % false    ->     NaN
+true + false    ->     1
+true - false    ->     1
+true / false    ->     Infinity
+true<< false    ->     1
+true>> false    ->     1
+true>>>false    ->     1
+true & false    ->     0
+true ^ false    ->     1
+true | false    ->     1
+true **null    ->     1
+true * null    ->     0
+true % null    ->     NaN
+true + null    ->     1
+true - null    ->     1
+true / null    ->     Infinity
+true<< null    ->     1
+true>> null    ->     1
+true>>>null    ->     1
+true & null    ->     0
+true ^ null    ->     1
+true | null    ->     1
+true **0    ->     1
+true * 0    ->     0
+true % 0    ->     NaN
+true + 0    ->     1
+true - 0    ->     1
+true / 0    ->     Infinity
+true<< 0    ->     1
+true>> 0    ->     1
+true>>>0    ->     1
+true & 0    ->     0
+true ^ 0    ->     1
+true | 0    ->     1
+true ** (-0)     ->     1
+true *  (-0)     ->     -0
+true %  (-0)     ->     NaN
+true +  (-0)     ->     1
+true -  (-0)     ->     1
+true /  (-0)     ->     -Infinity
+true<<  (-0)     ->     1
+true>>  (-0)     ->     1
+true>>> (-0)     ->     1
+true &  (-0)     ->     0
+true ^  (-0)     ->     1
+true |  (-0)     ->     1
+true **7    ->     1
+true * 7    ->     7
+true % 7    ->     1
+true + 7    ->     8
+true - 7    ->     -6
+true / 7    ->     0.14285714285714285
+true<< 7    ->     128
+true>> 7    ->     0
+true>>>7    ->     0
+true & 7    ->     1
+true ^ 7    ->     6
+true | 7    ->     7
+true ** (-7)     ->     1
+true *  (-7)     ->     -7
+true %  (-7)     ->     1
+true +  (-7)     ->     -6
+true -  (-7)     ->     8
+true /  (-7)     ->     -0.14285714285714285
+true<<  (-7)     ->     33554432
+true>>  (-7)     ->     0
+true>>> (-7)     ->     0
+true &  (-7)     ->     1
+true ^  (-7)     ->     -8
+true |  (-7)     ->     -7
+true **1    ->     1
+true * 1    ->     1
+true % 1    ->     0
+true + 1    ->     2
+true - 1    ->     0
+true / 1    ->     1
+true<< 1    ->     2
+true>> 1    ->     0
+true>>>1    ->     0
+true & 1    ->     1
+true ^ 1    ->     0
+true | 1    ->     1
+true ** (-1)     ->     1
+true *  (-1)     ->     -1
+true %  (-1)     ->     0
+true +  (-1)     ->     0
+true -  (-1)     ->     2
+true /  (-1)     ->     -1
+true<<  (-1)     ->     -2147483648
+true>>  (-1)     ->     0
+true>>> (-1)     ->     0
+true &  (-1)     ->     1
+true ^  (-1)     ->     -2
+true |  (-1)     ->     -1
+true **(1/3)    ->     1
+true * (1/3)    ->     0.3333333333333333
+true % (1/3)    ->     5.551115123125783e-17
+true + (1/3)    ->     1.3333333333333333
+true - (1/3)    ->     0.6666666666666667
+true / (1/3)    ->     3
+true<< (1/3)    ->     1
+true>> (1/3)    ->     1
+true>>>(1/3)    ->     1
+true & (1/3)    ->     0
+true ^ (1/3)    ->     1
+true | (1/3)    ->     1
+true **(-1/3)    ->     1
+true * (-1/3)    ->     -0.3333333333333333
+true % (-1/3)    ->     5.551115123125783e-17
+true + (-1/3)    ->     0.6666666666666667
+true - (-1/3)    ->     1.3333333333333333
+true / (-1/3)    ->     -3
+true<< (-1/3)    ->     1
+true>> (-1/3)    ->     1
+true>>>(-1/3)    ->     1
+true & (-1/3)    ->     0
+true ^ (-1/3)    ->     1
+true | (-1/3)    ->     1
+true **undefined    ->     NaN
+true * undefined    ->     NaN
+true % undefined    ->     NaN
+true + undefined    ->     NaN
+true - undefined    ->     NaN
+true / undefined    ->     NaN
+true<< undefined    ->     1
+true>> undefined    ->     1
+true>>>undefined    ->     1
+true & undefined    ->     0
+true ^ undefined    ->     1
+true | undefined    ->     1
+true **function () {}    ->     NaN
+true * function () {}    ->     NaN
+true % function () {}    ->     NaN
+true + function () {}    ->     truefunction () {}
+true - function () {}    ->     NaN
+true / function () {}    ->     NaN
+true<< function () {}    ->     1
+true>> function () {}    ->     1
+true>>>function () {}    ->     1
+true & function () {}    ->     0
+true ^ function () {}    ->     1
+true | function () {}    ->     1
+true **{}    ->     NaN
+true * {}    ->     NaN
+true % {}    ->     NaN
+true + {}    ->     true[object Object]
+true - {}    ->     NaN
+true / {}    ->     NaN
+true<< {}    ->     1
+true>> {}    ->     1
+true>>>{}    ->     1
+true & {}    ->     0
+true ^ {}    ->     1
+true | {}    ->     1
+true **{a: 1}    ->     NaN
+true * {a: 1}    ->     NaN
+true % {a: 1}    ->     NaN
+true + {a: 1}    ->     true[object Object]
+true - {a: 1}    ->     NaN
+true / {a: 1}    ->     NaN
+true<< {a: 1}    ->     1
+true>> {a: 1}    ->     1
+true>>>{a: 1}    ->     1
+true & {a: 1}    ->     0
+true ^ {a: 1}    ->     1
+true | {a: 1}    ->     1
+true **""    ->     1
+true * ""    ->     0
+true % ""    ->     NaN
+true + ""    ->     true
+true - ""    ->     1
+true / ""    ->     Infinity
+true<< ""    ->     1
+true>> ""    ->     1
+true>>>""    ->     1
+true & ""    ->     0
+true ^ ""    ->     1
+true | ""    ->     1
+true **"5"    ->     1
+true * "5"    ->     5
+true % "5"    ->     1
+true + "5"    ->     true5
+true - "5"    ->     -4
+true / "5"    ->     0.2
+true<< "5"    ->     32
+true>> "5"    ->     0
+true>>>"5"    ->     0
+true & "5"    ->     1
+true ^ "5"    ->     4
+true | "5"    ->     5
+true **"5 5"    ->     NaN
+true * "5 5"    ->     NaN
+true % "5 5"    ->     NaN
+true + "5 5"    ->     true5 5
+true - "5 5"    ->     NaN
+true / "5 5"    ->     NaN
+true<< "5 5"    ->     1
+true>> "5 5"    ->     1
+true>>>"5 5"    ->     1
+true & "5 5"    ->     0
+true ^ "5 5"    ->     1
+true | "5 5"    ->     1
+true **"5 a"    ->     NaN
+true * "5 a"    ->     NaN
+true % "5 a"    ->     NaN
+true + "5 a"    ->     true5 a
+true - "5 a"    ->     NaN
+true / "5 a"    ->     NaN
+true<< "5 a"    ->     1
+true>> "5 a"    ->     1
+true>>>"5 a"    ->     1
+true & "5 a"    ->     0
+true ^ "5 a"    ->     1
+true | "5 a"    ->     1
+false **true    ->     0
+false * true    ->     0
+false % true    ->     0
+false + true    ->     1
+false - true    ->     -1
+false / true    ->     0
+false<< true    ->     0
+false>> true    ->     0
+false>>>true    ->     0
+false & true    ->     0
+false ^ true    ->     1
+false | true    ->     1
+false **false    ->     1
+false * false    ->     0
+false % false    ->     NaN
+false + false    ->     0
+false - false    ->     0
+false / false    ->     NaN
+false<< false    ->     0
+false>> false    ->     0
+false>>>false    ->     0
+false & false    ->     0
+false ^ false    ->     0
+false | false    ->     0
+false **null    ->     1
+false * null    ->     0
+false % null    ->     NaN
+false + null    ->     0
+false - null    ->     0
+false / null    ->     NaN
+false<< null    ->     0
+false>> null    ->     0
+false>>>null    ->     0
+false & null    ->     0
+false ^ null    ->     0
+false | null    ->     0
+false **0    ->     1
+false * 0    ->     0
+false % 0    ->     NaN
+false + 0    ->     0
+false - 0    ->     0
+false / 0    ->     NaN
+false<< 0    ->     0
+false>> 0    ->     0
+false>>>0    ->     0
+false & 0    ->     0
+false ^ 0    ->     0
+false | 0    ->     0
+false ** (-0)     ->     1
+false *  (-0)     ->     -0
+false %  (-0)     ->     NaN
+false +  (-0)     ->     0
+false -  (-0)     ->     0
+false /  (-0)     ->     NaN
+false<<  (-0)     ->     0
+false>>  (-0)     ->     0
+false>>> (-0)     ->     0
+false &  (-0)     ->     0
+false ^  (-0)     ->     0
+false |  (-0)     ->     0
+false **7    ->     0
+false * 7    ->     0
+false % 7    ->     0
+false + 7    ->     7
+false - 7    ->     -7
+false / 7    ->     0
+false<< 7    ->     0
+false>> 7    ->     0
+false>>>7    ->     0
+false & 7    ->     0
+false ^ 7    ->     7
+false | 7    ->     7
+false ** (-7)     ->     Infinity
+false *  (-7)     ->     -0
+false %  (-7)     ->     0
+false +  (-7)     ->     -7
+false -  (-7)     ->     7
+false /  (-7)     ->     -0
+false<<  (-7)     ->     0
+false>>  (-7)     ->     0
+false>>> (-7)     ->     0
+false &  (-7)     ->     0
+false ^  (-7)     ->     -7
+false |  (-7)     ->     -7
+false **1    ->     0
+false * 1    ->     0
+false % 1    ->     0
+false + 1    ->     1
+false - 1    ->     -1
+false / 1    ->     0
+false<< 1    ->     0
+false>> 1    ->     0
+false>>>1    ->     0
+false & 1    ->     0
+false ^ 1    ->     1
+false | 1    ->     1
+false ** (-1)     ->     Infinity
+false *  (-1)     ->     -0
+false %  (-1)     ->     0
+false +  (-1)     ->     -1
+false -  (-1)     ->     1
+false /  (-1)     ->     -0
+false<<  (-1)     ->     0
+false>>  (-1)     ->     0
+false>>> (-1)     ->     0
+false &  (-1)     ->     0
+false ^  (-1)     ->     -1
+false |  (-1)     ->     -1
+false **(1/3)    ->     0
+false * (1/3)    ->     0
+false % (1/3)    ->     0
+false + (1/3)    ->     0.3333333333333333
+false - (1/3)    ->     -0.3333333333333333
+false / (1/3)    ->     0
+false<< (1/3)    ->     0
+false>> (1/3)    ->     0
+false>>>(1/3)    ->     0
+false & (1/3)    ->     0
+false ^ (1/3)    ->     0
+false | (1/3)    ->     0
+false **(-1/3)    ->     Infinity
+false * (-1/3)    ->     -0
+false % (-1/3)    ->     0
+false + (-1/3)    ->     -0.3333333333333333
+false - (-1/3)    ->     0.3333333333333333
+false / (-1/3)    ->     -0
+false<< (-1/3)    ->     0
+false>> (-1/3)    ->     0
+false>>>(-1/3)    ->     0
+false & (-1/3)    ->     0
+false ^ (-1/3)    ->     0
+false | (-1/3)    ->     0
+false **undefined    ->     NaN
+false * undefined    ->     NaN
+false % undefined    ->     NaN
+false + undefined    ->     NaN
+false - undefined    ->     NaN
+false / undefined    ->     NaN
+false<< undefined    ->     0
+false>> undefined    ->     0
+false>>>undefined    ->     0
+false & undefined    ->     0
+false ^ undefined    ->     0
+false | undefined    ->     0
+false **function () {}    ->     NaN
+false * function () {}    ->     NaN
+false % function () {}    ->     NaN
+false + function () {}    ->     falsefunction () {}
+false - function () {}    ->     NaN
+false / function () {}    ->     NaN
+false<< function () {}    ->     0
+false>> function () {}    ->     0
+false>>>function () {}    ->     0
+false & function () {}    ->     0
+false ^ function () {}    ->     0
+false | function () {}    ->     0
+false **{}    ->     NaN
+false * {}    ->     NaN
+false % {}    ->     NaN
+false + {}    ->     false[object Object]
+false - {}    ->     NaN
+false / {}    ->     NaN
+false<< {}    ->     0
+false>> {}    ->     0
+false>>>{}    ->     0
+false & {}    ->     0
+false ^ {}    ->     0
+false | {}    ->     0
+false **{a: 1}    ->     NaN
+false * {a: 1}    ->     NaN
+false % {a: 1}    ->     NaN
+false + {a: 1}    ->     false[object Object]
+false - {a: 1}    ->     NaN
+false / {a: 1}    ->     NaN
+false<< {a: 1}    ->     0
+false>> {a: 1}    ->     0
+false>>>{a: 1}    ->     0
+false & {a: 1}    ->     0
+false ^ {a: 1}    ->     0
+false | {a: 1}    ->     0
+false **""    ->     1
+false * ""    ->     0
+false % ""    ->     NaN
+false + ""    ->     false
+false - ""    ->     0
+false / ""    ->     NaN
+false<< ""    ->     0
+false>> ""    ->     0
+false>>>""    ->     0
+false & ""    ->     0
+false ^ ""    ->     0
+false | ""    ->     0
+false **"5"    ->     0
+false * "5"    ->     0
+false % "5"    ->     0
+false + "5"    ->     false5
+false - "5"    ->     -5
+false / "5"    ->     0
+false<< "5"    ->     0
+false>> "5"    ->     0
+false>>>"5"    ->     0
+false & "5"    ->     0
+false ^ "5"    ->     5
+false | "5"    ->     5
+false **"5 5"    ->     NaN
+false * "5 5"    ->     NaN
+false % "5 5"    ->     NaN
+false + "5 5"    ->     false5 5
+false - "5 5"    ->     NaN
+false / "5 5"    ->     NaN
+false<< "5 5"    ->     0
+false>> "5 5"    ->     0
+false>>>"5 5"    ->     0
+false & "5 5"    ->     0
+false ^ "5 5"    ->     0
+false | "5 5"    ->     0
+false **"5 a"    ->     NaN
+false * "5 a"    ->     NaN
+false % "5 a"    ->     NaN
+false + "5 a"    ->     false5 a
+false - "5 a"    ->     NaN
+false / "5 a"    ->     NaN
+false<< "5 a"    ->     0
+false>> "5 a"    ->     0
+false>>>"5 a"    ->     0
+false & "5 a"    ->     0
+false ^ "5 a"    ->     0
+false | "5 a"    ->     0
+null **true    ->     0
+null * true    ->     0
+null % true    ->     0
+null + true    ->     1
+null - true    ->     -1
+null / true    ->     0
+null<< true    ->     0
+null>> true    ->     0
+null>>>true    ->     0
+null & true    ->     0
+null ^ true    ->     1
+null | true    ->     1
+null **false    ->     1
+null * false    ->     0
+null % false    ->     NaN
+null + false    ->     0
+null - false    ->     0
+null / false    ->     NaN
+null<< false    ->     0
+null>> false    ->     0
+null>>>false    ->     0
+null & false    ->     0
+null ^ false    ->     0
+null | false    ->     0
+null **null    ->     1
+null * null    ->     0
+null % null    ->     NaN
+null + null    ->     0
+null - null    ->     0
+null / null    ->     NaN
+null<< null    ->     0
+null>> null    ->     0
+null>>>null    ->     0
+null & null    ->     0
+null ^ null    ->     0
+null | null    ->     0
+null **0    ->     1
+null * 0    ->     0
+null % 0    ->     NaN
+null + 0    ->     0
+null - 0    ->     0
+null / 0    ->     NaN
+null<< 0    ->     0
+null>> 0    ->     0
+null>>>0    ->     0
+null & 0    ->     0
+null ^ 0    ->     0
+null | 0    ->     0
+null ** (-0)     ->     1
+null *  (-0)     ->     -0
+null %  (-0)     ->     NaN
+null +  (-0)     ->     0
+null -  (-0)     ->     0
+null /  (-0)     ->     NaN
+null<<  (-0)     ->     0
+null>>  (-0)     ->     0
+null>>> (-0)     ->     0
+null &  (-0)     ->     0
+null ^  (-0)     ->     0
+null |  (-0)     ->     0
+null **7    ->     0
+null * 7    ->     0
+null % 7    ->     0
+null + 7    ->     7
+null - 7    ->     -7
+null / 7    ->     0
+null<< 7    ->     0
+null>> 7    ->     0
+null>>>7    ->     0
+null & 7    ->     0
+null ^ 7    ->     7
+null | 7    ->     7
+null ** (-7)     ->     Infinity
+null *  (-7)     ->     -0
+null %  (-7)     ->     0
+null +  (-7)     ->     -7
+null -  (-7)     ->     7
+null /  (-7)     ->     -0
+null<<  (-7)     ->     0
+null>>  (-7)     ->     0
+null>>> (-7)     ->     0
+null &  (-7)     ->     0
+null ^  (-7)     ->     -7
+null |  (-7)     ->     -7
+null **1    ->     0
+null * 1    ->     0
+null % 1    ->     0
+null + 1    ->     1
+null - 1    ->     -1
+null / 1    ->     0
+null<< 1    ->     0
+null>> 1    ->     0
+null>>>1    ->     0
+null & 1    ->     0
+null ^ 1    ->     1
+null | 1    ->     1
+null ** (-1)     ->     Infinity
+null *  (-1)     ->     -0
+null %  (-1)     ->     0
+null +  (-1)     ->     -1
+null -  (-1)     ->     1
+null /  (-1)     ->     -0
+null<<  (-1)     ->     0
+null>>  (-1)     ->     0
+null>>> (-1)     ->     0
+null &  (-1)     ->     0
+null ^  (-1)     ->     -1
+null |  (-1)     ->     -1
+null **(1/3)    ->     0
+null * (1/3)    ->     0
+null % (1/3)    ->     0
+null + (1/3)    ->     0.3333333333333333
+null - (1/3)    ->     -0.3333333333333333
+null / (1/3)    ->     0
+null<< (1/3)    ->     0
+null>> (1/3)    ->     0
+null>>>(1/3)    ->     0
+null & (1/3)    ->     0
+null ^ (1/3)    ->     0
+null | (1/3)    ->     0
+null **(-1/3)    ->     Infinity
+null * (-1/3)    ->     -0
+null % (-1/3)    ->     0
+null + (-1/3)    ->     -0.3333333333333333
+null - (-1/3)    ->     0.3333333333333333
+null / (-1/3)    ->     -0
+null<< (-1/3)    ->     0
+null>> (-1/3)    ->     0
+null>>>(-1/3)    ->     0
+null & (-1/3)    ->     0
+null ^ (-1/3)    ->     0
+null | (-1/3)    ->     0
+null **undefined    ->     NaN
+null * undefined    ->     NaN
+null % undefined    ->     NaN
+null + undefined    ->     NaN
+null - undefined    ->     NaN
+null / undefined    ->     NaN
+null<< undefined    ->     0
+null>> undefined    ->     0
+null>>>undefined    ->     0
+null & undefined    ->     0
+null ^ undefined    ->     0
+null | undefined    ->     0
+null **function () {}    ->     NaN
+null * function () {}    ->     NaN
+null % function () {}    ->     NaN
+null + function () {}    ->     nullfunction () {}
+null - function () {}    ->     NaN
+null / function () {}    ->     NaN
+null<< function () {}    ->     0
+null>> function () {}    ->     0
+null>>>function () {}    ->     0
+null & function () {}    ->     0
+null ^ function () {}    ->     0
+null | function () {}    ->     0
+null **{}    ->     NaN
+null * {}    ->     NaN
+null % {}    ->     NaN
+null + {}    ->     null[object Object]
+null - {}    ->     NaN
+null / {}    ->     NaN
+null<< {}    ->     0
+null>> {}    ->     0
+null>>>{}    ->     0
+null & {}    ->     0
+null ^ {}    ->     0
+null | {}    ->     0
+null **{a: 1}    ->     NaN
+null * {a: 1}    ->     NaN
+null % {a: 1}    ->     NaN
+null + {a: 1}    ->     null[object Object]
+null - {a: 1}    ->     NaN
+null / {a: 1}    ->     NaN
+null<< {a: 1}    ->     0
+null>> {a: 1}    ->     0
+null>>>{a: 1}    ->     0
+null & {a: 1}    ->     0
+null ^ {a: 1}    ->     0
+null | {a: 1}    ->     0
+null **""    ->     1
+null * ""    ->     0
+null % ""    ->     NaN
+null + ""    ->     null
+null - ""    ->     0
+null / ""    ->     NaN
+null<< ""    ->     0
+null>> ""    ->     0
+null>>>""    ->     0
+null & ""    ->     0
+null ^ ""    ->     0
+null | ""    ->     0
+null **"5"    ->     0
+null * "5"    ->     0
+null % "5"    ->     0
+null + "5"    ->     null5
+null - "5"    ->     -5
+null / "5"    ->     0
+null<< "5"    ->     0
+null>> "5"    ->     0
+null>>>"5"    ->     0
+null & "5"    ->     0
+null ^ "5"    ->     5
+null | "5"    ->     5
+null **"5 5"    ->     NaN
+null * "5 5"    ->     NaN
+null % "5 5"    ->     NaN
+null + "5 5"    ->     null5 5
+null - "5 5"    ->     NaN
+null / "5 5"    ->     NaN
+null<< "5 5"    ->     0
+null>> "5 5"    ->     0
+null>>>"5 5"    ->     0
+null & "5 5"    ->     0
+null ^ "5 5"    ->     0
+null | "5 5"    ->     0
+null **"5 a"    ->     NaN
+null * "5 a"    ->     NaN
+null % "5 a"    ->     NaN
+null + "5 a"    ->     null5 a
+null - "5 a"    ->     NaN
+null / "5 a"    ->     NaN
+null<< "5 a"    ->     0
+null>> "5 a"    ->     0
+null>>>"5 a"    ->     0
+null & "5 a"    ->     0
+null ^ "5 a"    ->     0
+null | "5 a"    ->     0
+0 **true    ->     0
+0 * true    ->     0
+0 % true    ->     0
+0 + true    ->     1
+0 - true    ->     -1
+0 / true    ->     0
+0<< true    ->     0
+0>> true    ->     0
+0>>>true    ->     0
+0 & true    ->     0
+0 ^ true    ->     1
+0 | true    ->     1
+0 **false    ->     1
+0 * false    ->     0
+0 % false    ->     NaN
+0 + false    ->     0
+0 - false    ->     0
+0 / false    ->     NaN
+0<< false    ->     0
+0>> false    ->     0
+0>>>false    ->     0
+0 & false    ->     0
+0 ^ false    ->     0
+0 | false    ->     0
+0 **null    ->     1
+0 * null    ->     0
+0 % null    ->     NaN
+0 + null    ->     0
+0 - null    ->     0
+0 / null    ->     NaN
+0<< null    ->     0
+0>> null    ->     0
+0>>>null    ->     0
+0 & null    ->     0
+0 ^ null    ->     0
+0 | null    ->     0
+0 **0    ->     1
+0 * 0    ->     0
+0 % 0    ->     NaN
+0 + 0    ->     0
+0 - 0    ->     0
+0 / 0    ->     NaN
+0<< 0    ->     0
+0>> 0    ->     0
+0>>>0    ->     0
+0 & 0    ->     0
+0 ^ 0    ->     0
+0 | 0    ->     0
+0 ** (-0)     ->     1
+0 *  (-0)     ->     -0
+0 %  (-0)     ->     NaN
+0 +  (-0)     ->     0
+0 -  (-0)     ->     0
+0 /  (-0)     ->     NaN
+0<<  (-0)     ->     0
+0>>  (-0)     ->     0
+0>>> (-0)     ->     0
+0 &  (-0)     ->     0
+0 ^  (-0)     ->     0
+0 |  (-0)     ->     0
+0 **7    ->     0
+0 * 7    ->     0
+0 % 7    ->     0
+0 + 7    ->     7
+0 - 7    ->     -7
+0 / 7    ->     0
+0<< 7    ->     0
+0>> 7    ->     0
+0>>>7    ->     0
+0 & 7    ->     0
+0 ^ 7    ->     7
+0 | 7    ->     7
+0 ** (-7)     ->     Infinity
+0 *  (-7)     ->     -0
+0 %  (-7)     ->     0
+0 +  (-7)     ->     -7
+0 -  (-7)     ->     7
+0 /  (-7)     ->     -0
+0<<  (-7)     ->     0
+0>>  (-7)     ->     0
+0>>> (-7)     ->     0
+0 &  (-7)     ->     0
+0 ^  (-7)     ->     -7
+0 |  (-7)     ->     -7
+0 **1    ->     0
+0 * 1    ->     0
+0 % 1    ->     0
+0 + 1    ->     1
+0 - 1    ->     -1
+0 / 1    ->     0
+0<< 1    ->     0
+0>> 1    ->     0
+0>>>1    ->     0
+0 & 1    ->     0
+0 ^ 1    ->     1
+0 | 1    ->     1
+0 ** (-1)     ->     Infinity
+0 *  (-1)     ->     -0
+0 %  (-1)     ->     0
+0 +  (-1)     ->     -1
+0 -  (-1)     ->     1
+0 /  (-1)     ->     -0
+0<<  (-1)     ->     0
+0>>  (-1)     ->     0
+0>>> (-1)     ->     0
+0 &  (-1)     ->     0
+0 ^  (-1)     ->     -1
+0 |  (-1)     ->     -1
+0 **(1/3)    ->     0
+0 * (1/3)    ->     0
+0 % (1/3)    ->     0
+0 + (1/3)    ->     0.3333333333333333
+0 - (1/3)    ->     -0.3333333333333333
+0 / (1/3)    ->     0
+0<< (1/3)    ->     0
+0>> (1/3)    ->     0
+0>>>(1/3)    ->     0
+0 & (1/3)    ->     0
+0 ^ (1/3)    ->     0
+0 | (1/3)    ->     0
+0 **(-1/3)    ->     Infinity
+0 * (-1/3)    ->     -0
+0 % (-1/3)    ->     0
+0 + (-1/3)    ->     -0.3333333333333333
+0 - (-1/3)    ->     0.3333333333333333
+0 / (-1/3)    ->     -0
+0<< (-1/3)    ->     0
+0>> (-1/3)    ->     0
+0>>>(-1/3)    ->     0
+0 & (-1/3)    ->     0
+0 ^ (-1/3)    ->     0
+0 | (-1/3)    ->     0
+0 **undefined    ->     NaN
+0 * undefined    ->     NaN
+0 % undefined    ->     NaN
+0 + undefined    ->     NaN
+0 - undefined    ->     NaN
+0 / undefined    ->     NaN
+0<< undefined    ->     0
+0>> undefined    ->     0
+0>>>undefined    ->     0
+0 & undefined    ->     0
+0 ^ undefined    ->     0
+0 | undefined    ->     0
+0 **function () {}    ->     NaN
+0 * function () {}    ->     NaN
+0 % function () {}    ->     NaN
+0 + function () {}    ->     0function () {}
+0 - function () {}    ->     NaN
+0 / function () {}    ->     NaN
+0<< function () {}    ->     0
+0>> function () {}    ->     0
+0>>>function () {}    ->     0
+0 & function () {}    ->     0
+0 ^ function () {}    ->     0
+0 | function () {}    ->     0
+0 **{}    ->     NaN
+0 * {}    ->     NaN
+0 % {}    ->     NaN
+0 + {}    ->     0[object Object]
+0 - {}    ->     NaN
+0 / {}    ->     NaN
+0<< {}    ->     0
+0>> {}    ->     0
+0>>>{}    ->     0
+0 & {}    ->     0
+0 ^ {}    ->     0
+0 | {}    ->     0
+0 **{a: 1}    ->     NaN
+0 * {a: 1}    ->     NaN
+0 % {a: 1}    ->     NaN
+0 + {a: 1}    ->     0[object Object]
+0 - {a: 1}    ->     NaN
+0 / {a: 1}    ->     NaN
+0<< {a: 1}    ->     0
+0>> {a: 1}    ->     0
+0>>>{a: 1}    ->     0
+0 & {a: 1}    ->     0
+0 ^ {a: 1}    ->     0
+0 | {a: 1}    ->     0
+0 **""    ->     1
+0 * ""    ->     0
+0 % ""    ->     NaN
+0 + ""    ->     0
+0 - ""    ->     0
+0 / ""    ->     NaN
+0<< ""    ->     0
+0>> ""    ->     0
+0>>>""    ->     0
+0 & ""    ->     0
+0 ^ ""    ->     0
+0 | ""    ->     0
+0 **"5"    ->     0
+0 * "5"    ->     0
+0 % "5"    ->     0
+0 + "5"    ->     05
+0 - "5"    ->     -5
+0 / "5"    ->     0
+0<< "5"    ->     0
+0>> "5"    ->     0
+0>>>"5"    ->     0
+0 & "5"    ->     0
+0 ^ "5"    ->     5
+0 | "5"    ->     5
+0 **"5 5"    ->     NaN
+0 * "5 5"    ->     NaN
+0 % "5 5"    ->     NaN
+0 + "5 5"    ->     05 5
+0 - "5 5"    ->     NaN
+0 / "5 5"    ->     NaN
+0<< "5 5"    ->     0
+0>> "5 5"    ->     0
+0>>>"5 5"    ->     0
+0 & "5 5"    ->     0
+0 ^ "5 5"    ->     0
+0 | "5 5"    ->     0
+0 **"5 a"    ->     NaN
+0 * "5 a"    ->     NaN
+0 % "5 a"    ->     NaN
+0 + "5 a"    ->     05 a
+0 - "5 a"    ->     NaN
+0 / "5 a"    ->     NaN
+0<< "5 a"    ->     0
+0>> "5 a"    ->     0
+0>>>"5 a"    ->     0
+0 & "5 a"    ->     0
+0 ^ "5 a"    ->     0
+0 | "5 a"    ->     0
+ (-0)  **true    ->     -0
+ (-0)  * true    ->     -0
+ (-0)  % true    ->     -0
+ (-0)  + true    ->     1
+ (-0)  - true    ->     -1
+ (-0)  / true    ->     -0
+ (-0) << true    ->     0
+ (-0) >> true    ->     0
+ (-0) >>>true    ->     0
+ (-0)  & true    ->     0
+ (-0)  ^ true    ->     1
+ (-0)  | true    ->     1
+ (-0)  **false    ->     1
+ (-0)  * false    ->     -0
+ (-0)  % false    ->     NaN
+ (-0)  + false    ->     0
+ (-0)  - false    ->     -0
+ (-0)  / false    ->     NaN
+ (-0) << false    ->     0
+ (-0) >> false    ->     0
+ (-0) >>>false    ->     0
+ (-0)  & false    ->     0
+ (-0)  ^ false    ->     0
+ (-0)  | false    ->     0
+ (-0)  **null    ->     1
+ (-0)  * null    ->     -0
+ (-0)  % null    ->     NaN
+ (-0)  + null    ->     0
+ (-0)  - null    ->     -0
+ (-0)  / null    ->     NaN
+ (-0) << null    ->     0
+ (-0) >> null    ->     0
+ (-0) >>>null    ->     0
+ (-0)  & null    ->     0
+ (-0)  ^ null    ->     0
+ (-0)  | null    ->     0
+ (-0)  **0    ->     1
+ (-0)  * 0    ->     -0
+ (-0)  % 0    ->     NaN
+ (-0)  + 0    ->     0
+ (-0)  - 0    ->     -0
+ (-0)  / 0    ->     NaN
+ (-0) << 0    ->     0
+ (-0) >> 0    ->     0
+ (-0) >>>0    ->     0
+ (-0)  & 0    ->     0
+ (-0)  ^ 0    ->     0
+ (-0)  | 0    ->     0
+ (-0)  ** (-0)     ->     1
+ (-0)  *  (-0)     ->     0
+ (-0)  %  (-0)     ->     NaN
+ (-0)  +  (-0)     ->     -0
+ (-0)  -  (-0)     ->     0
+ (-0)  /  (-0)     ->     NaN
+ (-0) <<  (-0)     ->     0
+ (-0) >>  (-0)     ->     0
+ (-0) >>> (-0)     ->     0
+ (-0)  &  (-0)     ->     0
+ (-0)  ^  (-0)     ->     0
+ (-0)  |  (-0)     ->     0
+ (-0)  **7    ->     -0
+ (-0)  * 7    ->     -0
+ (-0)  % 7    ->     -0
+ (-0)  + 7    ->     7
+ (-0)  - 7    ->     -7
+ (-0)  / 7    ->     -0
+ (-0) << 7    ->     0
+ (-0) >> 7    ->     0
+ (-0) >>>7    ->     0
+ (-0)  & 7    ->     0
+ (-0)  ^ 7    ->     7
+ (-0)  | 7    ->     7
+ (-0)  ** (-7)     ->     -Infinity
+ (-0)  *  (-7)     ->     0
+ (-0)  %  (-7)     ->     -0
+ (-0)  +  (-7)     ->     -7
+ (-0)  -  (-7)     ->     7
+ (-0)  /  (-7)     ->     0
+ (-0) <<  (-7)     ->     0
+ (-0) >>  (-7)     ->     0
+ (-0) >>> (-7)     ->     0
+ (-0)  &  (-7)     ->     0
+ (-0)  ^  (-7)     ->     -7
+ (-0)  |  (-7)     ->     -7
+ (-0)  **1    ->     -0
+ (-0)  * 1    ->     -0
+ (-0)  % 1    ->     -0
+ (-0)  + 1    ->     1
+ (-0)  - 1    ->     -1
+ (-0)  / 1    ->     -0
+ (-0) << 1    ->     0
+ (-0) >> 1    ->     0
+ (-0) >>>1    ->     0
+ (-0)  & 1    ->     0
+ (-0)  ^ 1    ->     1
+ (-0)  | 1    ->     1
+ (-0)  ** (-1)     ->     -Infinity
+ (-0)  *  (-1)     ->     0
+ (-0)  %  (-1)     ->     -0
+ (-0)  +  (-1)     ->     -1
+ (-0)  -  (-1)     ->     1
+ (-0)  /  (-1)     ->     0
+ (-0) <<  (-1)     ->     0
+ (-0) >>  (-1)     ->     0
+ (-0) >>> (-1)     ->     0
+ (-0)  &  (-1)     ->     0
+ (-0)  ^  (-1)     ->     -1
+ (-0)  |  (-1)     ->     -1
+ (-0)  **(1/3)    ->     0
+ (-0)  * (1/3)    ->     -0
+ (-0)  % (1/3)    ->     -0
+ (-0)  + (1/3)    ->     0.3333333333333333
+ (-0)  - (1/3)    ->     -0.3333333333333333
+ (-0)  / (1/3)    ->     -0
+ (-0) << (1/3)    ->     0
+ (-0) >> (1/3)    ->     0
+ (-0) >>>(1/3)    ->     0
+ (-0)  & (1/3)    ->     0
+ (-0)  ^ (1/3)    ->     0
+ (-0)  | (1/3)    ->     0
+ (-0)  **(-1/3)    ->     Infinity
+ (-0)  * (-1/3)    ->     0
+ (-0)  % (-1/3)    ->     -0
+ (-0)  + (-1/3)    ->     -0.3333333333333333
+ (-0)  - (-1/3)    ->     0.3333333333333333
+ (-0)  / (-1/3)    ->     0
+ (-0) << (-1/3)    ->     0
+ (-0) >> (-1/3)    ->     0
+ (-0) >>>(-1/3)    ->     0
+ (-0)  & (-1/3)    ->     0
+ (-0)  ^ (-1/3)    ->     0
+ (-0)  | (-1/3)    ->     0
+ (-0)  **undefined    ->     NaN
+ (-0)  * undefined    ->     NaN
+ (-0)  % undefined    ->     NaN
+ (-0)  + undefined    ->     NaN
+ (-0)  - undefined    ->     NaN
+ (-0)  / undefined    ->     NaN
+ (-0) << undefined    ->     0
+ (-0) >> undefined    ->     0
+ (-0) >>>undefined    ->     0
+ (-0)  & undefined    ->     0
+ (-0)  ^ undefined    ->     0
+ (-0)  | undefined    ->     0
+ (-0)  **function () {}    ->     NaN
+ (-0)  * function () {}    ->     NaN
+ (-0)  % function () {}    ->     NaN
+ (-0)  + function () {}    ->     0function () {}
+ (-0)  - function () {}    ->     NaN
+ (-0)  / function () {}    ->     NaN
+ (-0) << function () {}    ->     0
+ (-0) >> function () {}    ->     0
+ (-0) >>>function () {}    ->     0
+ (-0)  & function () {}    ->     0
+ (-0)  ^ function () {}    ->     0
+ (-0)  | function () {}    ->     0
+ (-0)  **{}    ->     NaN
+ (-0)  * {}    ->     NaN
+ (-0)  % {}    ->     NaN
+ (-0)  + {}    ->     0[object Object]
+ (-0)  - {}    ->     NaN
+ (-0)  / {}    ->     NaN
+ (-0) << {}    ->     0
+ (-0) >> {}    ->     0
+ (-0) >>>{}    ->     0
+ (-0)  & {}    ->     0
+ (-0)  ^ {}    ->     0
+ (-0)  | {}    ->     0
+ (-0)  **{a: 1}    ->     NaN
+ (-0)  * {a: 1}    ->     NaN
+ (-0)  % {a: 1}    ->     NaN
+ (-0)  + {a: 1}    ->     0[object Object]
+ (-0)  - {a: 1}    ->     NaN
+ (-0)  / {a: 1}    ->     NaN
+ (-0) << {a: 1}    ->     0
+ (-0) >> {a: 1}    ->     0
+ (-0) >>>{a: 1}    ->     0
+ (-0)  & {a: 1}    ->     0
+ (-0)  ^ {a: 1}    ->     0
+ (-0)  | {a: 1}    ->     0
+ (-0)  **""    ->     1
+ (-0)  * ""    ->     -0
+ (-0)  % ""    ->     NaN
+ (-0)  + ""    ->     0
+ (-0)  - ""    ->     -0
+ (-0)  / ""    ->     NaN
+ (-0) << ""    ->     0
+ (-0) >> ""    ->     0
+ (-0) >>>""    ->     0
+ (-0)  & ""    ->     0
+ (-0)  ^ ""    ->     0
+ (-0)  | ""    ->     0
+ (-0)  **"5"    ->     -0
+ (-0)  * "5"    ->     -0
+ (-0)  % "5"    ->     -0
+ (-0)  + "5"    ->     05
+ (-0)  - "5"    ->     -5
+ (-0)  / "5"    ->     -0
+ (-0) << "5"    ->     0
+ (-0) >> "5"    ->     0
+ (-0) >>>"5"    ->     0
+ (-0)  & "5"    ->     0
+ (-0)  ^ "5"    ->     5
+ (-0)  | "5"    ->     5
+ (-0)  **"5 5"    ->     NaN
+ (-0)  * "5 5"    ->     NaN
+ (-0)  % "5 5"    ->     NaN
+ (-0)  + "5 5"    ->     05 5
+ (-0)  - "5 5"    ->     NaN
+ (-0)  / "5 5"    ->     NaN
+ (-0) << "5 5"    ->     0
+ (-0) >> "5 5"    ->     0
+ (-0) >>>"5 5"    ->     0
+ (-0)  & "5 5"    ->     0
+ (-0)  ^ "5 5"    ->     0
+ (-0)  | "5 5"    ->     0
+ (-0)  **"5 a"    ->     NaN
+ (-0)  * "5 a"    ->     NaN
+ (-0)  % "5 a"    ->     NaN
+ (-0)  + "5 a"    ->     05 a
+ (-0)  - "5 a"    ->     NaN
+ (-0)  / "5 a"    ->     NaN
+ (-0) << "5 a"    ->     0
+ (-0) >> "5 a"    ->     0
+ (-0) >>>"5 a"    ->     0
+ (-0)  & "5 a"    ->     0
+ (-0)  ^ "5 a"    ->     0
+ (-0)  | "5 a"    ->     0
+7 **true    ->     7
+7 * true    ->     7
+7 % true    ->     0
+7 + true    ->     8
+7 - true    ->     6
+7 / true    ->     7
+7<< true    ->     14
+7>> true    ->     3
+7>>>true    ->     3
+7 & true    ->     1
+7 ^ true    ->     6
+7 | true    ->     7
+7 **false    ->     1
+7 * false    ->     0
+7 % false    ->     NaN
+7 + false    ->     7
+7 - false    ->     7
+7 / false    ->     Infinity
+7<< false    ->     7
+7>> false    ->     7
+7>>>false    ->     7
+7 & false    ->     0
+7 ^ false    ->     7
+7 | false    ->     7
+7 **null    ->     1
+7 * null    ->     0
+7 % null    ->     NaN
+7 + null    ->     7
+7 - null    ->     7
+7 / null    ->     Infinity
+7<< null    ->     7
+7>> null    ->     7
+7>>>null    ->     7
+7 & null    ->     0
+7 ^ null    ->     7
+7 | null    ->     7
+7 **0    ->     1
+7 * 0    ->     0
+7 % 0    ->     NaN
+7 + 0    ->     7
+7 - 0    ->     7
+7 / 0    ->     Infinity
+7<< 0    ->     7
+7>> 0    ->     7
+7>>>0    ->     7
+7 & 0    ->     0
+7 ^ 0    ->     7
+7 | 0    ->     7
+7 ** (-0)     ->     1
+7 *  (-0)     ->     -0
+7 %  (-0)     ->     NaN
+7 +  (-0)     ->     7
+7 -  (-0)     ->     7
+7 /  (-0)     ->     -Infinity
+7<<  (-0)     ->     7
+7>>  (-0)     ->     7
+7>>> (-0)     ->     7
+7 &  (-0)     ->     0
+7 ^  (-0)     ->     7
+7 |  (-0)     ->     7
+7 **7    ->     823543
+7 * 7    ->     49
+7 % 7    ->     0
+7 + 7    ->     14
+7 - 7    ->     0
+7 / 7    ->     1
+7<< 7    ->     896
+7>> 7    ->     0
+7>>>7    ->     0
+7 & 7    ->     7
+7 ^ 7    ->     0
+7 | 7    ->     7
+7 ** (-7)     ->     0.0000012142656789020123
+7 *  (-7)     ->     -49
+7 %  (-7)     ->     0
+7 +  (-7)     ->     0
+7 -  (-7)     ->     14
+7 /  (-7)     ->     -1
+7<<  (-7)     ->     234881024
+7>>  (-7)     ->     0
+7>>> (-7)     ->     0
+7 &  (-7)     ->     1
+7 ^  (-7)     ->     -2
+7 |  (-7)     ->     -1
+7 **1    ->     7
+7 * 1    ->     7
+7 % 1    ->     0
+7 + 1    ->     8
+7 - 1    ->     6
+7 / 1    ->     7
+7<< 1    ->     14
+7>> 1    ->     3
+7>>>1    ->     3
+7 & 1    ->     1
+7 ^ 1    ->     6
+7 | 1    ->     7
+7 ** (-1)     ->     0.14285714285714285
+7 *  (-1)     ->     -7
+7 %  (-1)     ->     0
+7 +  (-1)     ->     6
+7 -  (-1)     ->     8
+7 /  (-1)     ->     -7
+7<<  (-1)     ->     -2147483648
+7>>  (-1)     ->     0
+7>>> (-1)     ->     0
+7 &  (-1)     ->     7
+7 ^  (-1)     ->     -8
+7 |  (-1)     ->     -1
+7 **(1/3)    ->     1.912931182772389
+7 * (1/3)    ->     2.333333333333333
+7 % (1/3)    ->     3.885780586188048e-16
+7 + (1/3)    ->     7.333333333333333
+7 - (1/3)    ->     6.666666666666667
+7 / (1/3)    ->     21
+7<< (1/3)    ->     7
+7>> (1/3)    ->     7
+7>>>(1/3)    ->     7
+7 & (1/3)    ->     0
+7 ^ (1/3)    ->     7
+7 | (1/3)    ->     7
+7 **(-1/3)    ->     0.5227579585747102
+7 * (-1/3)    ->     -2.333333333333333
+7 % (-1/3)    ->     3.885780586188048e-16
+7 + (-1/3)    ->     6.666666666666667
+7 - (-1/3)    ->     7.333333333333333
+7 / (-1/3)    ->     -21
+7<< (-1/3)    ->     7
+7>> (-1/3)    ->     7
+7>>>(-1/3)    ->     7
+7 & (-1/3)    ->     0
+7 ^ (-1/3)    ->     7
+7 | (-1/3)    ->     7
+7 **undefined    ->     NaN
+7 * undefined    ->     NaN
+7 % undefined    ->     NaN
+7 + undefined    ->     NaN
+7 - undefined    ->     NaN
+7 / undefined    ->     NaN
+7<< undefined    ->     7
+7>> undefined    ->     7
+7>>>undefined    ->     7
+7 & undefined    ->     0
+7 ^ undefined    ->     7
+7 | undefined    ->     7
+7 **function () {}    ->     NaN
+7 * function () {}    ->     NaN
+7 % function () {}    ->     NaN
+7 + function () {}    ->     7function () {}
+7 - function () {}    ->     NaN
+7 / function () {}    ->     NaN
+7<< function () {}    ->     7
+7>> function () {}    ->     7
+7>>>function () {}    ->     7
+7 & function () {}    ->     0
+7 ^ function () {}    ->     7
+7 | function () {}    ->     7
+7 **{}    ->     NaN
+7 * {}    ->     NaN
+7 % {}    ->     NaN
+7 + {}    ->     7[object Object]
+7 - {}    ->     NaN
+7 / {}    ->     NaN
+7<< {}    ->     7
+7>> {}    ->     7
+7>>>{}    ->     7
+7 & {}    ->     0
+7 ^ {}    ->     7
+7 | {}    ->     7
+7 **{a: 1}    ->     NaN
+7 * {a: 1}    ->     NaN
+7 % {a: 1}    ->     NaN
+7 + {a: 1}    ->     7[object Object]
+7 - {a: 1}    ->     NaN
+7 / {a: 1}    ->     NaN
+7<< {a: 1}    ->     7
+7>> {a: 1}    ->     7
+7>>>{a: 1}    ->     7
+7 & {a: 1}    ->     0
+7 ^ {a: 1}    ->     7
+7 | {a: 1}    ->     7
+7 **""    ->     1
+7 * ""    ->     0
+7 % ""    ->     NaN
+7 + ""    ->     7
+7 - ""    ->     7
+7 / ""    ->     Infinity
+7<< ""    ->     7
+7>> ""    ->     7
+7>>>""    ->     7
+7 & ""    ->     0
+7 ^ ""    ->     7
+7 | ""    ->     7
+7 **"5"    ->     16807
+7 * "5"    ->     35
+7 % "5"    ->     2
+7 + "5"    ->     75
+7 - "5"    ->     2
+7 / "5"    ->     1.4
+7<< "5"    ->     224
+7>> "5"    ->     0
+7>>>"5"    ->     0
+7 & "5"    ->     5
+7 ^ "5"    ->     2
+7 | "5"    ->     7
+7 **"5 5"    ->     NaN
+7 * "5 5"    ->     NaN
+7 % "5 5"    ->     NaN
+7 + "5 5"    ->     75 5
+7 - "5 5"    ->     NaN
+7 / "5 5"    ->     NaN
+7<< "5 5"    ->     7
+7>> "5 5"    ->     7
+7>>>"5 5"    ->     7
+7 & "5 5"    ->     0
+7 ^ "5 5"    ->     7
+7 | "5 5"    ->     7
+7 **"5 a"    ->     NaN
+7 * "5 a"    ->     NaN
+7 % "5 a"    ->     NaN
+7 + "5 a"    ->     75 a
+7 - "5 a"    ->     NaN
+7 / "5 a"    ->     NaN
+7<< "5 a"    ->     7
+7>> "5 a"    ->     7
+7>>>"5 a"    ->     7
+7 & "5 a"    ->     0
+7 ^ "5 a"    ->     7
+7 | "5 a"    ->     7
+ (-7)  **true    ->     -7
+ (-7)  * true    ->     -7
+ (-7)  % true    ->     -0
+ (-7)  + true    ->     -6
+ (-7)  - true    ->     -8
+ (-7)  / true    ->     -7
+ (-7) << true    ->     -14
+ (-7) >> true    ->     -4
+ (-7) >>>true    ->     2147483644
+ (-7)  & true    ->     1
+ (-7)  ^ true    ->     -8
+ (-7)  | true    ->     -7
+ (-7)  **false    ->     1
+ (-7)  * false    ->     -0
+ (-7)  % false    ->     NaN
+ (-7)  + false    ->     -7
+ (-7)  - false    ->     -7
+ (-7)  / false    ->     -Infinity
+ (-7) << false    ->     -7
+ (-7) >> false    ->     -7
+ (-7) >>>false    ->     4294967289
+ (-7)  & false    ->     0
+ (-7)  ^ false    ->     -7
+ (-7)  | false    ->     -7
+ (-7)  **null    ->     1
+ (-7)  * null    ->     -0
+ (-7)  % null    ->     NaN
+ (-7)  + null    ->     -7
+ (-7)  - null    ->     -7
+ (-7)  / null    ->     -Infinity
+ (-7) << null    ->     -7
+ (-7) >> null    ->     -7
+ (-7) >>>null    ->     4294967289
+ (-7)  & null    ->     0
+ (-7)  ^ null    ->     -7
+ (-7)  | null    ->     -7
+ (-7)  **0    ->     1
+ (-7)  * 0    ->     -0
+ (-7)  % 0    ->     NaN
+ (-7)  + 0    ->     -7
+ (-7)  - 0    ->     -7
+ (-7)  / 0    ->     -Infinity
+ (-7) << 0    ->     -7
+ (-7) >> 0    ->     -7
+ (-7) >>>0    ->     4294967289
+ (-7)  & 0    ->     0
+ (-7)  ^ 0    ->     -7
+ (-7)  | 0    ->     -7
+ (-7)  ** (-0)     ->     1
+ (-7)  *  (-0)     ->     0
+ (-7)  %  (-0)     ->     NaN
+ (-7)  +  (-0)     ->     -7
+ (-7)  -  (-0)     ->     -7
+ (-7)  /  (-0)     ->     Infinity
+ (-7) <<  (-0)     ->     -7
+ (-7) >>  (-0)     ->     -7
+ (-7) >>> (-0)     ->     4294967289
+ (-7)  &  (-0)     ->     0
+ (-7)  ^  (-0)     ->     -7
+ (-7)  |  (-0)     ->     -7
+ (-7)  **7    ->     -823543
+ (-7)  * 7    ->     -49
+ (-7)  % 7    ->     -0
+ (-7)  + 7    ->     0
+ (-7)  - 7    ->     -14
+ (-7)  / 7    ->     -1
+ (-7) << 7    ->     -896
+ (-7) >> 7    ->     -1
+ (-7) >>>7    ->     33554431
+ (-7)  & 7    ->     1
+ (-7)  ^ 7    ->     -2
+ (-7)  | 7    ->     -1
+ (-7)  ** (-7)     ->     -0.0000012142656789020123
+ (-7)  *  (-7)     ->     49
+ (-7)  %  (-7)     ->     -0
+ (-7)  +  (-7)     ->     -14
+ (-7)  -  (-7)     ->     0
+ (-7)  /  (-7)     ->     1
+ (-7) <<  (-7)     ->     -234881024
+ (-7) >>  (-7)     ->     -1
+ (-7) >>> (-7)     ->     127
+ (-7)  &  (-7)     ->     -7
+ (-7)  ^  (-7)     ->     0
+ (-7)  |  (-7)     ->     -7
+ (-7)  **1    ->     -7
+ (-7)  * 1    ->     -7
+ (-7)  % 1    ->     -0
+ (-7)  + 1    ->     -6
+ (-7)  - 1    ->     -8
+ (-7)  / 1    ->     -7
+ (-7) << 1    ->     -14
+ (-7) >> 1    ->     -4
+ (-7) >>>1    ->     2147483644
+ (-7)  & 1    ->     1
+ (-7)  ^ 1    ->     -8
+ (-7)  | 1    ->     -7
+ (-7)  ** (-1)     ->     -0.14285714285714285
+ (-7)  *  (-1)     ->     7
+ (-7)  %  (-1)     ->     -0
+ (-7)  +  (-1)     ->     -8
+ (-7)  -  (-1)     ->     -6
+ (-7)  /  (-1)     ->     7
+ (-7) <<  (-1)     ->     -2147483648
+ (-7) >>  (-1)     ->     -1
+ (-7) >>> (-1)     ->     1
+ (-7)  &  (-1)     ->     -7
+ (-7)  ^  (-1)     ->     6
+ (-7)  |  (-1)     ->     -1
+ (-7)  **(1/3)    ->     NaN
+ (-7)  * (1/3)    ->     -2.333333333333333
+ (-7)  % (1/3)    ->     -3.885780586188048e-16
+ (-7)  + (1/3)    ->     -6.666666666666667
+ (-7)  - (1/3)    ->     -7.333333333333333
+ (-7)  / (1/3)    ->     -21
+ (-7) << (1/3)    ->     -7
+ (-7) >> (1/3)    ->     -7
+ (-7) >>>(1/3)    ->     4294967289
+ (-7)  & (1/3)    ->     0
+ (-7)  ^ (1/3)    ->     -7
+ (-7)  | (1/3)    ->     -7
+ (-7)  **(-1/3)    ->     NaN
+ (-7)  * (-1/3)    ->     2.333333333333333
+ (-7)  % (-1/3)    ->     -3.885780586188048e-16
+ (-7)  + (-1/3)    ->     -7.333333333333333
+ (-7)  - (-1/3)    ->     -6.666666666666667
+ (-7)  / (-1/3)    ->     21
+ (-7) << (-1/3)    ->     -7
+ (-7) >> (-1/3)    ->     -7
+ (-7) >>>(-1/3)    ->     4294967289
+ (-7)  & (-1/3)    ->     0
+ (-7)  ^ (-1/3)    ->     -7
+ (-7)  | (-1/3)    ->     -7
+ (-7)  **undefined    ->     NaN
+ (-7)  * undefined    ->     NaN
+ (-7)  % undefined    ->     NaN
+ (-7)  + undefined    ->     NaN
+ (-7)  - undefined    ->     NaN
+ (-7)  / undefined    ->     NaN
+ (-7) << undefined    ->     -7
+ (-7) >> undefined    ->     -7
+ (-7) >>>undefined    ->     4294967289
+ (-7)  & undefined    ->     0
+ (-7)  ^ undefined    ->     -7
+ (-7)  | undefined    ->     -7
+ (-7)  **function () {}    ->     NaN
+ (-7)  * function () {}    ->     NaN
+ (-7)  % function () {}    ->     NaN
+ (-7)  + function () {}    ->     -7function () {}
+ (-7)  - function () {}    ->     NaN
+ (-7)  / function () {}    ->     NaN
+ (-7) << function () {}    ->     -7
+ (-7) >> function () {}    ->     -7
+ (-7) >>>function () {}    ->     4294967289
+ (-7)  & function () {}    ->     0
+ (-7)  ^ function () {}    ->     -7
+ (-7)  | function () {}    ->     -7
+ (-7)  **{}    ->     NaN
+ (-7)  * {}    ->     NaN
+ (-7)  % {}    ->     NaN
+ (-7)  + {}    ->     -7[object Object]
+ (-7)  - {}    ->     NaN
+ (-7)  / {}    ->     NaN
+ (-7) << {}    ->     -7
+ (-7) >> {}    ->     -7
+ (-7) >>>{}    ->     4294967289
+ (-7)  & {}    ->     0
+ (-7)  ^ {}    ->     -7
+ (-7)  | {}    ->     -7
+ (-7)  **{a: 1}    ->     NaN
+ (-7)  * {a: 1}    ->     NaN
+ (-7)  % {a: 1}    ->     NaN
+ (-7)  + {a: 1}    ->     -7[object Object]
+ (-7)  - {a: 1}    ->     NaN
+ (-7)  / {a: 1}    ->     NaN
+ (-7) << {a: 1}    ->     -7
+ (-7) >> {a: 1}    ->     -7
+ (-7) >>>{a: 1}    ->     4294967289
+ (-7)  & {a: 1}    ->     0
+ (-7)  ^ {a: 1}    ->     -7
+ (-7)  | {a: 1}    ->     -7
+ (-7)  **""    ->     1
+ (-7)  * ""    ->     -0
+ (-7)  % ""    ->     NaN
+ (-7)  + ""    ->     -7
+ (-7)  - ""    ->     -7
+ (-7)  / ""    ->     -Infinity
+ (-7) << ""    ->     -7
+ (-7) >> ""    ->     -7
+ (-7) >>>""    ->     4294967289
+ (-7)  & ""    ->     0
+ (-7)  ^ ""    ->     -7
+ (-7)  | ""    ->     -7
+ (-7)  **"5"    ->     -16807
+ (-7)  * "5"    ->     -35
+ (-7)  % "5"    ->     -2
+ (-7)  + "5"    ->     -75
+ (-7)  - "5"    ->     -12
+ (-7)  / "5"    ->     -1.4
+ (-7) << "5"    ->     -224
+ (-7) >> "5"    ->     -1
+ (-7) >>>"5"    ->     134217727
+ (-7)  & "5"    ->     1
+ (-7)  ^ "5"    ->     -4
+ (-7)  | "5"    ->     -3
+ (-7)  **"5 5"    ->     NaN
+ (-7)  * "5 5"    ->     NaN
+ (-7)  % "5 5"    ->     NaN
+ (-7)  + "5 5"    ->     -75 5
+ (-7)  - "5 5"    ->     NaN
+ (-7)  / "5 5"    ->     NaN
+ (-7) << "5 5"    ->     -7
+ (-7) >> "5 5"    ->     -7
+ (-7) >>>"5 5"    ->     4294967289
+ (-7)  & "5 5"    ->     0
+ (-7)  ^ "5 5"    ->     -7
+ (-7)  | "5 5"    ->     -7
+ (-7)  **"5 a"    ->     NaN
+ (-7)  * "5 a"    ->     NaN
+ (-7)  % "5 a"    ->     NaN
+ (-7)  + "5 a"    ->     -75 a
+ (-7)  - "5 a"    ->     NaN
+ (-7)  / "5 a"    ->     NaN
+ (-7) << "5 a"    ->     -7
+ (-7) >> "5 a"    ->     -7
+ (-7) >>>"5 a"    ->     4294967289
+ (-7)  & "5 a"    ->     0
+ (-7)  ^ "5 a"    ->     -7
+ (-7)  | "5 a"    ->     -7
+1 **true    ->     1
+1 * true    ->     1
+1 % true    ->     0
+1 + true    ->     2
+1 - true    ->     0
+1 / true    ->     1
+1<< true    ->     2
+1>> true    ->     0
+1>>>true    ->     0
+1 & true    ->     1
+1 ^ true    ->     0
+1 | true    ->     1
+1 **false    ->     1
+1 * false    ->     0
+1 % false    ->     NaN
+1 + false    ->     1
+1 - false    ->     1
+1 / false    ->     Infinity
+1<< false    ->     1
+1>> false    ->     1
+1>>>false    ->     1
+1 & false    ->     0
+1 ^ false    ->     1
+1 | false    ->     1
+1 **null    ->     1
+1 * null    ->     0
+1 % null    ->     NaN
+1 + null    ->     1
+1 - null    ->     1
+1 / null    ->     Infinity
+1<< null    ->     1
+1>> null    ->     1
+1>>>null    ->     1
+1 & null    ->     0
+1 ^ null    ->     1
+1 | null    ->     1
+1 **0    ->     1
+1 * 0    ->     0
+1 % 0    ->     NaN
+1 + 0    ->     1
+1 - 0    ->     1
+1 / 0    ->     Infinity
+1<< 0    ->     1
+1>> 0    ->     1
+1>>>0    ->     1
+1 & 0    ->     0
+1 ^ 0    ->     1
+1 | 0    ->     1
+1 ** (-0)     ->     1
+1 *  (-0)     ->     -0
+1 %  (-0)     ->     NaN
+1 +  (-0)     ->     1
+1 -  (-0)     ->     1
+1 /  (-0)     ->     -Infinity
+1<<  (-0)     ->     1
+1>>  (-0)     ->     1
+1>>> (-0)     ->     1
+1 &  (-0)     ->     0
+1 ^  (-0)     ->     1
+1 |  (-0)     ->     1
+1 **7    ->     1
+1 * 7    ->     7
+1 % 7    ->     1
+1 + 7    ->     8
+1 - 7    ->     -6
+1 / 7    ->     0.14285714285714285
+1<< 7    ->     128
+1>> 7    ->     0
+1>>>7    ->     0
+1 & 7    ->     1
+1 ^ 7    ->     6
+1 | 7    ->     7
+1 ** (-7)     ->     1
+1 *  (-7)     ->     -7
+1 %  (-7)     ->     1
+1 +  (-7)     ->     -6
+1 -  (-7)     ->     8
+1 /  (-7)     ->     -0.14285714285714285
+1<<  (-7)     ->     33554432
+1>>  (-7)     ->     0
+1>>> (-7)     ->     0
+1 &  (-7)     ->     1
+1 ^  (-7)     ->     -8
+1 |  (-7)     ->     -7
+1 **1    ->     1
+1 * 1    ->     1
+1 % 1    ->     0
+1 + 1    ->     2
+1 - 1    ->     0
+1 / 1    ->     1
+1<< 1    ->     2
+1>> 1    ->     0
+1>>>1    ->     0
+1 & 1    ->     1
+1 ^ 1    ->     0
+1 | 1    ->     1
+1 ** (-1)     ->     1
+1 *  (-1)     ->     -1
+1 %  (-1)     ->     0
+1 +  (-1)     ->     0
+1 -  (-1)     ->     2
+1 /  (-1)     ->     -1
+1<<  (-1)     ->     -2147483648
+1>>  (-1)     ->     0
+1>>> (-1)     ->     0
+1 &  (-1)     ->     1
+1 ^  (-1)     ->     -2
+1 |  (-1)     ->     -1
+1 **(1/3)    ->     1
+1 * (1/3)    ->     0.3333333333333333
+1 % (1/3)    ->     5.551115123125783e-17
+1 + (1/3)    ->     1.3333333333333333
+1 - (1/3)    ->     0.6666666666666667
+1 / (1/3)    ->     3
+1<< (1/3)    ->     1
+1>> (1/3)    ->     1
+1>>>(1/3)    ->     1
+1 & (1/3)    ->     0
+1 ^ (1/3)    ->     1
+1 | (1/3)    ->     1
+1 **(-1/3)    ->     1
+1 * (-1/3)    ->     -0.3333333333333333
+1 % (-1/3)    ->     5.551115123125783e-17
+1 + (-1/3)    ->     0.6666666666666667
+1 - (-1/3)    ->     1.3333333333333333
+1 / (-1/3)    ->     -3
+1<< (-1/3)    ->     1
+1>> (-1/3)    ->     1
+1>>>(-1/3)    ->     1
+1 & (-1/3)    ->     0
+1 ^ (-1/3)    ->     1
+1 | (-1/3)    ->     1
+1 **undefined    ->     NaN
+1 * undefined    ->     NaN
+1 % undefined    ->     NaN
+1 + undefined    ->     NaN
+1 - undefined    ->     NaN
+1 / undefined    ->     NaN
+1<< undefined    ->     1
+1>> undefined    ->     1
+1>>>undefined    ->     1
+1 & undefined    ->     0
+1 ^ undefined    ->     1
+1 | undefined    ->     1
+1 **function () {}    ->     NaN
+1 * function () {}    ->     NaN
+1 % function () {}    ->     NaN
+1 + function () {}    ->     1function () {}
+1 - function () {}    ->     NaN
+1 / function () {}    ->     NaN
+1<< function () {}    ->     1
+1>> function () {}    ->     1
+1>>>function () {}    ->     1
+1 & function () {}    ->     0
+1 ^ function () {}    ->     1
+1 | function () {}    ->     1
+1 **{}    ->     NaN
+1 * {}    ->     NaN
+1 % {}    ->     NaN
+1 + {}    ->     1[object Object]
+1 - {}    ->     NaN
+1 / {}    ->     NaN
+1<< {}    ->     1
+1>> {}    ->     1
+1>>>{}    ->     1
+1 & {}    ->     0
+1 ^ {}    ->     1
+1 | {}    ->     1
+1 **{a: 1}    ->     NaN
+1 * {a: 1}    ->     NaN
+1 % {a: 1}    ->     NaN
+1 + {a: 1}    ->     1[object Object]
+1 - {a: 1}    ->     NaN
+1 / {a: 1}    ->     NaN
+1<< {a: 1}    ->     1
+1>> {a: 1}    ->     1
+1>>>{a: 1}    ->     1
+1 & {a: 1}    ->     0
+1 ^ {a: 1}    ->     1
+1 | {a: 1}    ->     1
+1 **""    ->     1
+1 * ""    ->     0
+1 % ""    ->     NaN
+1 + ""    ->     1
+1 - ""    ->     1
+1 / ""    ->     Infinity
+1<< ""    ->     1
+1>> ""    ->     1
+1>>>""    ->     1
+1 & ""    ->     0
+1 ^ ""    ->     1
+1 | ""    ->     1
+1 **"5"    ->     1
+1 * "5"    ->     5
+1 % "5"    ->     1
+1 + "5"    ->     15
+1 - "5"    ->     -4
+1 / "5"    ->     0.2
+1<< "5"    ->     32
+1>> "5"    ->     0
+1>>>"5"    ->     0
+1 & "5"    ->     1
+1 ^ "5"    ->     4
+1 | "5"    ->     5
+1 **"5 5"    ->     NaN
+1 * "5 5"    ->     NaN
+1 % "5 5"    ->     NaN
+1 + "5 5"    ->     15 5
+1 - "5 5"    ->     NaN
+1 / "5 5"    ->     NaN
+1<< "5 5"    ->     1
+1>> "5 5"    ->     1
+1>>>"5 5"    ->     1
+1 & "5 5"    ->     0
+1 ^ "5 5"    ->     1
+1 | "5 5"    ->     1
+1 **"5 a"    ->     NaN
+1 * "5 a"    ->     NaN
+1 % "5 a"    ->     NaN
+1 + "5 a"    ->     15 a
+1 - "5 a"    ->     NaN
+1 / "5 a"    ->     NaN
+1<< "5 a"    ->     1
+1>> "5 a"    ->     1
+1>>>"5 a"    ->     1
+1 & "5 a"    ->     0
+1 ^ "5 a"    ->     1
+1 | "5 a"    ->     1
+ (-1)  **true    ->     -1
+ (-1)  * true    ->     -1
+ (-1)  % true    ->     -0
+ (-1)  + true    ->     0
+ (-1)  - true    ->     -2
+ (-1)  / true    ->     -1
+ (-1) << true    ->     -2
+ (-1) >> true    ->     -1
+ (-1) >>>true    ->     2147483647
+ (-1)  & true    ->     1
+ (-1)  ^ true    ->     -2
+ (-1)  | true    ->     -1
+ (-1)  **false    ->     1
+ (-1)  * false    ->     -0
+ (-1)  % false    ->     NaN
+ (-1)  + false    ->     -1
+ (-1)  - false    ->     -1
+ (-1)  / false    ->     -Infinity
+ (-1) << false    ->     -1
+ (-1) >> false    ->     -1
+ (-1) >>>false    ->     4294967295
+ (-1)  & false    ->     0
+ (-1)  ^ false    ->     -1
+ (-1)  | false    ->     -1
+ (-1)  **null    ->     1
+ (-1)  * null    ->     -0
+ (-1)  % null    ->     NaN
+ (-1)  + null    ->     -1
+ (-1)  - null    ->     -1
+ (-1)  / null    ->     -Infinity
+ (-1) << null    ->     -1
+ (-1) >> null    ->     -1
+ (-1) >>>null    ->     4294967295
+ (-1)  & null    ->     0
+ (-1)  ^ null    ->     -1
+ (-1)  | null    ->     -1
+ (-1)  **0    ->     1
+ (-1)  * 0    ->     -0
+ (-1)  % 0    ->     NaN
+ (-1)  + 0    ->     -1
+ (-1)  - 0    ->     -1
+ (-1)  / 0    ->     -Infinity
+ (-1) << 0    ->     -1
+ (-1) >> 0    ->     -1
+ (-1) >>>0    ->     4294967295
+ (-1)  & 0    ->     0
+ (-1)  ^ 0    ->     -1
+ (-1)  | 0    ->     -1
+ (-1)  ** (-0)     ->     1
+ (-1)  *  (-0)     ->     0
+ (-1)  %  (-0)     ->     NaN
+ (-1)  +  (-0)     ->     -1
+ (-1)  -  (-0)     ->     -1
+ (-1)  /  (-0)     ->     Infinity
+ (-1) <<  (-0)     ->     -1
+ (-1) >>  (-0)     ->     -1
+ (-1) >>> (-0)     ->     4294967295
+ (-1)  &  (-0)     ->     0
+ (-1)  ^  (-0)     ->     -1
+ (-1)  |  (-0)     ->     -1
+ (-1)  **7    ->     -1
+ (-1)  * 7    ->     -7
+ (-1)  % 7    ->     -1
+ (-1)  + 7    ->     6
+ (-1)  - 7    ->     -8
+ (-1)  / 7    ->     -0.14285714285714285
+ (-1) << 7    ->     -128
+ (-1) >> 7    ->     -1
+ (-1) >>>7    ->     33554431
+ (-1)  & 7    ->     7
+ (-1)  ^ 7    ->     -8
+ (-1)  | 7    ->     -1
+ (-1)  ** (-7)     ->     -1
+ (-1)  *  (-7)     ->     7
+ (-1)  %  (-7)     ->     -1
+ (-1)  +  (-7)     ->     -8
+ (-1)  -  (-7)     ->     6
+ (-1)  /  (-7)     ->     0.14285714285714285
+ (-1) <<  (-7)     ->     -33554432
+ (-1) >>  (-7)     ->     -1
+ (-1) >>> (-7)     ->     127
+ (-1)  &  (-7)     ->     -7
+ (-1)  ^  (-7)     ->     6
+ (-1)  |  (-7)     ->     -1
+ (-1)  **1    ->     -1
+ (-1)  * 1    ->     -1
+ (-1)  % 1    ->     -0
+ (-1)  + 1    ->     0
+ (-1)  - 1    ->     -2
+ (-1)  / 1    ->     -1
+ (-1) << 1    ->     -2
+ (-1) >> 1    ->     -1
+ (-1) >>>1    ->     2147483647
+ (-1)  & 1    ->     1
+ (-1)  ^ 1    ->     -2
+ (-1)  | 1    ->     -1
+ (-1)  ** (-1)     ->     -1
+ (-1)  *  (-1)     ->     1
+ (-1)  %  (-1)     ->     -0
+ (-1)  +  (-1)     ->     -2
+ (-1)  -  (-1)     ->     0
+ (-1)  /  (-1)     ->     1
+ (-1) <<  (-1)     ->     -2147483648
+ (-1) >>  (-1)     ->     -1
+ (-1) >>> (-1)     ->     1
+ (-1)  &  (-1)     ->     -1
+ (-1)  ^  (-1)     ->     0
+ (-1)  |  (-1)     ->     -1
+ (-1)  **(1/3)    ->     NaN
+ (-1)  * (1/3)    ->     -0.3333333333333333
+ (-1)  % (1/3)    ->     -5.551115123125783e-17
+ (-1)  + (1/3)    ->     -0.6666666666666667
+ (-1)  - (1/3)    ->     -1.3333333333333333
+ (-1)  / (1/3)    ->     -3
+ (-1) << (1/3)    ->     -1
+ (-1) >> (1/3)    ->     -1
+ (-1) >>>(1/3)    ->     4294967295
+ (-1)  & (1/3)    ->     0
+ (-1)  ^ (1/3)    ->     -1
+ (-1)  | (1/3)    ->     -1
+ (-1)  **(-1/3)    ->     NaN
+ (-1)  * (-1/3)    ->     0.3333333333333333
+ (-1)  % (-1/3)    ->     -5.551115123125783e-17
+ (-1)  + (-1/3)    ->     -1.3333333333333333
+ (-1)  - (-1/3)    ->     -0.6666666666666667
+ (-1)  / (-1/3)    ->     3
+ (-1) << (-1/3)    ->     -1
+ (-1) >> (-1/3)    ->     -1
+ (-1) >>>(-1/3)    ->     4294967295
+ (-1)  & (-1/3)    ->     0
+ (-1)  ^ (-1/3)    ->     -1
+ (-1)  | (-1/3)    ->     -1
+ (-1)  **undefined    ->     NaN
+ (-1)  * undefined    ->     NaN
+ (-1)  % undefined    ->     NaN
+ (-1)  + undefined    ->     NaN
+ (-1)  - undefined    ->     NaN
+ (-1)  / undefined    ->     NaN
+ (-1) << undefined    ->     -1
+ (-1) >> undefined    ->     -1
+ (-1) >>>undefined    ->     4294967295
+ (-1)  & undefined    ->     0
+ (-1)  ^ undefined    ->     -1
+ (-1)  | undefined    ->     -1
+ (-1)  **function () {}    ->     NaN
+ (-1)  * function () {}    ->     NaN
+ (-1)  % function () {}    ->     NaN
+ (-1)  + function () {}    ->     -1function () {}
+ (-1)  - function () {}    ->     NaN
+ (-1)  / function () {}    ->     NaN
+ (-1) << function () {}    ->     -1
+ (-1) >> function () {}    ->     -1
+ (-1) >>>function () {}    ->     4294967295
+ (-1)  & function () {}    ->     0
+ (-1)  ^ function () {}    ->     -1
+ (-1)  | function () {}    ->     -1
+ (-1)  **{}    ->     NaN
+ (-1)  * {}    ->     NaN
+ (-1)  % {}    ->     NaN
+ (-1)  + {}    ->     -1[object Object]
+ (-1)  - {}    ->     NaN
+ (-1)  / {}    ->     NaN
+ (-1) << {}    ->     -1
+ (-1) >> {}    ->     -1
+ (-1) >>>{}    ->     4294967295
+ (-1)  & {}    ->     0
+ (-1)  ^ {}    ->     -1
+ (-1)  | {}    ->     -1
+ (-1)  **{a: 1}    ->     NaN
+ (-1)  * {a: 1}    ->     NaN
+ (-1)  % {a: 1}    ->     NaN
+ (-1)  + {a: 1}    ->     -1[object Object]
+ (-1)  - {a: 1}    ->     NaN
+ (-1)  / {a: 1}    ->     NaN
+ (-1) << {a: 1}    ->     -1
+ (-1) >> {a: 1}    ->     -1
+ (-1) >>>{a: 1}    ->     4294967295
+ (-1)  & {a: 1}    ->     0
+ (-1)  ^ {a: 1}    ->     -1
+ (-1)  | {a: 1}    ->     -1
+ (-1)  **""    ->     1
+ (-1)  * ""    ->     -0
+ (-1)  % ""    ->     NaN
+ (-1)  + ""    ->     -1
+ (-1)  - ""    ->     -1
+ (-1)  / ""    ->     -Infinity
+ (-1) << ""    ->     -1
+ (-1) >> ""    ->     -1
+ (-1) >>>""    ->     4294967295
+ (-1)  & ""    ->     0
+ (-1)  ^ ""    ->     -1
+ (-1)  | ""    ->     -1
+ (-1)  **"5"    ->     -1
+ (-1)  * "5"    ->     -5
+ (-1)  % "5"    ->     -1
+ (-1)  + "5"    ->     -15
+ (-1)  - "5"    ->     -6
+ (-1)  / "5"    ->     -0.2
+ (-1) << "5"    ->     -32
+ (-1) >> "5"    ->     -1
+ (-1) >>>"5"    ->     134217727
+ (-1)  & "5"    ->     5
+ (-1)  ^ "5"    ->     -6
+ (-1)  | "5"    ->     -1
+ (-1)  **"5 5"    ->     NaN
+ (-1)  * "5 5"    ->     NaN
+ (-1)  % "5 5"    ->     NaN
+ (-1)  + "5 5"    ->     -15 5
+ (-1)  - "5 5"    ->     NaN
+ (-1)  / "5 5"    ->     NaN
+ (-1) << "5 5"    ->     -1
+ (-1) >> "5 5"    ->     -1
+ (-1) >>>"5 5"    ->     4294967295
+ (-1)  & "5 5"    ->     0
+ (-1)  ^ "5 5"    ->     -1
+ (-1)  | "5 5"    ->     -1
+ (-1)  **"5 a"    ->     NaN
+ (-1)  * "5 a"    ->     NaN
+ (-1)  % "5 a"    ->     NaN
+ (-1)  + "5 a"    ->     -15 a
+ (-1)  - "5 a"    ->     NaN
+ (-1)  / "5 a"    ->     NaN
+ (-1) << "5 a"    ->     -1
+ (-1) >> "5 a"    ->     -1
+ (-1) >>>"5 a"    ->     4294967295
+ (-1)  & "5 a"    ->     0
+ (-1)  ^ "5 a"    ->     -1
+ (-1)  | "5 a"    ->     -1
+(1/3) **true    ->     0.3333333333333333
+(1/3) * true    ->     0.3333333333333333
+(1/3) % true    ->     0.3333333333333333
+(1/3) + true    ->     1.3333333333333333
+(1/3) - true    ->     -0.6666666666666667
+(1/3) / true    ->     0.3333333333333333
+(1/3)<< true    ->     0
+(1/3)>> true    ->     0
+(1/3)>>>true    ->     0
+(1/3) & true    ->     0
+(1/3) ^ true    ->     1
+(1/3) | true    ->     1
+(1/3) **false    ->     1
+(1/3) * false    ->     0
+(1/3) % false    ->     NaN
+(1/3) + false    ->     0.3333333333333333
+(1/3) - false    ->     0.3333333333333333
+(1/3) / false    ->     Infinity
+(1/3)<< false    ->     0
+(1/3)>> false    ->     0
+(1/3)>>>false    ->     0
+(1/3) & false    ->     0
+(1/3) ^ false    ->     0
+(1/3) | false    ->     0
+(1/3) **null    ->     1
+(1/3) * null    ->     0
+(1/3) % null    ->     NaN
+(1/3) + null    ->     0.3333333333333333
+(1/3) - null    ->     0.3333333333333333
+(1/3) / null    ->     Infinity
+(1/3)<< null    ->     0
+(1/3)>> null    ->     0
+(1/3)>>>null    ->     0
+(1/3) & null    ->     0
+(1/3) ^ null    ->     0
+(1/3) | null    ->     0
+(1/3) **0    ->     1
+(1/3) * 0    ->     0
+(1/3) % 0    ->     NaN
+(1/3) + 0    ->     0.3333333333333333
+(1/3) - 0    ->     0.3333333333333333
+(1/3) / 0    ->     Infinity
+(1/3)<< 0    ->     0
+(1/3)>> 0    ->     0
+(1/3)>>>0    ->     0
+(1/3) & 0    ->     0
+(1/3) ^ 0    ->     0
+(1/3) | 0    ->     0
+(1/3) ** (-0)     ->     1
+(1/3) *  (-0)     ->     -0
+(1/3) %  (-0)     ->     NaN
+(1/3) +  (-0)     ->     0.3333333333333333
+(1/3) -  (-0)     ->     0.3333333333333333
+(1/3) /  (-0)     ->     -Infinity
+(1/3)<<  (-0)     ->     0
+(1/3)>>  (-0)     ->     0
+(1/3)>>> (-0)     ->     0
+(1/3) &  (-0)     ->     0
+(1/3) ^  (-0)     ->     0
+(1/3) |  (-0)     ->     0
+(1/3) **7    ->     0.00045724737082761756
+(1/3) * 7    ->     2.333333333333333
+(1/3) % 7    ->     0.3333333333333333
+(1/3) + 7    ->     7.333333333333333
+(1/3) - 7    ->     -6.666666666666667
+(1/3) / 7    ->     0.047619047619047616
+(1/3)<< 7    ->     0
+(1/3)>> 7    ->     0
+(1/3)>>>7    ->     0
+(1/3) & 7    ->     0
+(1/3) ^ 7    ->     7
+(1/3) | 7    ->     7
+(1/3) ** (-7)     ->     2187.000000000001
+(1/3) *  (-7)     ->     -2.333333333333333
+(1/3) %  (-7)     ->     0.3333333333333333
+(1/3) +  (-7)     ->     -6.666666666666667
+(1/3) -  (-7)     ->     7.333333333333333
+(1/3) /  (-7)     ->     -0.047619047619047616
+(1/3)<<  (-7)     ->     0
+(1/3)>>  (-7)     ->     0
+(1/3)>>> (-7)     ->     0
+(1/3) &  (-7)     ->     0
+(1/3) ^  (-7)     ->     -7
+(1/3) |  (-7)     ->     -7
+(1/3) **1    ->     0.3333333333333333
+(1/3) * 1    ->     0.3333333333333333
+(1/3) % 1    ->     0.3333333333333333
+(1/3) + 1    ->     1.3333333333333333
+(1/3) - 1    ->     -0.6666666666666667
+(1/3) / 1    ->     0.3333333333333333
+(1/3)<< 1    ->     0
+(1/3)>> 1    ->     0
+(1/3)>>>1    ->     0
+(1/3) & 1    ->     0
+(1/3) ^ 1    ->     1
+(1/3) | 1    ->     1
+(1/3) ** (-1)     ->     3
+(1/3) *  (-1)     ->     -0.3333333333333333
+(1/3) %  (-1)     ->     0.3333333333333333
+(1/3) +  (-1)     ->     -0.6666666666666667
+(1/3) -  (-1)     ->     1.3333333333333333
+(1/3) /  (-1)     ->     -0.3333333333333333
+(1/3)<<  (-1)     ->     0
+(1/3)>>  (-1)     ->     0
+(1/3)>>> (-1)     ->     0
+(1/3) &  (-1)     ->     0
+(1/3) ^  (-1)     ->     -1
+(1/3) |  (-1)     ->     -1
+(1/3) **(1/3)    ->     0.6933612743506347
+(1/3) * (1/3)    ->     0.1111111111111111
+(1/3) % (1/3)    ->     0
+(1/3) + (1/3)    ->     0.6666666666666666
+(1/3) - (1/3)    ->     0
+(1/3) / (1/3)    ->     1
+(1/3)<< (1/3)    ->     0
+(1/3)>> (1/3)    ->     0
+(1/3)>>>(1/3)    ->     0
+(1/3) & (1/3)    ->     0
+(1/3) ^ (1/3)    ->     0
+(1/3) | (1/3)    ->     0
+(1/3) **(-1/3)    ->     1.4422495703074083
+(1/3) * (-1/3)    ->     -0.1111111111111111
+(1/3) % (-1/3)    ->     0
+(1/3) + (-1/3)    ->     0
+(1/3) - (-1/3)    ->     0.6666666666666666
+(1/3) / (-1/3)    ->     -1
+(1/3)<< (-1/3)    ->     0
+(1/3)>> (-1/3)    ->     0
+(1/3)>>>(-1/3)    ->     0
+(1/3) & (-1/3)    ->     0
+(1/3) ^ (-1/3)    ->     0
+(1/3) | (-1/3)    ->     0
+(1/3) **undefined    ->     NaN
+(1/3) * undefined    ->     NaN
+(1/3) % undefined    ->     NaN
+(1/3) + undefined    ->     NaN
+(1/3) - undefined    ->     NaN
+(1/3) / undefined    ->     NaN
+(1/3)<< undefined    ->     0
+(1/3)>> undefined    ->     0
+(1/3)>>>undefined    ->     0
+(1/3) & undefined    ->     0
+(1/3) ^ undefined    ->     0
+(1/3) | undefined    ->     0
+(1/3) **function () {}    ->     NaN
+(1/3) * function () {}    ->     NaN
+(1/3) % function () {}    ->     NaN
+(1/3) + function () {}    ->     0.3333333333333333function () {}
+(1/3) - function () {}    ->     NaN
+(1/3) / function () {}    ->     NaN
+(1/3)<< function () {}    ->     0
+(1/3)>> function () {}    ->     0
+(1/3)>>>function () {}    ->     0
+(1/3) & function () {}    ->     0
+(1/3) ^ function () {}    ->     0
+(1/3) | function () {}    ->     0
+(1/3) **{}    ->     NaN
+(1/3) * {}    ->     NaN
+(1/3) % {}    ->     NaN
+(1/3) + {}    ->     0.3333333333333333[object Object]
+(1/3) - {}    ->     NaN
+(1/3) / {}    ->     NaN
+(1/3)<< {}    ->     0
+(1/3)>> {}    ->     0
+(1/3)>>>{}    ->     0
+(1/3) & {}    ->     0
+(1/3) ^ {}    ->     0
+(1/3) | {}    ->     0
+(1/3) **{a: 1}    ->     NaN
+(1/3) * {a: 1}    ->     NaN
+(1/3) % {a: 1}    ->     NaN
+(1/3) + {a: 1}    ->     0.3333333333333333[object Object]
+(1/3) - {a: 1}    ->     NaN
+(1/3) / {a: 1}    ->     NaN
+(1/3)<< {a: 1}    ->     0
+(1/3)>> {a: 1}    ->     0
+(1/3)>>>{a: 1}    ->     0
+(1/3) & {a: 1}    ->     0
+(1/3) ^ {a: 1}    ->     0
+(1/3) | {a: 1}    ->     0
+(1/3) **""    ->     1
+(1/3) * ""    ->     0
+(1/3) % ""    ->     NaN
+(1/3) + ""    ->     0.3333333333333333
+(1/3) - ""    ->     0.3333333333333333
+(1/3) / ""    ->     Infinity
+(1/3)<< ""    ->     0
+(1/3)>> ""    ->     0
+(1/3)>>>""    ->     0
+(1/3) & ""    ->     0
+(1/3) ^ ""    ->     0
+(1/3) | ""    ->     0
+(1/3) **"5"    ->     0.004115226337448558
+(1/3) * "5"    ->     1.6666666666666665
+(1/3) % "5"    ->     0.3333333333333333
+(1/3) + "5"    ->     0.33333333333333335
+(1/3) - "5"    ->     -4.666666666666667
+(1/3) / "5"    ->     0.06666666666666667
+(1/3)<< "5"    ->     0
+(1/3)>> "5"    ->     0
+(1/3)>>>"5"    ->     0
+(1/3) & "5"    ->     0
+(1/3) ^ "5"    ->     5
+(1/3) | "5"    ->     5
+(1/3) **"5 5"    ->     NaN
+(1/3) * "5 5"    ->     NaN
+(1/3) % "5 5"    ->     NaN
+(1/3) + "5 5"    ->     0.33333333333333335 5
+(1/3) - "5 5"    ->     NaN
+(1/3) / "5 5"    ->     NaN
+(1/3)<< "5 5"    ->     0
+(1/3)>> "5 5"    ->     0
+(1/3)>>>"5 5"    ->     0
+(1/3) & "5 5"    ->     0
+(1/3) ^ "5 5"    ->     0
+(1/3) | "5 5"    ->     0
+(1/3) **"5 a"    ->     NaN
+(1/3) * "5 a"    ->     NaN
+(1/3) % "5 a"    ->     NaN
+(1/3) + "5 a"    ->     0.33333333333333335 a
+(1/3) - "5 a"    ->     NaN
+(1/3) / "5 a"    ->     NaN
+(1/3)<< "5 a"    ->     0
+(1/3)>> "5 a"    ->     0
+(1/3)>>>"5 a"    ->     0
+(1/3) & "5 a"    ->     0
+(1/3) ^ "5 a"    ->     0
+(1/3) | "5 a"    ->     0
+(-1/3) **true    ->     -0.3333333333333333
+(-1/3) * true    ->     -0.3333333333333333
+(-1/3) % true    ->     -0.3333333333333333
+(-1/3) + true    ->     0.6666666666666667
+(-1/3) - true    ->     -1.3333333333333333
+(-1/3) / true    ->     -0.3333333333333333
+(-1/3)<< true    ->     0
+(-1/3)>> true    ->     0
+(-1/3)>>>true    ->     0
+(-1/3) & true    ->     0
+(-1/3) ^ true    ->     1
+(-1/3) | true    ->     1
+(-1/3) **false    ->     1
+(-1/3) * false    ->     -0
+(-1/3) % false    ->     NaN
+(-1/3) + false    ->     -0.3333333333333333
+(-1/3) - false    ->     -0.3333333333333333
+(-1/3) / false    ->     -Infinity
+(-1/3)<< false    ->     0
+(-1/3)>> false    ->     0
+(-1/3)>>>false    ->     0
+(-1/3) & false    ->     0
+(-1/3) ^ false    ->     0
+(-1/3) | false    ->     0
+(-1/3) **null    ->     1
+(-1/3) * null    ->     -0
+(-1/3) % null    ->     NaN
+(-1/3) + null    ->     -0.3333333333333333
+(-1/3) - null    ->     -0.3333333333333333
+(-1/3) / null    ->     -Infinity
+(-1/3)<< null    ->     0
+(-1/3)>> null    ->     0
+(-1/3)>>>null    ->     0
+(-1/3) & null    ->     0
+(-1/3) ^ null    ->     0
+(-1/3) | null    ->     0
+(-1/3) **0    ->     1
+(-1/3) * 0    ->     -0
+(-1/3) % 0    ->     NaN
+(-1/3) + 0    ->     -0.3333333333333333
+(-1/3) - 0    ->     -0.3333333333333333
+(-1/3) / 0    ->     -Infinity
+(-1/3)<< 0    ->     0
+(-1/3)>> 0    ->     0
+(-1/3)>>>0    ->     0
+(-1/3) & 0    ->     0
+(-1/3) ^ 0    ->     0
+(-1/3) | 0    ->     0
+(-1/3) ** (-0)     ->     1
+(-1/3) *  (-0)     ->     0
+(-1/3) %  (-0)     ->     NaN
+(-1/3) +  (-0)     ->     -0.3333333333333333
+(-1/3) -  (-0)     ->     -0.3333333333333333
+(-1/3) /  (-0)     ->     Infinity
+(-1/3)<<  (-0)     ->     0
+(-1/3)>>  (-0)     ->     0
+(-1/3)>>> (-0)     ->     0
+(-1/3) &  (-0)     ->     0
+(-1/3) ^  (-0)     ->     0
+(-1/3) |  (-0)     ->     0
+(-1/3) **7    ->     -0.00045724737082761756
+(-1/3) * 7    ->     -2.333333333333333
+(-1/3) % 7    ->     -0.3333333333333333
+(-1/3) + 7    ->     6.666666666666667
+(-1/3) - 7    ->     -7.333333333333333
+(-1/3) / 7    ->     -0.047619047619047616
+(-1/3)<< 7    ->     0
+(-1/3)>> 7    ->     0
+(-1/3)>>>7    ->     0
+(-1/3) & 7    ->     0
+(-1/3) ^ 7    ->     7
+(-1/3) | 7    ->     7
+(-1/3) ** (-7)     ->     -2187.000000000001
+(-1/3) *  (-7)     ->     2.333333333333333
+(-1/3) %  (-7)     ->     -0.3333333333333333
+(-1/3) +  (-7)     ->     -7.333333333333333
+(-1/3) -  (-7)     ->     6.666666666666667
+(-1/3) /  (-7)     ->     0.047619047619047616
+(-1/3)<<  (-7)     ->     0
+(-1/3)>>  (-7)     ->     0
+(-1/3)>>> (-7)     ->     0
+(-1/3) &  (-7)     ->     0
+(-1/3) ^  (-7)     ->     -7
+(-1/3) |  (-7)     ->     -7
+(-1/3) **1    ->     -0.3333333333333333
+(-1/3) * 1    ->     -0.3333333333333333
+(-1/3) % 1    ->     -0.3333333333333333
+(-1/3) + 1    ->     0.6666666666666667
+(-1/3) - 1    ->     -1.3333333333333333
+(-1/3) / 1    ->     -0.3333333333333333
+(-1/3)<< 1    ->     0
+(-1/3)>> 1    ->     0
+(-1/3)>>>1    ->     0
+(-1/3) & 1    ->     0
+(-1/3) ^ 1    ->     1
+(-1/3) | 1    ->     1
+(-1/3) ** (-1)     ->     -3
+(-1/3) *  (-1)     ->     0.3333333333333333
+(-1/3) %  (-1)     ->     -0.3333333333333333
+(-1/3) +  (-1)     ->     -1.3333333333333333
+(-1/3) -  (-1)     ->     0.6666666666666667
+(-1/3) /  (-1)     ->     0.3333333333333333
+(-1/3)<<  (-1)     ->     0
+(-1/3)>>  (-1)     ->     0
+(-1/3)>>> (-1)     ->     0
+(-1/3) &  (-1)     ->     0
+(-1/3) ^  (-1)     ->     -1
+(-1/3) |  (-1)     ->     -1
+(-1/3) **(1/3)    ->     NaN
+(-1/3) * (1/3)    ->     -0.1111111111111111
+(-1/3) % (1/3)    ->     -0
+(-1/3) + (1/3)    ->     0
+(-1/3) - (1/3)    ->     -0.6666666666666666
+(-1/3) / (1/3)    ->     -1
+(-1/3)<< (1/3)    ->     0
+(-1/3)>> (1/3)    ->     0
+(-1/3)>>>(1/3)    ->     0
+(-1/3) & (1/3)    ->     0
+(-1/3) ^ (1/3)    ->     0
+(-1/3) | (1/3)    ->     0
+(-1/3) **(-1/3)    ->     NaN
+(-1/3) * (-1/3)    ->     0.1111111111111111
+(-1/3) % (-1/3)    ->     -0
+(-1/3) + (-1/3)    ->     -0.6666666666666666
+(-1/3) - (-1/3)    ->     0
+(-1/3) / (-1/3)    ->     1
+(-1/3)<< (-1/3)    ->     0
+(-1/3)>> (-1/3)    ->     0
+(-1/3)>>>(-1/3)    ->     0
+(-1/3) & (-1/3)    ->     0
+(-1/3) ^ (-1/3)    ->     0
+(-1/3) | (-1/3)    ->     0
+(-1/3) **undefined    ->     NaN
+(-1/3) * undefined    ->     NaN
+(-1/3) % undefined    ->     NaN
+(-1/3) + undefined    ->     NaN
+(-1/3) - undefined    ->     NaN
+(-1/3) / undefined    ->     NaN
+(-1/3)<< undefined    ->     0
+(-1/3)>> undefined    ->     0
+(-1/3)>>>undefined    ->     0
+(-1/3) & undefined    ->     0
+(-1/3) ^ undefined    ->     0
+(-1/3) | undefined    ->     0
+(-1/3) **function () {}    ->     NaN
+(-1/3) * function () {}    ->     NaN
+(-1/3) % function () {}    ->     NaN
+(-1/3) + function () {}    ->     -0.3333333333333333function () {}
+(-1/3) - function () {}    ->     NaN
+(-1/3) / function () {}    ->     NaN
+(-1/3)<< function () {}    ->     0
+(-1/3)>> function () {}    ->     0
+(-1/3)>>>function () {}    ->     0
+(-1/3) & function () {}    ->     0
+(-1/3) ^ function () {}    ->     0
+(-1/3) | function () {}    ->     0
+(-1/3) **{}    ->     NaN
+(-1/3) * {}    ->     NaN
+(-1/3) % {}    ->     NaN
+(-1/3) + {}    ->     -0.3333333333333333[object Object]
+(-1/3) - {}    ->     NaN
+(-1/3) / {}    ->     NaN
+(-1/3)<< {}    ->     0
+(-1/3)>> {}    ->     0
+(-1/3)>>>{}    ->     0
+(-1/3) & {}    ->     0
+(-1/3) ^ {}    ->     0
+(-1/3) | {}    ->     0
+(-1/3) **{a: 1}    ->     NaN
+(-1/3) * {a: 1}    ->     NaN
+(-1/3) % {a: 1}    ->     NaN
+(-1/3) + {a: 1}    ->     -0.3333333333333333[object Object]
+(-1/3) - {a: 1}    ->     NaN
+(-1/3) / {a: 1}    ->     NaN
+(-1/3)<< {a: 1}    ->     0
+(-1/3)>> {a: 1}    ->     0
+(-1/3)>>>{a: 1}    ->     0
+(-1/3) & {a: 1}    ->     0
+(-1/3) ^ {a: 1}    ->     0
+(-1/3) | {a: 1}    ->     0
+(-1/3) **""    ->     1
+(-1/3) * ""    ->     -0
+(-1/3) % ""    ->     NaN
+(-1/3) + ""    ->     -0.3333333333333333
+(-1/3) - ""    ->     -0.3333333333333333
+(-1/3) / ""    ->     -Infinity
+(-1/3)<< ""    ->     0
+(-1/3)>> ""    ->     0
+(-1/3)>>>""    ->     0
+(-1/3) & ""    ->     0
+(-1/3) ^ ""    ->     0
+(-1/3) | ""    ->     0
+(-1/3) **"5"    ->     -0.004115226337448558
+(-1/3) * "5"    ->     -1.6666666666666665
+(-1/3) % "5"    ->     -0.3333333333333333
+(-1/3) + "5"    ->     -0.33333333333333335
+(-1/3) - "5"    ->     -5.333333333333333
+(-1/3) / "5"    ->     -0.06666666666666667
+(-1/3)<< "5"    ->     0
+(-1/3)>> "5"    ->     0
+(-1/3)>>>"5"    ->     0
+(-1/3) & "5"    ->     0
+(-1/3) ^ "5"    ->     5
+(-1/3) | "5"    ->     5
+(-1/3) **"5 5"    ->     NaN
+(-1/3) * "5 5"    ->     NaN
+(-1/3) % "5 5"    ->     NaN
+(-1/3) + "5 5"    ->     -0.33333333333333335 5
+(-1/3) - "5 5"    ->     NaN
+(-1/3) / "5 5"    ->     NaN
+(-1/3)<< "5 5"    ->     0
+(-1/3)>> "5 5"    ->     0
+(-1/3)>>>"5 5"    ->     0
+(-1/3) & "5 5"    ->     0
+(-1/3) ^ "5 5"    ->     0
+(-1/3) | "5 5"    ->     0
+(-1/3) **"5 a"    ->     NaN
+(-1/3) * "5 a"    ->     NaN
+(-1/3) % "5 a"    ->     NaN
+(-1/3) + "5 a"    ->     -0.33333333333333335 a
+(-1/3) - "5 a"    ->     NaN
+(-1/3) / "5 a"    ->     NaN
+(-1/3)<< "5 a"    ->     0
+(-1/3)>> "5 a"    ->     0
+(-1/3)>>>"5 a"    ->     0
+(-1/3) & "5 a"    ->     0
+(-1/3) ^ "5 a"    ->     0
+(-1/3) | "5 a"    ->     0
+undefined **true    ->     NaN
+undefined * true    ->     NaN
+undefined % true    ->     NaN
+undefined + true    ->     NaN
+undefined - true    ->     NaN
+undefined / true    ->     NaN
+undefined<< true    ->     0
+undefined>> true    ->     0
+undefined>>>true    ->     0
+undefined & true    ->     0
+undefined ^ true    ->     1
+undefined | true    ->     1
+undefined **false    ->     1
+undefined * false    ->     NaN
+undefined % false    ->     NaN
+undefined + false    ->     NaN
+undefined - false    ->     NaN
+undefined / false    ->     NaN
+undefined<< false    ->     0
+undefined>> false    ->     0
+undefined>>>false    ->     0
+undefined & false    ->     0
+undefined ^ false    ->     0
+undefined | false    ->     0
+undefined **null    ->     1
+undefined * null    ->     NaN
+undefined % null    ->     NaN
+undefined + null    ->     NaN
+undefined - null    ->     NaN
+undefined / null    ->     NaN
+undefined<< null    ->     0
+undefined>> null    ->     0
+undefined>>>null    ->     0
+undefined & null    ->     0
+undefined ^ null    ->     0
+undefined | null    ->     0
+undefined **0    ->     1
+undefined * 0    ->     NaN
+undefined % 0    ->     NaN
+undefined + 0    ->     NaN
+undefined - 0    ->     NaN
+undefined / 0    ->     NaN
+undefined<< 0    ->     0
+undefined>> 0    ->     0
+undefined>>>0    ->     0
+undefined & 0    ->     0
+undefined ^ 0    ->     0
+undefined | 0    ->     0
+undefined ** (-0)     ->     1
+undefined *  (-0)     ->     NaN
+undefined %  (-0)     ->     NaN
+undefined +  (-0)     ->     NaN
+undefined -  (-0)     ->     NaN
+undefined /  (-0)     ->     NaN
+undefined<<  (-0)     ->     0
+undefined>>  (-0)     ->     0
+undefined>>> (-0)     ->     0
+undefined &  (-0)     ->     0
+undefined ^  (-0)     ->     0
+undefined |  (-0)     ->     0
+undefined **7    ->     NaN
+undefined * 7    ->     NaN
+undefined % 7    ->     NaN
+undefined + 7    ->     NaN
+undefined - 7    ->     NaN
+undefined / 7    ->     NaN
+undefined<< 7    ->     0
+undefined>> 7    ->     0
+undefined>>>7    ->     0
+undefined & 7    ->     0
+undefined ^ 7    ->     7
+undefined | 7    ->     7
+undefined ** (-7)     ->     NaN
+undefined *  (-7)     ->     NaN
+undefined %  (-7)     ->     NaN
+undefined +  (-7)     ->     NaN
+undefined -  (-7)     ->     NaN
+undefined /  (-7)     ->     NaN
+undefined<<  (-7)     ->     0
+undefined>>  (-7)     ->     0
+undefined>>> (-7)     ->     0
+undefined &  (-7)     ->     0
+undefined ^  (-7)     ->     -7
+undefined |  (-7)     ->     -7
+undefined **1    ->     NaN
+undefined * 1    ->     NaN
+undefined % 1    ->     NaN
+undefined + 1    ->     NaN
+undefined - 1    ->     NaN
+undefined / 1    ->     NaN
+undefined<< 1    ->     0
+undefined>> 1    ->     0
+undefined>>>1    ->     0
+undefined & 1    ->     0
+undefined ^ 1    ->     1
+undefined | 1    ->     1
+undefined ** (-1)     ->     NaN
+undefined *  (-1)     ->     NaN
+undefined %  (-1)     ->     NaN
+undefined +  (-1)     ->     NaN
+undefined -  (-1)     ->     NaN
+undefined /  (-1)     ->     NaN
+undefined<<  (-1)     ->     0
+undefined>>  (-1)     ->     0
+undefined>>> (-1)     ->     0
+undefined &  (-1)     ->     0
+undefined ^  (-1)     ->     -1
+undefined |  (-1)     ->     -1
+undefined **(1/3)    ->     NaN
+undefined * (1/3)    ->     NaN
+undefined % (1/3)    ->     NaN
+undefined + (1/3)    ->     NaN
+undefined - (1/3)    ->     NaN
+undefined / (1/3)    ->     NaN
+undefined<< (1/3)    ->     0
+undefined>> (1/3)    ->     0
+undefined>>>(1/3)    ->     0
+undefined & (1/3)    ->     0
+undefined ^ (1/3)    ->     0
+undefined | (1/3)    ->     0
+undefined **(-1/3)    ->     NaN
+undefined * (-1/3)    ->     NaN
+undefined % (-1/3)    ->     NaN
+undefined + (-1/3)    ->     NaN
+undefined - (-1/3)    ->     NaN
+undefined / (-1/3)    ->     NaN
+undefined<< (-1/3)    ->     0
+undefined>> (-1/3)    ->     0
+undefined>>>(-1/3)    ->     0
+undefined & (-1/3)    ->     0
+undefined ^ (-1/3)    ->     0
+undefined | (-1/3)    ->     0
+undefined **undefined    ->     NaN
+undefined * undefined    ->     NaN
+undefined % undefined    ->     NaN
+undefined + undefined    ->     NaN
+undefined - undefined    ->     NaN
+undefined / undefined    ->     NaN
+undefined<< undefined    ->     0
+undefined>> undefined    ->     0
+undefined>>>undefined    ->     0
+undefined & undefined    ->     0
+undefined ^ undefined    ->     0
+undefined | undefined    ->     0
+undefined **function () {}    ->     NaN
+undefined * function () {}    ->     NaN
+undefined % function () {}    ->     NaN
+undefined + function () {}    ->     undefinedfunction () {}
+undefined - function () {}    ->     NaN
+undefined / function () {}    ->     NaN
+undefined<< function () {}    ->     0
+undefined>> function () {}    ->     0
+undefined>>>function () {}    ->     0
+undefined & function () {}    ->     0
+undefined ^ function () {}    ->     0
+undefined | function () {}    ->     0
+undefined **{}    ->     NaN
+undefined * {}    ->     NaN
+undefined % {}    ->     NaN
+undefined + {}    ->     undefined[object Object]
+undefined - {}    ->     NaN
+undefined / {}    ->     NaN
+undefined<< {}    ->     0
+undefined>> {}    ->     0
+undefined>>>{}    ->     0
+undefined & {}    ->     0
+undefined ^ {}    ->     0
+undefined | {}    ->     0
+undefined **{a: 1}    ->     NaN
+undefined * {a: 1}    ->     NaN
+undefined % {a: 1}    ->     NaN
+undefined + {a: 1}    ->     undefined[object Object]
+undefined - {a: 1}    ->     NaN
+undefined / {a: 1}    ->     NaN
+undefined<< {a: 1}    ->     0
+undefined>> {a: 1}    ->     0
+undefined>>>{a: 1}    ->     0
+undefined & {a: 1}    ->     0
+undefined ^ {a: 1}    ->     0
+undefined | {a: 1}    ->     0
+undefined **""    ->     1
+undefined * ""    ->     NaN
+undefined % ""    ->     NaN
+undefined + ""    ->     undefined
+undefined - ""    ->     NaN
+undefined / ""    ->     NaN
+undefined<< ""    ->     0
+undefined>> ""    ->     0
+undefined>>>""    ->     0
+undefined & ""    ->     0
+undefined ^ ""    ->     0
+undefined | ""    ->     0
+undefined **"5"    ->     NaN
+undefined * "5"    ->     NaN
+undefined % "5"    ->     NaN
+undefined + "5"    ->     undefined5
+undefined - "5"    ->     NaN
+undefined / "5"    ->     NaN
+undefined<< "5"    ->     0
+undefined>> "5"    ->     0
+undefined>>>"5"    ->     0
+undefined & "5"    ->     0
+undefined ^ "5"    ->     5
+undefined | "5"    ->     5
+undefined **"5 5"    ->     NaN
+undefined * "5 5"    ->     NaN
+undefined % "5 5"    ->     NaN
+undefined + "5 5"    ->     undefined5 5
+undefined - "5 5"    ->     NaN
+undefined / "5 5"    ->     NaN
+undefined<< "5 5"    ->     0
+undefined>> "5 5"    ->     0
+undefined>>>"5 5"    ->     0
+undefined & "5 5"    ->     0
+undefined ^ "5 5"    ->     0
+undefined | "5 5"    ->     0
+undefined **"5 a"    ->     NaN
+undefined * "5 a"    ->     NaN
+undefined % "5 a"    ->     NaN
+undefined + "5 a"    ->     undefined5 a
+undefined - "5 a"    ->     NaN
+undefined / "5 a"    ->     NaN
+undefined<< "5 a"    ->     0
+undefined>> "5 a"    ->     0
+undefined>>>"5 a"    ->     0
+undefined & "5 a"    ->     0
+undefined ^ "5 a"    ->     0
+undefined | "5 a"    ->     0
+function () {} **true    ->     NaN
+function () {} * true    ->     NaN
+function () {} % true    ->     NaN
+function () {} + true    ->     function () {}true
+function () {} - true    ->     NaN
+function () {} / true    ->     NaN
+function () {}<< true    ->     0
+function () {}>> true    ->     0
+function () {}>>>true    ->     0
+function () {} & true    ->     0
+function () {} ^ true    ->     1
+function () {} | true    ->     1
+function () {} **false    ->     1
+function () {} * false    ->     NaN
+function () {} % false    ->     NaN
+function () {} + false    ->     function () {}false
+function () {} - false    ->     NaN
+function () {} / false    ->     NaN
+function () {}<< false    ->     0
+function () {}>> false    ->     0
+function () {}>>>false    ->     0
+function () {} & false    ->     0
+function () {} ^ false    ->     0
+function () {} | false    ->     0
+function () {} **null    ->     1
+function () {} * null    ->     NaN
+function () {} % null    ->     NaN
+function () {} + null    ->     function () {}null
+function () {} - null    ->     NaN
+function () {} / null    ->     NaN
+function () {}<< null    ->     0
+function () {}>> null    ->     0
+function () {}>>>null    ->     0
+function () {} & null    ->     0
+function () {} ^ null    ->     0
+function () {} | null    ->     0
+function () {} **0    ->     1
+function () {} * 0    ->     NaN
+function () {} % 0    ->     NaN
+function () {} + 0    ->     function () {}0
+function () {} - 0    ->     NaN
+function () {} / 0    ->     NaN
+function () {}<< 0    ->     0
+function () {}>> 0    ->     0
+function () {}>>>0    ->     0
+function () {} & 0    ->     0
+function () {} ^ 0    ->     0
+function () {} | 0    ->     0
+function () {} ** (-0)     ->     1
+function () {} *  (-0)     ->     NaN
+function () {} %  (-0)     ->     NaN
+function () {} +  (-0)     ->     function () {}0
+function () {} -  (-0)     ->     NaN
+function () {} /  (-0)     ->     NaN
+function () {}<<  (-0)     ->     0
+function () {}>>  (-0)     ->     0
+function () {}>>> (-0)     ->     0
+function () {} &  (-0)     ->     0
+function () {} ^  (-0)     ->     0
+function () {} |  (-0)     ->     0
+function () {} **7    ->     NaN
+function () {} * 7    ->     NaN
+function () {} % 7    ->     NaN
+function () {} + 7    ->     function () {}7
+function () {} - 7    ->     NaN
+function () {} / 7    ->     NaN
+function () {}<< 7    ->     0
+function () {}>> 7    ->     0
+function () {}>>>7    ->     0
+function () {} & 7    ->     0
+function () {} ^ 7    ->     7
+function () {} | 7    ->     7
+function () {} ** (-7)     ->     NaN
+function () {} *  (-7)     ->     NaN
+function () {} %  (-7)     ->     NaN
+function () {} +  (-7)     ->     function () {}-7
+function () {} -  (-7)     ->     NaN
+function () {} /  (-7)     ->     NaN
+function () {}<<  (-7)     ->     0
+function () {}>>  (-7)     ->     0
+function () {}>>> (-7)     ->     0
+function () {} &  (-7)     ->     0
+function () {} ^  (-7)     ->     -7
+function () {} |  (-7)     ->     -7
+function () {} **1    ->     NaN
+function () {} * 1    ->     NaN
+function () {} % 1    ->     NaN
+function () {} + 1    ->     function () {}1
+function () {} - 1    ->     NaN
+function () {} / 1    ->     NaN
+function () {}<< 1    ->     0
+function () {}>> 1    ->     0
+function () {}>>>1    ->     0
+function () {} & 1    ->     0
+function () {} ^ 1    ->     1
+function () {} | 1    ->     1
+function () {} ** (-1)     ->     NaN
+function () {} *  (-1)     ->     NaN
+function () {} %  (-1)     ->     NaN
+function () {} +  (-1)     ->     function () {}-1
+function () {} -  (-1)     ->     NaN
+function () {} /  (-1)     ->     NaN
+function () {}<<  (-1)     ->     0
+function () {}>>  (-1)     ->     0
+function () {}>>> (-1)     ->     0
+function () {} &  (-1)     ->     0
+function () {} ^  (-1)     ->     -1
+function () {} |  (-1)     ->     -1
+function () {} **(1/3)    ->     NaN
+function () {} * (1/3)    ->     NaN
+function () {} % (1/3)    ->     NaN
+function () {} + (1/3)    ->     function () {}0.3333333333333333
+function () {} - (1/3)    ->     NaN
+function () {} / (1/3)    ->     NaN
+function () {}<< (1/3)    ->     0
+function () {}>> (1/3)    ->     0
+function () {}>>>(1/3)    ->     0
+function () {} & (1/3)    ->     0
+function () {} ^ (1/3)    ->     0
+function () {} | (1/3)    ->     0
+function () {} **(-1/3)    ->     NaN
+function () {} * (-1/3)    ->     NaN
+function () {} % (-1/3)    ->     NaN
+function () {} + (-1/3)    ->     function () {}-0.3333333333333333
+function () {} - (-1/3)    ->     NaN
+function () {} / (-1/3)    ->     NaN
+function () {}<< (-1/3)    ->     0
+function () {}>> (-1/3)    ->     0
+function () {}>>>(-1/3)    ->     0
+function () {} & (-1/3)    ->     0
+function () {} ^ (-1/3)    ->     0
+function () {} | (-1/3)    ->     0
+function () {} **undefined    ->     NaN
+function () {} * undefined    ->     NaN
+function () {} % undefined    ->     NaN
+function () {} + undefined    ->     function () {}undefined
+function () {} - undefined    ->     NaN
+function () {} / undefined    ->     NaN
+function () {}<< undefined    ->     0
+function () {}>> undefined    ->     0
+function () {}>>>undefined    ->     0
+function () {} & undefined    ->     0
+function () {} ^ undefined    ->     0
+function () {} | undefined    ->     0
+function () {} **function () {}    ->     NaN
+function () {} * function () {}    ->     NaN
+function () {} % function () {}    ->     NaN
+function () {} + function () {}    ->     function () {}function () {}
+function () {} - function () {}    ->     NaN
+function () {} / function () {}    ->     NaN
+function () {}<< function () {}    ->     0
+function () {}>> function () {}    ->     0
+function () {}>>>function () {}    ->     0
+function () {} & function () {}    ->     0
+function () {} ^ function () {}    ->     0
+function () {} | function () {}    ->     0
+function () {} **{}    ->     NaN
+function () {} * {}    ->     NaN
+function () {} % {}    ->     NaN
+function () {} + {}    ->     function () {}[object Object]
+function () {} - {}    ->     NaN
+function () {} / {}    ->     NaN
+function () {}<< {}    ->     0
+function () {}>> {}    ->     0
+function () {}>>>{}    ->     0
+function () {} & {}    ->     0
+function () {} ^ {}    ->     0
+function () {} | {}    ->     0
+function () {} **{a: 1}    ->     NaN
+function () {} * {a: 1}    ->     NaN
+function () {} % {a: 1}    ->     NaN
+function () {} + {a: 1}    ->     function () {}[object Object]
+function () {} - {a: 1}    ->     NaN
+function () {} / {a: 1}    ->     NaN
+function () {}<< {a: 1}    ->     0
+function () {}>> {a: 1}    ->     0
+function () {}>>>{a: 1}    ->     0
+function () {} & {a: 1}    ->     0
+function () {} ^ {a: 1}    ->     0
+function () {} | {a: 1}    ->     0
+function () {} **""    ->     1
+function () {} * ""    ->     NaN
+function () {} % ""    ->     NaN
+function () {} + ""    ->     function () {}
+function () {} - ""    ->     NaN
+function () {} / ""    ->     NaN
+function () {}<< ""    ->     0
+function () {}>> ""    ->     0
+function () {}>>>""    ->     0
+function () {} & ""    ->     0
+function () {} ^ ""    ->     0
+function () {} | ""    ->     0
+function () {} **"5"    ->     NaN
+function () {} * "5"    ->     NaN
+function () {} % "5"    ->     NaN
+function () {} + "5"    ->     function () {}5
+function () {} - "5"    ->     NaN
+function () {} / "5"    ->     NaN
+function () {}<< "5"    ->     0
+function () {}>> "5"    ->     0
+function () {}>>>"5"    ->     0
+function () {} & "5"    ->     0
+function () {} ^ "5"    ->     5
+function () {} | "5"    ->     5
+function () {} **"5 5"    ->     NaN
+function () {} * "5 5"    ->     NaN
+function () {} % "5 5"    ->     NaN
+function () {} + "5 5"    ->     function () {}5 5
+function () {} - "5 5"    ->     NaN
+function () {} / "5 5"    ->     NaN
+function () {}<< "5 5"    ->     0
+function () {}>> "5 5"    ->     0
+function () {}>>>"5 5"    ->     0
+function () {} & "5 5"    ->     0
+function () {} ^ "5 5"    ->     0
+function () {} | "5 5"    ->     0
+function () {} **"5 a"    ->     NaN
+function () {} * "5 a"    ->     NaN
+function () {} % "5 a"    ->     NaN
+function () {} + "5 a"    ->     function () {}5 a
+function () {} - "5 a"    ->     NaN
+function () {} / "5 a"    ->     NaN
+function () {}<< "5 a"    ->     0
+function () {}>> "5 a"    ->     0
+function () {}>>>"5 a"    ->     0
+function () {} & "5 a"    ->     0
+function () {} ^ "5 a"    ->     0
+function () {} | "5 a"    ->     0
+{} **true    ->     NaN
+{} * true    ->     NaN
+{} % true    ->     NaN
+{} + true    ->     [object Object]true
+{} - true    ->     NaN
+{} / true    ->     NaN
+{}<< true    ->     0
+{}>> true    ->     0
+{}>>>true    ->     0
+{} & true    ->     0
+{} ^ true    ->     1
+{} | true    ->     1
+{} **false    ->     1
+{} * false    ->     NaN
+{} % false    ->     NaN
+{} + false    ->     [object Object]false
+{} - false    ->     NaN
+{} / false    ->     NaN
+{}<< false    ->     0
+{}>> false    ->     0
+{}>>>false    ->     0
+{} & false    ->     0
+{} ^ false    ->     0
+{} | false    ->     0
+{} **null    ->     1
+{} * null    ->     NaN
+{} % null    ->     NaN
+{} + null    ->     [object Object]null
+{} - null    ->     NaN
+{} / null    ->     NaN
+{}<< null    ->     0
+{}>> null    ->     0
+{}>>>null    ->     0
+{} & null    ->     0
+{} ^ null    ->     0
+{} | null    ->     0
+{} **0    ->     1
+{} * 0    ->     NaN
+{} % 0    ->     NaN
+{} + 0    ->     [object Object]0
+{} - 0    ->     NaN
+{} / 0    ->     NaN
+{}<< 0    ->     0
+{}>> 0    ->     0
+{}>>>0    ->     0
+{} & 0    ->     0
+{} ^ 0    ->     0
+{} | 0    ->     0
+{} ** (-0)     ->     1
+{} *  (-0)     ->     NaN
+{} %  (-0)     ->     NaN
+{} +  (-0)     ->     [object Object]0
+{} -  (-0)     ->     NaN
+{} /  (-0)     ->     NaN
+{}<<  (-0)     ->     0
+{}>>  (-0)     ->     0
+{}>>> (-0)     ->     0
+{} &  (-0)     ->     0
+{} ^  (-0)     ->     0
+{} |  (-0)     ->     0
+{} **7    ->     NaN
+{} * 7    ->     NaN
+{} % 7    ->     NaN
+{} + 7    ->     [object Object]7
+{} - 7    ->     NaN
+{} / 7    ->     NaN
+{}<< 7    ->     0
+{}>> 7    ->     0
+{}>>>7    ->     0
+{} & 7    ->     0
+{} ^ 7    ->     7
+{} | 7    ->     7
+{} ** (-7)     ->     NaN
+{} *  (-7)     ->     NaN
+{} %  (-7)     ->     NaN
+{} +  (-7)     ->     [object Object]-7
+{} -  (-7)     ->     NaN
+{} /  (-7)     ->     NaN
+{}<<  (-7)     ->     0
+{}>>  (-7)     ->     0
+{}>>> (-7)     ->     0
+{} &  (-7)     ->     0
+{} ^  (-7)     ->     -7
+{} |  (-7)     ->     -7
+{} **1    ->     NaN
+{} * 1    ->     NaN
+{} % 1    ->     NaN
+{} + 1    ->     [object Object]1
+{} - 1    ->     NaN
+{} / 1    ->     NaN
+{}<< 1    ->     0
+{}>> 1    ->     0
+{}>>>1    ->     0
+{} & 1    ->     0
+{} ^ 1    ->     1
+{} | 1    ->     1
+{} ** (-1)     ->     NaN
+{} *  (-1)     ->     NaN
+{} %  (-1)     ->     NaN
+{} +  (-1)     ->     [object Object]-1
+{} -  (-1)     ->     NaN
+{} /  (-1)     ->     NaN
+{}<<  (-1)     ->     0
+{}>>  (-1)     ->     0
+{}>>> (-1)     ->     0
+{} &  (-1)     ->     0
+{} ^  (-1)     ->     -1
+{} |  (-1)     ->     -1
+{} **(1/3)    ->     NaN
+{} * (1/3)    ->     NaN
+{} % (1/3)    ->     NaN
+{} + (1/3)    ->     [object Object]0.3333333333333333
+{} - (1/3)    ->     NaN
+{} / (1/3)    ->     NaN
+{}<< (1/3)    ->     0
+{}>> (1/3)    ->     0
+{}>>>(1/3)    ->     0
+{} & (1/3)    ->     0
+{} ^ (1/3)    ->     0
+{} | (1/3)    ->     0
+{} **(-1/3)    ->     NaN
+{} * (-1/3)    ->     NaN
+{} % (-1/3)    ->     NaN
+{} + (-1/3)    ->     [object Object]-0.3333333333333333
+{} - (-1/3)    ->     NaN
+{} / (-1/3)    ->     NaN
+{}<< (-1/3)    ->     0
+{}>> (-1/3)    ->     0
+{}>>>(-1/3)    ->     0
+{} & (-1/3)    ->     0
+{} ^ (-1/3)    ->     0
+{} | (-1/3)    ->     0
+{} **undefined    ->     NaN
+{} * undefined    ->     NaN
+{} % undefined    ->     NaN
+{} + undefined    ->     [object Object]undefined
+{} - undefined    ->     NaN
+{} / undefined    ->     NaN
+{}<< undefined    ->     0
+{}>> undefined    ->     0
+{}>>>undefined    ->     0
+{} & undefined    ->     0
+{} ^ undefined    ->     0
+{} | undefined    ->     0
+{} **function () {}    ->     NaN
+{} * function () {}    ->     NaN
+{} % function () {}    ->     NaN
+{} + function () {}    ->     [object Object]function () {}
+{} - function () {}    ->     NaN
+{} / function () {}    ->     NaN
+{}<< function () {}    ->     0
+{}>> function () {}    ->     0
+{}>>>function () {}    ->     0
+{} & function () {}    ->     0
+{} ^ function () {}    ->     0
+{} | function () {}    ->     0
+{} **{}    ->     NaN
+{} * {}    ->     NaN
+{} % {}    ->     NaN
+{} + {}    ->     [object Object][object Object]
+{} - {}    ->     NaN
+{} / {}    ->     NaN
+{}<< {}    ->     0
+{}>> {}    ->     0
+{}>>>{}    ->     0
+{} & {}    ->     0
+{} ^ {}    ->     0
+{} | {}    ->     0
+{} **{a: 1}    ->     NaN
+{} * {a: 1}    ->     NaN
+{} % {a: 1}    ->     NaN
+{} + {a: 1}    ->     [object Object][object Object]
+{} - {a: 1}    ->     NaN
+{} / {a: 1}    ->     NaN
+{}<< {a: 1}    ->     0
+{}>> {a: 1}    ->     0
+{}>>>{a: 1}    ->     0
+{} & {a: 1}    ->     0
+{} ^ {a: 1}    ->     0
+{} | {a: 1}    ->     0
+{} **""    ->     1
+{} * ""    ->     NaN
+{} % ""    ->     NaN
+{} + ""    ->     [object Object]
+{} - ""    ->     NaN
+{} / ""    ->     NaN
+{}<< ""    ->     0
+{}>> ""    ->     0
+{}>>>""    ->     0
+{} & ""    ->     0
+{} ^ ""    ->     0
+{} | ""    ->     0
+{} **"5"    ->     NaN
+{} * "5"    ->     NaN
+{} % "5"    ->     NaN
+{} + "5"    ->     [object Object]5
+{} - "5"    ->     NaN
+{} / "5"    ->     NaN
+{}<< "5"    ->     0
+{}>> "5"    ->     0
+{}>>>"5"    ->     0
+{} & "5"    ->     0
+{} ^ "5"    ->     5
+{} | "5"    ->     5
+{} **"5 5"    ->     NaN
+{} * "5 5"    ->     NaN
+{} % "5 5"    ->     NaN
+{} + "5 5"    ->     [object Object]5 5
+{} - "5 5"    ->     NaN
+{} / "5 5"    ->     NaN
+{}<< "5 5"    ->     0
+{}>> "5 5"    ->     0
+{}>>>"5 5"    ->     0
+{} & "5 5"    ->     0
+{} ^ "5 5"    ->     0
+{} | "5 5"    ->     0
+{} **"5 a"    ->     NaN
+{} * "5 a"    ->     NaN
+{} % "5 a"    ->     NaN
+{} + "5 a"    ->     [object Object]5 a
+{} - "5 a"    ->     NaN
+{} / "5 a"    ->     NaN
+{}<< "5 a"    ->     0
+{}>> "5 a"    ->     0
+{}>>>"5 a"    ->     0
+{} & "5 a"    ->     0
+{} ^ "5 a"    ->     0
+{} | "5 a"    ->     0
+{a: 1} **true    ->     NaN
+{a: 1} * true    ->     NaN
+{a: 1} % true    ->     NaN
+{a: 1} + true    ->     [object Object]true
+{a: 1} - true    ->     NaN
+{a: 1} / true    ->     NaN
+{a: 1}<< true    ->     0
+{a: 1}>> true    ->     0
+{a: 1}>>>true    ->     0
+{a: 1} & true    ->     0
+{a: 1} ^ true    ->     1
+{a: 1} | true    ->     1
+{a: 1} **false    ->     1
+{a: 1} * false    ->     NaN
+{a: 1} % false    ->     NaN
+{a: 1} + false    ->     [object Object]false
+{a: 1} - false    ->     NaN
+{a: 1} / false    ->     NaN
+{a: 1}<< false    ->     0
+{a: 1}>> false    ->     0
+{a: 1}>>>false    ->     0
+{a: 1} & false    ->     0
+{a: 1} ^ false    ->     0
+{a: 1} | false    ->     0
+{a: 1} **null    ->     1
+{a: 1} * null    ->     NaN
+{a: 1} % null    ->     NaN
+{a: 1} + null    ->     [object Object]null
+{a: 1} - null    ->     NaN
+{a: 1} / null    ->     NaN
+{a: 1}<< null    ->     0
+{a: 1}>> null    ->     0
+{a: 1}>>>null    ->     0
+{a: 1} & null    ->     0
+{a: 1} ^ null    ->     0
+{a: 1} | null    ->     0
+{a: 1} **0    ->     1
+{a: 1} * 0    ->     NaN
+{a: 1} % 0    ->     NaN
+{a: 1} + 0    ->     [object Object]0
+{a: 1} - 0    ->     NaN
+{a: 1} / 0    ->     NaN
+{a: 1}<< 0    ->     0
+{a: 1}>> 0    ->     0
+{a: 1}>>>0    ->     0
+{a: 1} & 0    ->     0
+{a: 1} ^ 0    ->     0
+{a: 1} | 0    ->     0
+{a: 1} ** (-0)     ->     1
+{a: 1} *  (-0)     ->     NaN
+{a: 1} %  (-0)     ->     NaN
+{a: 1} +  (-0)     ->     [object Object]0
+{a: 1} -  (-0)     ->     NaN
+{a: 1} /  (-0)     ->     NaN
+{a: 1}<<  (-0)     ->     0
+{a: 1}>>  (-0)     ->     0
+{a: 1}>>> (-0)     ->     0
+{a: 1} &  (-0)     ->     0
+{a: 1} ^  (-0)     ->     0
+{a: 1} |  (-0)     ->     0
+{a: 1} **7    ->     NaN
+{a: 1} * 7    ->     NaN
+{a: 1} % 7    ->     NaN
+{a: 1} + 7    ->     [object Object]7
+{a: 1} - 7    ->     NaN
+{a: 1} / 7    ->     NaN
+{a: 1}<< 7    ->     0
+{a: 1}>> 7    ->     0
+{a: 1}>>>7    ->     0
+{a: 1} & 7    ->     0
+{a: 1} ^ 7    ->     7
+{a: 1} | 7    ->     7
+{a: 1} ** (-7)     ->     NaN
+{a: 1} *  (-7)     ->     NaN
+{a: 1} %  (-7)     ->     NaN
+{a: 1} +  (-7)     ->     [object Object]-7
+{a: 1} -  (-7)     ->     NaN
+{a: 1} /  (-7)     ->     NaN
+{a: 1}<<  (-7)     ->     0
+{a: 1}>>  (-7)     ->     0
+{a: 1}>>> (-7)     ->     0
+{a: 1} &  (-7)     ->     0
+{a: 1} ^  (-7)     ->     -7
+{a: 1} |  (-7)     ->     -7
+{a: 1} **1    ->     NaN
+{a: 1} * 1    ->     NaN
+{a: 1} % 1    ->     NaN
+{a: 1} + 1    ->     [object Object]1
+{a: 1} - 1    ->     NaN
+{a: 1} / 1    ->     NaN
+{a: 1}<< 1    ->     0
+{a: 1}>> 1    ->     0
+{a: 1}>>>1    ->     0
+{a: 1} & 1    ->     0
+{a: 1} ^ 1    ->     1
+{a: 1} | 1    ->     1
+{a: 1} ** (-1)     ->     NaN
+{a: 1} *  (-1)     ->     NaN
+{a: 1} %  (-1)     ->     NaN
+{a: 1} +  (-1)     ->     [object Object]-1
+{a: 1} -  (-1)     ->     NaN
+{a: 1} /  (-1)     ->     NaN
+{a: 1}<<  (-1)     ->     0
+{a: 1}>>  (-1)     ->     0
+{a: 1}>>> (-1)     ->     0
+{a: 1} &  (-1)     ->     0
+{a: 1} ^  (-1)     ->     -1
+{a: 1} |  (-1)     ->     -1
+{a: 1} **(1/3)    ->     NaN
+{a: 1} * (1/3)    ->     NaN
+{a: 1} % (1/3)    ->     NaN
+{a: 1} + (1/3)    ->     [object Object]0.3333333333333333
+{a: 1} - (1/3)    ->     NaN
+{a: 1} / (1/3)    ->     NaN
+{a: 1}<< (1/3)    ->     0
+{a: 1}>> (1/3)    ->     0
+{a: 1}>>>(1/3)    ->     0
+{a: 1} & (1/3)    ->     0
+{a: 1} ^ (1/3)    ->     0
+{a: 1} | (1/3)    ->     0
+{a: 1} **(-1/3)    ->     NaN
+{a: 1} * (-1/3)    ->     NaN
+{a: 1} % (-1/3)    ->     NaN
+{a: 1} + (-1/3)    ->     [object Object]-0.3333333333333333
+{a: 1} - (-1/3)    ->     NaN
+{a: 1} / (-1/3)    ->     NaN
+{a: 1}<< (-1/3)    ->     0
+{a: 1}>> (-1/3)    ->     0
+{a: 1}>>>(-1/3)    ->     0
+{a: 1} & (-1/3)    ->     0
+{a: 1} ^ (-1/3)    ->     0
+{a: 1} | (-1/3)    ->     0
+{a: 1} **undefined    ->     NaN
+{a: 1} * undefined    ->     NaN
+{a: 1} % undefined    ->     NaN
+{a: 1} + undefined    ->     [object Object]undefined
+{a: 1} - undefined    ->     NaN
+{a: 1} / undefined    ->     NaN
+{a: 1}<< undefined    ->     0
+{a: 1}>> undefined    ->     0
+{a: 1}>>>undefined    ->     0
+{a: 1} & undefined    ->     0
+{a: 1} ^ undefined    ->     0
+{a: 1} | undefined    ->     0
+{a: 1} **function () {}    ->     NaN
+{a: 1} * function () {}    ->     NaN
+{a: 1} % function () {}    ->     NaN
+{a: 1} + function () {}    ->     [object Object]function () {}
+{a: 1} - function () {}    ->     NaN
+{a: 1} / function () {}    ->     NaN
+{a: 1}<< function () {}    ->     0
+{a: 1}>> function () {}    ->     0
+{a: 1}>>>function () {}    ->     0
+{a: 1} & function () {}    ->     0
+{a: 1} ^ function () {}    ->     0
+{a: 1} | function () {}    ->     0
+{a: 1} **{}    ->     NaN
+{a: 1} * {}    ->     NaN
+{a: 1} % {}    ->     NaN
+{a: 1} + {}    ->     [object Object][object Object]
+{a: 1} - {}    ->     NaN
+{a: 1} / {}    ->     NaN
+{a: 1}<< {}    ->     0
+{a: 1}>> {}    ->     0
+{a: 1}>>>{}    ->     0
+{a: 1} & {}    ->     0
+{a: 1} ^ {}    ->     0
+{a: 1} | {}    ->     0
+{a: 1} **{a: 1}    ->     NaN
+{a: 1} * {a: 1}    ->     NaN
+{a: 1} % {a: 1}    ->     NaN
+{a: 1} + {a: 1}    ->     [object Object][object Object]
+{a: 1} - {a: 1}    ->     NaN
+{a: 1} / {a: 1}    ->     NaN
+{a: 1}<< {a: 1}    ->     0
+{a: 1}>> {a: 1}    ->     0
+{a: 1}>>>{a: 1}    ->     0
+{a: 1} & {a: 1}    ->     0
+{a: 1} ^ {a: 1}    ->     0
+{a: 1} | {a: 1}    ->     0
+{a: 1} **""    ->     1
+{a: 1} * ""    ->     NaN
+{a: 1} % ""    ->     NaN
+{a: 1} + ""    ->     [object Object]
+{a: 1} - ""    ->     NaN
+{a: 1} / ""    ->     NaN
+{a: 1}<< ""    ->     0
+{a: 1}>> ""    ->     0
+{a: 1}>>>""    ->     0
+{a: 1} & ""    ->     0
+{a: 1} ^ ""    ->     0
+{a: 1} | ""    ->     0
+{a: 1} **"5"    ->     NaN
+{a: 1} * "5"    ->     NaN
+{a: 1} % "5"    ->     NaN
+{a: 1} + "5"    ->     [object Object]5
+{a: 1} - "5"    ->     NaN
+{a: 1} / "5"    ->     NaN
+{a: 1}<< "5"    ->     0
+{a: 1}>> "5"    ->     0
+{a: 1}>>>"5"    ->     0
+{a: 1} & "5"    ->     0
+{a: 1} ^ "5"    ->     5
+{a: 1} | "5"    ->     5
+{a: 1} **"5 5"    ->     NaN
+{a: 1} * "5 5"    ->     NaN
+{a: 1} % "5 5"    ->     NaN
+{a: 1} + "5 5"    ->     [object Object]5 5
+{a: 1} - "5 5"    ->     NaN
+{a: 1} / "5 5"    ->     NaN
+{a: 1}<< "5 5"    ->     0
+{a: 1}>> "5 5"    ->     0
+{a: 1}>>>"5 5"    ->     0
+{a: 1} & "5 5"    ->     0
+{a: 1} ^ "5 5"    ->     0
+{a: 1} | "5 5"    ->     0
+{a: 1} **"5 a"    ->     NaN
+{a: 1} * "5 a"    ->     NaN
+{a: 1} % "5 a"    ->     NaN
+{a: 1} + "5 a"    ->     [object Object]5 a
+{a: 1} - "5 a"    ->     NaN
+{a: 1} / "5 a"    ->     NaN
+{a: 1}<< "5 a"    ->     0
+{a: 1}>> "5 a"    ->     0
+{a: 1}>>>"5 a"    ->     0
+{a: 1} & "5 a"    ->     0
+{a: 1} ^ "5 a"    ->     0
+{a: 1} | "5 a"    ->     0
+"" **true    ->     0
+"" * true    ->     0
+"" % true    ->     0
+"" + true    ->     true
+"" - true    ->     -1
+"" / true    ->     0
+""<< true    ->     0
+"">> true    ->     0
+"">>>true    ->     0
+"" & true    ->     0
+"" ^ true    ->     1
+"" | true    ->     1
+"" **false    ->     1
+"" * false    ->     0
+"" % false    ->     NaN
+"" + false    ->     false
+"" - false    ->     0
+"" / false    ->     NaN
+""<< false    ->     0
+"">> false    ->     0
+"">>>false    ->     0
+"" & false    ->     0
+"" ^ false    ->     0
+"" | false    ->     0
+"" **null    ->     1
+"" * null    ->     0
+"" % null    ->     NaN
+"" + null    ->     null
+"" - null    ->     0
+"" / null    ->     NaN
+""<< null    ->     0
+"">> null    ->     0
+"">>>null    ->     0
+"" & null    ->     0
+"" ^ null    ->     0
+"" | null    ->     0
+"" **0    ->     1
+"" * 0    ->     0
+"" % 0    ->     NaN
+"" + 0    ->     0
+"" - 0    ->     0
+"" / 0    ->     NaN
+""<< 0    ->     0
+"">> 0    ->     0
+"">>>0    ->     0
+"" & 0    ->     0
+"" ^ 0    ->     0
+"" | 0    ->     0
+"" ** (-0)     ->     1
+"" *  (-0)     ->     -0
+"" %  (-0)     ->     NaN
+"" +  (-0)     ->     0
+"" -  (-0)     ->     0
+"" /  (-0)     ->     NaN
+""<<  (-0)     ->     0
+"">>  (-0)     ->     0
+"">>> (-0)     ->     0
+"" &  (-0)     ->     0
+"" ^  (-0)     ->     0
+"" |  (-0)     ->     0
+"" **7    ->     0
+"" * 7    ->     0
+"" % 7    ->     0
+"" + 7    ->     7
+"" - 7    ->     -7
+"" / 7    ->     0
+""<< 7    ->     0
+"">> 7    ->     0
+"">>>7    ->     0
+"" & 7    ->     0
+"" ^ 7    ->     7
+"" | 7    ->     7
+"" ** (-7)     ->     Infinity
+"" *  (-7)     ->     -0
+"" %  (-7)     ->     0
+"" +  (-7)     ->     -7
+"" -  (-7)     ->     7
+"" /  (-7)     ->     -0
+""<<  (-7)     ->     0
+"">>  (-7)     ->     0
+"">>> (-7)     ->     0
+"" &  (-7)     ->     0
+"" ^  (-7)     ->     -7
+"" |  (-7)     ->     -7
+"" **1    ->     0
+"" * 1    ->     0
+"" % 1    ->     0
+"" + 1    ->     1
+"" - 1    ->     -1
+"" / 1    ->     0
+""<< 1    ->     0
+"">> 1    ->     0
+"">>>1    ->     0
+"" & 1    ->     0
+"" ^ 1    ->     1
+"" | 1    ->     1
+"" ** (-1)     ->     Infinity
+"" *  (-1)     ->     -0
+"" %  (-1)     ->     0
+"" +  (-1)     ->     -1
+"" -  (-1)     ->     1
+"" /  (-1)     ->     -0
+""<<  (-1)     ->     0
+"">>  (-1)     ->     0
+"">>> (-1)     ->     0
+"" &  (-1)     ->     0
+"" ^  (-1)     ->     -1
+"" |  (-1)     ->     -1
+"" **(1/3)    ->     0
+"" * (1/3)    ->     0
+"" % (1/3)    ->     0
+"" + (1/3)    ->     0.3333333333333333
+"" - (1/3)    ->     -0.3333333333333333
+"" / (1/3)    ->     0
+""<< (1/3)    ->     0
+"">> (1/3)    ->     0
+"">>>(1/3)    ->     0
+"" & (1/3)    ->     0
+"" ^ (1/3)    ->     0
+"" | (1/3)    ->     0
+"" **(-1/3)    ->     Infinity
+"" * (-1/3)    ->     -0
+"" % (-1/3)    ->     0
+"" + (-1/3)    ->     -0.3333333333333333
+"" - (-1/3)    ->     0.3333333333333333
+"" / (-1/3)    ->     -0
+""<< (-1/3)    ->     0
+"">> (-1/3)    ->     0
+"">>>(-1/3)    ->     0
+"" & (-1/3)    ->     0
+"" ^ (-1/3)    ->     0
+"" | (-1/3)    ->     0
+"" **undefined    ->     NaN
+"" * undefined    ->     NaN
+"" % undefined    ->     NaN
+"" + undefined    ->     undefined
+"" - undefined    ->     NaN
+"" / undefined    ->     NaN
+""<< undefined    ->     0
+"">> undefined    ->     0
+"">>>undefined    ->     0
+"" & undefined    ->     0
+"" ^ undefined    ->     0
+"" | undefined    ->     0
+"" **function () {}    ->     NaN
+"" * function () {}    ->     NaN
+"" % function () {}    ->     NaN
+"" + function () {}    ->     function () {}
+"" - function () {}    ->     NaN
+"" / function () {}    ->     NaN
+""<< function () {}    ->     0
+"">> function () {}    ->     0
+"">>>function () {}    ->     0
+"" & function () {}    ->     0
+"" ^ function () {}    ->     0
+"" | function () {}    ->     0
+"" **{}    ->     NaN
+"" * {}    ->     NaN
+"" % {}    ->     NaN
+"" + {}    ->     [object Object]
+"" - {}    ->     NaN
+"" / {}    ->     NaN
+""<< {}    ->     0
+"">> {}    ->     0
+"">>>{}    ->     0
+"" & {}    ->     0
+"" ^ {}    ->     0
+"" | {}    ->     0
+"" **{a: 1}    ->     NaN
+"" * {a: 1}    ->     NaN
+"" % {a: 1}    ->     NaN
+"" + {a: 1}    ->     [object Object]
+"" - {a: 1}    ->     NaN
+"" / {a: 1}    ->     NaN
+""<< {a: 1}    ->     0
+"">> {a: 1}    ->     0
+"">>>{a: 1}    ->     0
+"" & {a: 1}    ->     0
+"" ^ {a: 1}    ->     0
+"" | {a: 1}    ->     0
+"" **""    ->     1
+"" * ""    ->     0
+"" % ""    ->     NaN
+"" + ""    ->
+"" - ""    ->     0
+"" / ""    ->     NaN
+""<< ""    ->     0
+"">> ""    ->     0
+"">>>""    ->     0
+"" & ""    ->     0
+"" ^ ""    ->     0
+"" | ""    ->     0
+"" **"5"    ->     0
+"" * "5"    ->     0
+"" % "5"    ->     0
+"" + "5"    ->     5
+"" - "5"    ->     -5
+"" / "5"    ->     0
+""<< "5"    ->     0
+"">> "5"    ->     0
+"">>>"5"    ->     0
+"" & "5"    ->     0
+"" ^ "5"    ->     5
+"" | "5"    ->     5
+"" **"5 5"    ->     NaN
+"" * "5 5"    ->     NaN
+"" % "5 5"    ->     NaN
+"" + "5 5"    ->     5 5
+"" - "5 5"    ->     NaN
+"" / "5 5"    ->     NaN
+""<< "5 5"    ->     0
+"">> "5 5"    ->     0
+"">>>"5 5"    ->     0
+"" & "5 5"    ->     0
+"" ^ "5 5"    ->     0
+"" | "5 5"    ->     0
+"" **"5 a"    ->     NaN
+"" * "5 a"    ->     NaN
+"" % "5 a"    ->     NaN
+"" + "5 a"    ->     5 a
+"" - "5 a"    ->     NaN
+"" / "5 a"    ->     NaN
+""<< "5 a"    ->     0
+"">> "5 a"    ->     0
+"">>>"5 a"    ->     0
+"" & "5 a"    ->     0
+"" ^ "5 a"    ->     0
+"" | "5 a"    ->     0
+"5" **true    ->     5
+"5" * true    ->     5
+"5" % true    ->     0
+"5" + true    ->     5true
+"5" - true    ->     4
+"5" / true    ->     5
+"5"<< true    ->     10
+"5">> true    ->     2
+"5">>>true    ->     2
+"5" & true    ->     1
+"5" ^ true    ->     4
+"5" | true    ->     5
+"5" **false    ->     1
+"5" * false    ->     0
+"5" % false    ->     NaN
+"5" + false    ->     5false
+"5" - false    ->     5
+"5" / false    ->     Infinity
+"5"<< false    ->     5
+"5">> false    ->     5
+"5">>>false    ->     5
+"5" & false    ->     0
+"5" ^ false    ->     5
+"5" | false    ->     5
+"5" **null    ->     1
+"5" * null    ->     0
+"5" % null    ->     NaN
+"5" + null    ->     5null
+"5" - null    ->     5
+"5" / null    ->     Infinity
+"5"<< null    ->     5
+"5">> null    ->     5
+"5">>>null    ->     5
+"5" & null    ->     0
+"5" ^ null    ->     5
+"5" | null    ->     5
+"5" **0    ->     1
+"5" * 0    ->     0
+"5" % 0    ->     NaN
+"5" + 0    ->     50
+"5" - 0    ->     5
+"5" / 0    ->     Infinity
+"5"<< 0    ->     5
+"5">> 0    ->     5
+"5">>>0    ->     5
+"5" & 0    ->     0
+"5" ^ 0    ->     5
+"5" | 0    ->     5
+"5" ** (-0)     ->     1
+"5" *  (-0)     ->     -0
+"5" %  (-0)     ->     NaN
+"5" +  (-0)     ->     50
+"5" -  (-0)     ->     5
+"5" /  (-0)     ->     -Infinity
+"5"<<  (-0)     ->     5
+"5">>  (-0)     ->     5
+"5">>> (-0)     ->     5
+"5" &  (-0)     ->     0
+"5" ^  (-0)     ->     5
+"5" |  (-0)     ->     5
+"5" **7    ->     78125
+"5" * 7    ->     35
+"5" % 7    ->     5
+"5" + 7    ->     57
+"5" - 7    ->     -2
+"5" / 7    ->     0.7142857142857143
+"5"<< 7    ->     640
+"5">> 7    ->     0
+"5">>>7    ->     0
+"5" & 7    ->     5
+"5" ^ 7    ->     2
+"5" | 7    ->     7
+"5" ** (-7)     ->     0.0000128
+"5" *  (-7)     ->     -35
+"5" %  (-7)     ->     5
+"5" +  (-7)     ->     5-7
+"5" -  (-7)     ->     12
+"5" /  (-7)     ->     -0.7142857142857143
+"5"<<  (-7)     ->     167772160
+"5">>  (-7)     ->     0
+"5">>> (-7)     ->     0
+"5" &  (-7)     ->     1
+"5" ^  (-7)     ->     -4
+"5" |  (-7)     ->     -3
+"5" **1    ->     5
+"5" * 1    ->     5
+"5" % 1    ->     0
+"5" + 1    ->     51
+"5" - 1    ->     4
+"5" / 1    ->     5
+"5"<< 1    ->     10
+"5">> 1    ->     2
+"5">>>1    ->     2
+"5" & 1    ->     1
+"5" ^ 1    ->     4
+"5" | 1    ->     5
+"5" ** (-1)     ->     0.2
+"5" *  (-1)     ->     -5
+"5" %  (-1)     ->     0
+"5" +  (-1)     ->     5-1
+"5" -  (-1)     ->     6
+"5" /  (-1)     ->     -5
+"5"<<  (-1)     ->     -2147483648
+"5">>  (-1)     ->     0
+"5">>> (-1)     ->     0
+"5" &  (-1)     ->     5
+"5" ^  (-1)     ->     -6
+"5" |  (-1)     ->     -1
+"5" **(1/3)    ->     1.7099759466766968
+"5" * (1/3)    ->     1.6666666666666665
+"5" % (1/3)    ->     2.7755575615628914e-16
+"5" + (1/3)    ->     50.3333333333333333
+"5" - (1/3)    ->     4.666666666666667
+"5" / (1/3)    ->     15
+"5"<< (1/3)    ->     5
+"5">> (1/3)    ->     5
+"5">>>(1/3)    ->     5
+"5" & (1/3)    ->     0
+"5" ^ (1/3)    ->     5
+"5" | (1/3)    ->     5
+"5" **(-1/3)    ->     0.5848035476425733
+"5" * (-1/3)    ->     -1.6666666666666665
+"5" % (-1/3)    ->     2.7755575615628914e-16
+"5" + (-1/3)    ->     5-0.3333333333333333
+"5" - (-1/3)    ->     5.333333333333333
+"5" / (-1/3)    ->     -15
+"5"<< (-1/3)    ->     5
+"5">> (-1/3)    ->     5
+"5">>>(-1/3)    ->     5
+"5" & (-1/3)    ->     0
+"5" ^ (-1/3)    ->     5
+"5" | (-1/3)    ->     5
+"5" **undefined    ->     NaN
+"5" * undefined    ->     NaN
+"5" % undefined    ->     NaN
+"5" + undefined    ->     5undefined
+"5" - undefined    ->     NaN
+"5" / undefined    ->     NaN
+"5"<< undefined    ->     5
+"5">> undefined    ->     5
+"5">>>undefined    ->     5
+"5" & undefined    ->     0
+"5" ^ undefined    ->     5
+"5" | undefined    ->     5
+"5" **function () {}    ->     NaN
+"5" * function () {}    ->     NaN
+"5" % function () {}    ->     NaN
+"5" + function () {}    ->     5function () {}
+"5" - function () {}    ->     NaN
+"5" / function () {}    ->     NaN
+"5"<< function () {}    ->     5
+"5">> function () {}    ->     5
+"5">>>function () {}    ->     5
+"5" & function () {}    ->     0
+"5" ^ function () {}    ->     5
+"5" | function () {}    ->     5
+"5" **{}    ->     NaN
+"5" * {}    ->     NaN
+"5" % {}    ->     NaN
+"5" + {}    ->     5[object Object]
+"5" - {}    ->     NaN
+"5" / {}    ->     NaN
+"5"<< {}    ->     5
+"5">> {}    ->     5
+"5">>>{}    ->     5
+"5" & {}    ->     0
+"5" ^ {}    ->     5
+"5" | {}    ->     5
+"5" **{a: 1}    ->     NaN
+"5" * {a: 1}    ->     NaN
+"5" % {a: 1}    ->     NaN
+"5" + {a: 1}    ->     5[object Object]
+"5" - {a: 1}    ->     NaN
+"5" / {a: 1}    ->     NaN
+"5"<< {a: 1}    ->     5
+"5">> {a: 1}    ->     5
+"5">>>{a: 1}    ->     5
+"5" & {a: 1}    ->     0
+"5" ^ {a: 1}    ->     5
+"5" | {a: 1}    ->     5
+"5" **""    ->     1
+"5" * ""    ->     0
+"5" % ""    ->     NaN
+"5" + ""    ->     5
+"5" - ""    ->     5
+"5" / ""    ->     Infinity
+"5"<< ""    ->     5
+"5">> ""    ->     5
+"5">>>""    ->     5
+"5" & ""    ->     0
+"5" ^ ""    ->     5
+"5" | ""    ->     5
+"5" **"5"    ->     3125
+"5" * "5"    ->     25
+"5" % "5"    ->     0
+"5" + "5"    ->     55
+"5" - "5"    ->     0
+"5" / "5"    ->     1
+"5"<< "5"    ->     160
+"5">> "5"    ->     0
+"5">>>"5"    ->     0
+"5" & "5"    ->     5
+"5" ^ "5"    ->     0
+"5" | "5"    ->     5
+"5" **"5 5"    ->     NaN
+"5" * "5 5"    ->     NaN
+"5" % "5 5"    ->     NaN
+"5" + "5 5"    ->     55 5
+"5" - "5 5"    ->     NaN
+"5" / "5 5"    ->     NaN
+"5"<< "5 5"    ->     5
+"5">> "5 5"    ->     5
+"5">>>"5 5"    ->     5
+"5" & "5 5"    ->     0
+"5" ^ "5 5"    ->     5
+"5" | "5 5"    ->     5
+"5" **"5 a"    ->     NaN
+"5" * "5 a"    ->     NaN
+"5" % "5 a"    ->     NaN
+"5" + "5 a"    ->     55 a
+"5" - "5 a"    ->     NaN
+"5" / "5 a"    ->     NaN
+"5"<< "5 a"    ->     5
+"5">> "5 a"    ->     5
+"5">>>"5 a"    ->     5
+"5" & "5 a"    ->     0
+"5" ^ "5 a"    ->     5
+"5" | "5 a"    ->     5
+"5 5" **true    ->     NaN
+"5 5" * true    ->     NaN
+"5 5" % true    ->     NaN
+"5 5" + true    ->     5 5true
+"5 5" - true    ->     NaN
+"5 5" / true    ->     NaN
+"5 5"<< true    ->     0
+"5 5">> true    ->     0
+"5 5">>>true    ->     0
+"5 5" & true    ->     0
+"5 5" ^ true    ->     1
+"5 5" | true    ->     1
+"5 5" **false    ->     1
+"5 5" * false    ->     NaN
+"5 5" % false    ->     NaN
+"5 5" + false    ->     5 5false
+"5 5" - false    ->     NaN
+"5 5" / false    ->     NaN
+"5 5"<< false    ->     0
+"5 5">> false    ->     0
+"5 5">>>false    ->     0
+"5 5" & false    ->     0
+"5 5" ^ false    ->     0
+"5 5" | false    ->     0
+"5 5" **null    ->     1
+"5 5" * null    ->     NaN
+"5 5" % null    ->     NaN
+"5 5" + null    ->     5 5null
+"5 5" - null    ->     NaN
+"5 5" / null    ->     NaN
+"5 5"<< null    ->     0
+"5 5">> null    ->     0
+"5 5">>>null    ->     0
+"5 5" & null    ->     0
+"5 5" ^ null    ->     0
+"5 5" | null    ->     0
+"5 5" **0    ->     1
+"5 5" * 0    ->     NaN
+"5 5" % 0    ->     NaN
+"5 5" + 0    ->     5 50
+"5 5" - 0    ->     NaN
+"5 5" / 0    ->     NaN
+"5 5"<< 0    ->     0
+"5 5">> 0    ->     0
+"5 5">>>0    ->     0
+"5 5" & 0    ->     0
+"5 5" ^ 0    ->     0
+"5 5" | 0    ->     0
+"5 5" ** (-0)     ->     1
+"5 5" *  (-0)     ->     NaN
+"5 5" %  (-0)     ->     NaN
+"5 5" +  (-0)     ->     5 50
+"5 5" -  (-0)     ->     NaN
+"5 5" /  (-0)     ->     NaN
+"5 5"<<  (-0)     ->     0
+"5 5">>  (-0)     ->     0
+"5 5">>> (-0)     ->     0
+"5 5" &  (-0)     ->     0
+"5 5" ^  (-0)     ->     0
+"5 5" |  (-0)     ->     0
+"5 5" **7    ->     NaN
+"5 5" * 7    ->     NaN
+"5 5" % 7    ->     NaN
+"5 5" + 7    ->     5 57
+"5 5" - 7    ->     NaN
+"5 5" / 7    ->     NaN
+"5 5"<< 7    ->     0
+"5 5">> 7    ->     0
+"5 5">>>7    ->     0
+"5 5" & 7    ->     0
+"5 5" ^ 7    ->     7
+"5 5" | 7    ->     7
+"5 5" ** (-7)     ->     NaN
+"5 5" *  (-7)     ->     NaN
+"5 5" %  (-7)     ->     NaN
+"5 5" +  (-7)     ->     5 5-7
+"5 5" -  (-7)     ->     NaN
+"5 5" /  (-7)     ->     NaN
+"5 5"<<  (-7)     ->     0
+"5 5">>  (-7)     ->     0
+"5 5">>> (-7)     ->     0
+"5 5" &  (-7)     ->     0
+"5 5" ^  (-7)     ->     -7
+"5 5" |  (-7)     ->     -7
+"5 5" **1    ->     NaN
+"5 5" * 1    ->     NaN
+"5 5" % 1    ->     NaN
+"5 5" + 1    ->     5 51
+"5 5" - 1    ->     NaN
+"5 5" / 1    ->     NaN
+"5 5"<< 1    ->     0
+"5 5">> 1    ->     0
+"5 5">>>1    ->     0
+"5 5" & 1    ->     0
+"5 5" ^ 1    ->     1
+"5 5" | 1    ->     1
+"5 5" ** (-1)     ->     NaN
+"5 5" *  (-1)     ->     NaN
+"5 5" %  (-1)     ->     NaN
+"5 5" +  (-1)     ->     5 5-1
+"5 5" -  (-1)     ->     NaN
+"5 5" /  (-1)     ->     NaN
+"5 5"<<  (-1)     ->     0
+"5 5">>  (-1)     ->     0
+"5 5">>> (-1)     ->     0
+"5 5" &  (-1)     ->     0
+"5 5" ^  (-1)     ->     -1
+"5 5" |  (-1)     ->     -1
+"5 5" **(1/3)    ->     NaN
+"5 5" * (1/3)    ->     NaN
+"5 5" % (1/3)    ->     NaN
+"5 5" + (1/3)    ->     5 50.3333333333333333
+"5 5" - (1/3)    ->     NaN
+"5 5" / (1/3)    ->     NaN
+"5 5"<< (1/3)    ->     0
+"5 5">> (1/3)    ->     0
+"5 5">>>(1/3)    ->     0
+"5 5" & (1/3)    ->     0
+"5 5" ^ (1/3)    ->     0
+"5 5" | (1/3)    ->     0
+"5 5" **(-1/3)    ->     NaN
+"5 5" * (-1/3)    ->     NaN
+"5 5" % (-1/3)    ->     NaN
+"5 5" + (-1/3)    ->     5 5-0.3333333333333333
+"5 5" - (-1/3)    ->     NaN
+"5 5" / (-1/3)    ->     NaN
+"5 5"<< (-1/3)    ->     0
+"5 5">> (-1/3)    ->     0
+"5 5">>>(-1/3)    ->     0
+"5 5" & (-1/3)    ->     0
+"5 5" ^ (-1/3)    ->     0
+"5 5" | (-1/3)    ->     0
+"5 5" **undefined    ->     NaN
+"5 5" * undefined    ->     NaN
+"5 5" % undefined    ->     NaN
+"5 5" + undefined    ->     5 5undefined
+"5 5" - undefined    ->     NaN
+"5 5" / undefined    ->     NaN
+"5 5"<< undefined    ->     0
+"5 5">> undefined    ->     0
+"5 5">>>undefined    ->     0
+"5 5" & undefined    ->     0
+"5 5" ^ undefined    ->     0
+"5 5" | undefined    ->     0
+"5 5" **function () {}    ->     NaN
+"5 5" * function () {}    ->     NaN
+"5 5" % function () {}    ->     NaN
+"5 5" + function () {}    ->     5 5function () {}
+"5 5" - function () {}    ->     NaN
+"5 5" / function () {}    ->     NaN
+"5 5"<< function () {}    ->     0
+"5 5">> function () {}    ->     0
+"5 5">>>function () {}    ->     0
+"5 5" & function () {}    ->     0
+"5 5" ^ function () {}    ->     0
+"5 5" | function () {}    ->     0
+"5 5" **{}    ->     NaN
+"5 5" * {}    ->     NaN
+"5 5" % {}    ->     NaN
+"5 5" + {}    ->     5 5[object Object]
+"5 5" - {}    ->     NaN
+"5 5" / {}    ->     NaN
+"5 5"<< {}    ->     0
+"5 5">> {}    ->     0
+"5 5">>>{}    ->     0
+"5 5" & {}    ->     0
+"5 5" ^ {}    ->     0
+"5 5" | {}    ->     0
+"5 5" **{a: 1}    ->     NaN
+"5 5" * {a: 1}    ->     NaN
+"5 5" % {a: 1}    ->     NaN
+"5 5" + {a: 1}    ->     5 5[object Object]
+"5 5" - {a: 1}    ->     NaN
+"5 5" / {a: 1}    ->     NaN
+"5 5"<< {a: 1}    ->     0
+"5 5">> {a: 1}    ->     0
+"5 5">>>{a: 1}    ->     0
+"5 5" & {a: 1}    ->     0
+"5 5" ^ {a: 1}    ->     0
+"5 5" | {a: 1}    ->     0
+"5 5" **""    ->     1
+"5 5" * ""    ->     NaN
+"5 5" % ""    ->     NaN
+"5 5" + ""    ->     5 5
+"5 5" - ""    ->     NaN
+"5 5" / ""    ->     NaN
+"5 5"<< ""    ->     0
+"5 5">> ""    ->     0
+"5 5">>>""    ->     0
+"5 5" & ""    ->     0
+"5 5" ^ ""    ->     0
+"5 5" | ""    ->     0
+"5 5" **"5"    ->     NaN
+"5 5" * "5"    ->     NaN
+"5 5" % "5"    ->     NaN
+"5 5" + "5"    ->     5 55
+"5 5" - "5"    ->     NaN
+"5 5" / "5"    ->     NaN
+"5 5"<< "5"    ->     0
+"5 5">> "5"    ->     0
+"5 5">>>"5"    ->     0
+"5 5" & "5"    ->     0
+"5 5" ^ "5"    ->     5
+"5 5" | "5"    ->     5
+"5 5" **"5 5"    ->     NaN
+"5 5" * "5 5"    ->     NaN
+"5 5" % "5 5"    ->     NaN
+"5 5" + "5 5"    ->     5 55 5
+"5 5" - "5 5"    ->     NaN
+"5 5" / "5 5"    ->     NaN
+"5 5"<< "5 5"    ->     0
+"5 5">> "5 5"    ->     0
+"5 5">>>"5 5"    ->     0
+"5 5" & "5 5"    ->     0
+"5 5" ^ "5 5"    ->     0
+"5 5" | "5 5"    ->     0
+"5 5" **"5 a"    ->     NaN
+"5 5" * "5 a"    ->     NaN
+"5 5" % "5 a"    ->     NaN
+"5 5" + "5 a"    ->     5 55 a
+"5 5" - "5 a"    ->     NaN
+"5 5" / "5 a"    ->     NaN
+"5 5"<< "5 a"    ->     0
+"5 5">> "5 a"    ->     0
+"5 5">>>"5 a"    ->     0
+"5 5" & "5 a"    ->     0
+"5 5" ^ "5 a"    ->     0
+"5 5" | "5 a"    ->     0
+"5 a" **true    ->     NaN
+"5 a" * true    ->     NaN
+"5 a" % true    ->     NaN
+"5 a" + true    ->     5 atrue
+"5 a" - true    ->     NaN
+"5 a" / true    ->     NaN
+"5 a"<< true    ->     0
+"5 a">> true    ->     0
+"5 a">>>true    ->     0
+"5 a" & true    ->     0
+"5 a" ^ true    ->     1
+"5 a" | true    ->     1
+"5 a" **false    ->     1
+"5 a" * false    ->     NaN
+"5 a" % false    ->     NaN
+"5 a" + false    ->     5 afalse
+"5 a" - false    ->     NaN
+"5 a" / false    ->     NaN
+"5 a"<< false    ->     0
+"5 a">> false    ->     0
+"5 a">>>false    ->     0
+"5 a" & false    ->     0
+"5 a" ^ false    ->     0
+"5 a" | false    ->     0
+"5 a" **null    ->     1
+"5 a" * null    ->     NaN
+"5 a" % null    ->     NaN
+"5 a" + null    ->     5 anull
+"5 a" - null    ->     NaN
+"5 a" / null    ->     NaN
+"5 a"<< null    ->     0
+"5 a">> null    ->     0
+"5 a">>>null    ->     0
+"5 a" & null    ->     0
+"5 a" ^ null    ->     0
+"5 a" | null    ->     0
+"5 a" **0    ->     1
+"5 a" * 0    ->     NaN
+"5 a" % 0    ->     NaN
+"5 a" + 0    ->     5 a0
+"5 a" - 0    ->     NaN
+"5 a" / 0    ->     NaN
+"5 a"<< 0    ->     0
+"5 a">> 0    ->     0
+"5 a">>>0    ->     0
+"5 a" & 0    ->     0
+"5 a" ^ 0    ->     0
+"5 a" | 0    ->     0
+"5 a" ** (-0)     ->     1
+"5 a" *  (-0)     ->     NaN
+"5 a" %  (-0)     ->     NaN
+"5 a" +  (-0)     ->     5 a0
+"5 a" -  (-0)     ->     NaN
+"5 a" /  (-0)     ->     NaN
+"5 a"<<  (-0)     ->     0
+"5 a">>  (-0)     ->     0
+"5 a">>> (-0)     ->     0
+"5 a" &  (-0)     ->     0
+"5 a" ^  (-0)     ->     0
+"5 a" |  (-0)     ->     0
+"5 a" **7    ->     NaN
+"5 a" * 7    ->     NaN
+"5 a" % 7    ->     NaN
+"5 a" + 7    ->     5 a7
+"5 a" - 7    ->     NaN
+"5 a" / 7    ->     NaN
+"5 a"<< 7    ->     0
+"5 a">> 7    ->     0
+"5 a">>>7    ->     0
+"5 a" & 7    ->     0
+"5 a" ^ 7    ->     7
+"5 a" | 7    ->     7
+"5 a" ** (-7)     ->     NaN
+"5 a" *  (-7)     ->     NaN
+"5 a" %  (-7)     ->     NaN
+"5 a" +  (-7)     ->     5 a-7
+"5 a" -  (-7)     ->     NaN
+"5 a" /  (-7)     ->     NaN
+"5 a"<<  (-7)     ->     0
+"5 a">>  (-7)     ->     0
+"5 a">>> (-7)     ->     0
+"5 a" &  (-7)     ->     0
+"5 a" ^  (-7)     ->     -7
+"5 a" |  (-7)     ->     -7
+"5 a" **1    ->     NaN
+"5 a" * 1    ->     NaN
+"5 a" % 1    ->     NaN
+"5 a" + 1    ->     5 a1
+"5 a" - 1    ->     NaN
+"5 a" / 1    ->     NaN
+"5 a"<< 1    ->     0
+"5 a">> 1    ->     0
+"5 a">>>1    ->     0
+"5 a" & 1    ->     0
+"5 a" ^ 1    ->     1
+"5 a" | 1    ->     1
+"5 a" ** (-1)     ->     NaN
+"5 a" *  (-1)     ->     NaN
+"5 a" %  (-1)     ->     NaN
+"5 a" +  (-1)     ->     5 a-1
+"5 a" -  (-1)     ->     NaN
+"5 a" /  (-1)     ->     NaN
+"5 a"<<  (-1)     ->     0
+"5 a">>  (-1)     ->     0
+"5 a">>> (-1)     ->     0
+"5 a" &  (-1)     ->     0
+"5 a" ^  (-1)     ->     -1
+"5 a" |  (-1)     ->     -1
+"5 a" **(1/3)    ->     NaN
+"5 a" * (1/3)    ->     NaN
+"5 a" % (1/3)    ->     NaN
+"5 a" + (1/3)    ->     5 a0.3333333333333333
+"5 a" - (1/3)    ->     NaN
+"5 a" / (1/3)    ->     NaN
+"5 a"<< (1/3)    ->     0
+"5 a">> (1/3)    ->     0
+"5 a">>>(1/3)    ->     0
+"5 a" & (1/3)    ->     0
+"5 a" ^ (1/3)    ->     0
+"5 a" | (1/3)    ->     0
+"5 a" **(-1/3)    ->     NaN
+"5 a" * (-1/3)    ->     NaN
+"5 a" % (-1/3)    ->     NaN
+"5 a" + (-1/3)    ->     5 a-0.3333333333333333
+"5 a" - (-1/3)    ->     NaN
+"5 a" / (-1/3)    ->     NaN
+"5 a"<< (-1/3)    ->     0
+"5 a">> (-1/3)    ->     0
+"5 a">>>(-1/3)    ->     0
+"5 a" & (-1/3)    ->     0
+"5 a" ^ (-1/3)    ->     0
+"5 a" | (-1/3)    ->     0
+"5 a" **undefined    ->     NaN
+"5 a" * undefined    ->     NaN
+"5 a" % undefined    ->     NaN
+"5 a" + undefined    ->     5 aundefined
+"5 a" - undefined    ->     NaN
+"5 a" / undefined    ->     NaN
+"5 a"<< undefined    ->     0
+"5 a">> undefined    ->     0
+"5 a">>>undefined    ->     0
+"5 a" & undefined    ->     0
+"5 a" ^ undefined    ->     0
+"5 a" | undefined    ->     0
+"5 a" **function () {}    ->     NaN
+"5 a" * function () {}    ->     NaN
+"5 a" % function () {}    ->     NaN
+"5 a" + function () {}    ->     5 afunction () {}
+"5 a" - function () {}    ->     NaN
+"5 a" / function () {}    ->     NaN
+"5 a"<< function () {}    ->     0
+"5 a">> function () {}    ->     0
+"5 a">>>function () {}    ->     0
+"5 a" & function () {}    ->     0
+"5 a" ^ function () {}    ->     0
+"5 a" | function () {}    ->     0
+"5 a" **{}    ->     NaN
+"5 a" * {}    ->     NaN
+"5 a" % {}    ->     NaN
+"5 a" + {}    ->     5 a[object Object]
+"5 a" - {}    ->     NaN
+"5 a" / {}    ->     NaN
+"5 a"<< {}    ->     0
+"5 a">> {}    ->     0
+"5 a">>>{}    ->     0
+"5 a" & {}    ->     0
+"5 a" ^ {}    ->     0
+"5 a" | {}    ->     0
+"5 a" **{a: 1}    ->     NaN
+"5 a" * {a: 1}    ->     NaN
+"5 a" % {a: 1}    ->     NaN
+"5 a" + {a: 1}    ->     5 a[object Object]
+"5 a" - {a: 1}    ->     NaN
+"5 a" / {a: 1}    ->     NaN
+"5 a"<< {a: 1}    ->     0
+"5 a">> {a: 1}    ->     0
+"5 a">>>{a: 1}    ->     0
+"5 a" & {a: 1}    ->     0
+"5 a" ^ {a: 1}    ->     0
+"5 a" | {a: 1}    ->     0
+"5 a" **""    ->     1
+"5 a" * ""    ->     NaN
+"5 a" % ""    ->     NaN
+"5 a" + ""    ->     5 a
+"5 a" - ""    ->     NaN
+"5 a" / ""    ->     NaN
+"5 a"<< ""    ->     0
+"5 a">> ""    ->     0
+"5 a">>>""    ->     0
+"5 a" & ""    ->     0
+"5 a" ^ ""    ->     0
+"5 a" | ""    ->     0
+"5 a" **"5"    ->     NaN
+"5 a" * "5"    ->     NaN
+"5 a" % "5"    ->     NaN
+"5 a" + "5"    ->     5 a5
+"5 a" - "5"    ->     NaN
+"5 a" / "5"    ->     NaN
+"5 a"<< "5"    ->     0
+"5 a">> "5"    ->     0
+"5 a">>>"5"    ->     0
+"5 a" & "5"    ->     0
+"5 a" ^ "5"    ->     5
+"5 a" | "5"    ->     5
+"5 a" **"5 5"    ->     NaN
+"5 a" * "5 5"    ->     NaN
+"5 a" % "5 5"    ->     NaN
+"5 a" + "5 5"    ->     5 a5 5
+"5 a" - "5 5"    ->     NaN
+"5 a" / "5 5"    ->     NaN
+"5 a"<< "5 5"    ->     0
+"5 a">> "5 5"    ->     0
+"5 a">>>"5 5"    ->     0
+"5 a" & "5 5"    ->     0
+"5 a" ^ "5 5"    ->     0
+"5 a" | "5 5"    ->     0
+"5 a" **"5 a"    ->     NaN
+"5 a" * "5 a"    ->     NaN
+"5 a" % "5 a"    ->     NaN
+"5 a" + "5 a"    ->     5 a5 a
+"5 a" - "5 a"    ->     NaN
+"5 a" / "5 a"    ->     NaN
+"5 a"<< "5 a"    ->     0
+"5 a">> "5 a"    ->     0
+"5 a">>>"5 a"    ->     0
+"5 a" & "5 a"    ->     0
+"5 a" ^ "5 a"    ->     0
+"5 a" | "5 a"    ->     0
+undefined **true    ->     NaN
+undefined * true    ->     NaN
+undefined % true    ->     NaN
+undefined + true    ->     NaN
+undefined - true    ->     NaN
+undefined / true    ->     NaN
+undefined<< true    ->     0
+undefined>> true    ->     0
+undefined>>>true    ->     0
+undefined & true    ->     0
+undefined ^ true    ->     1
+undefined | true    ->     1
+undefined **false    ->     1
+undefined * false    ->     NaN
+undefined % false    ->     NaN
+undefined + false    ->     NaN
+undefined - false    ->     NaN
+undefined / false    ->     NaN
+undefined<< false    ->     0
+undefined>> false    ->     0
+undefined>>>false    ->     0
+undefined & false    ->     0
+undefined ^ false    ->     0
+undefined | false    ->     0
+undefined **null    ->     1
+undefined * null    ->     NaN
+undefined % null    ->     NaN
+undefined + null    ->     NaN
+undefined - null    ->     NaN
+undefined / null    ->     NaN
+undefined<< null    ->     0
+undefined>> null    ->     0
+undefined>>>null    ->     0
+undefined & null    ->     0
+undefined ^ null    ->     0
+undefined | null    ->     0
+undefined **0    ->     1
+undefined * 0    ->     NaN
+undefined % 0    ->     NaN
+undefined + 0    ->     NaN
+undefined - 0    ->     NaN
+undefined / 0    ->     NaN
+undefined<< 0    ->     0
+undefined>> 0    ->     0
+undefined>>>0    ->     0
+undefined & 0    ->     0
+undefined ^ 0    ->     0
+undefined | 0    ->     0
+undefined ** (-0)     ->     1
+undefined *  (-0)     ->     NaN
+undefined %  (-0)     ->     NaN
+undefined +  (-0)     ->     NaN
+undefined -  (-0)     ->     NaN
+undefined /  (-0)     ->     NaN
+undefined<<  (-0)     ->     0
+undefined>>  (-0)     ->     0
+undefined>>> (-0)     ->     0
+undefined &  (-0)     ->     0
+undefined ^  (-0)     ->     0
+undefined |  (-0)     ->     0
+undefined **7    ->     NaN
+undefined * 7    ->     NaN
+undefined % 7    ->     NaN
+undefined + 7    ->     NaN
+undefined - 7    ->     NaN
+undefined / 7    ->     NaN
+undefined<< 7    ->     0
+undefined>> 7    ->     0
+undefined>>>7    ->     0
+undefined & 7    ->     0
+undefined ^ 7    ->     7
+undefined | 7    ->     7
+undefined ** (-7)     ->     NaN
+undefined *  (-7)     ->     NaN
+undefined %  (-7)     ->     NaN
+undefined +  (-7)     ->     NaN
+undefined -  (-7)     ->     NaN
+undefined /  (-7)     ->     NaN
+undefined<<  (-7)     ->     0
+undefined>>  (-7)     ->     0
+undefined>>> (-7)     ->     0
+undefined &  (-7)     ->     0
+undefined ^  (-7)     ->     -7
+undefined |  (-7)     ->     -7
+undefined **1    ->     NaN
+undefined * 1    ->     NaN
+undefined % 1    ->     NaN
+undefined + 1    ->     NaN
+undefined - 1    ->     NaN
+undefined / 1    ->     NaN
+undefined<< 1    ->     0
+undefined>> 1    ->     0
+undefined>>>1    ->     0
+undefined & 1    ->     0
+undefined ^ 1    ->     1
+undefined | 1    ->     1
+undefined ** (-1)     ->     NaN
+undefined *  (-1)     ->     NaN
+undefined %  (-1)     ->     NaN
+undefined +  (-1)     ->     NaN
+undefined -  (-1)     ->     NaN
+undefined /  (-1)     ->     NaN
+undefined<<  (-1)     ->     0
+undefined>>  (-1)     ->     0
+undefined>>> (-1)     ->     0
+undefined &  (-1)     ->     0
+undefined ^  (-1)     ->     -1
+undefined |  (-1)     ->     -1
+undefined **(1/3)    ->     NaN
+undefined * (1/3)    ->     NaN
+undefined % (1/3)    ->     NaN
+undefined + (1/3)    ->     NaN
+undefined - (1/3)    ->     NaN
+undefined / (1/3)    ->     NaN
+undefined<< (1/3)    ->     0
+undefined>> (1/3)    ->     0
+undefined>>>(1/3)    ->     0
+undefined & (1/3)    ->     0
+undefined ^ (1/3)    ->     0
+undefined | (1/3)    ->     0
+undefined **(-1/3)    ->     NaN
+undefined * (-1/3)    ->     NaN
+undefined % (-1/3)    ->     NaN
+undefined + (-1/3)    ->     NaN
+undefined - (-1/3)    ->     NaN
+undefined / (-1/3)    ->     NaN
+undefined<< (-1/3)    ->     0
+undefined>> (-1/3)    ->     0
+undefined>>>(-1/3)    ->     0
+undefined & (-1/3)    ->     0
+undefined ^ (-1/3)    ->     0
+undefined | (-1/3)    ->     0
+undefined **undefined    ->     NaN
+undefined * undefined    ->     NaN
+undefined % undefined    ->     NaN
+undefined + undefined    ->     NaN
+undefined - undefined    ->     NaN
+undefined / undefined    ->     NaN
+undefined<< undefined    ->     0
+undefined>> undefined    ->     0
+undefined>>>undefined    ->     0
+undefined & undefined    ->     0
+undefined ^ undefined    ->     0
+undefined | undefined    ->     0
+undefined **function () {}    ->     NaN
+undefined * function () {}    ->     NaN
+undefined % function () {}    ->     NaN
+undefined + function () {}    ->     undefinedfunction () {}
+undefined - function () {}    ->     NaN
+undefined / function () {}    ->     NaN
+undefined<< function () {}    ->     0
+undefined>> function () {}    ->     0
+undefined>>>function () {}    ->     0
+undefined & function () {}    ->     0
+undefined ^ function () {}    ->     0
+undefined | function () {}    ->     0
+undefined **{}    ->     NaN
+undefined * {}    ->     NaN
+undefined % {}    ->     NaN
+undefined + {}    ->     undefined[object Object]
+undefined - {}    ->     NaN
+undefined / {}    ->     NaN
+undefined<< {}    ->     0
+undefined>> {}    ->     0
+undefined>>>{}    ->     0
+undefined & {}    ->     0
+undefined ^ {}    ->     0
+undefined | {}    ->     0
+undefined **{a: 1}    ->     NaN
+undefined * {a: 1}    ->     NaN
+undefined % {a: 1}    ->     NaN
+undefined + {a: 1}    ->     undefined[object Object]
+undefined - {a: 1}    ->     NaN
+undefined / {a: 1}    ->     NaN
+undefined<< {a: 1}    ->     0
+undefined>> {a: 1}    ->     0
+undefined>>>{a: 1}    ->     0
+undefined & {a: 1}    ->     0
+undefined ^ {a: 1}    ->     0
+undefined | {a: 1}    ->     0
+undefined **""    ->     1
+undefined * ""    ->     NaN
+undefined % ""    ->     NaN
+undefined + ""    ->     undefined
+undefined - ""    ->     NaN
+undefined / ""    ->     NaN
+undefined<< ""    ->     0
+undefined>> ""    ->     0
+undefined>>>""    ->     0
+undefined & ""    ->     0
+undefined ^ ""    ->     0
+undefined | ""    ->     0
+undefined **"5"    ->     NaN
+undefined * "5"    ->     NaN
+undefined % "5"    ->     NaN
+undefined + "5"    ->     undefined5
+undefined - "5"    ->     NaN
+undefined / "5"    ->     NaN
+undefined<< "5"    ->     0
+undefined>> "5"    ->     0
+undefined>>>"5"    ->     0
+undefined & "5"    ->     0
+undefined ^ "5"    ->     5
+undefined | "5"    ->     5
+undefined **"5 5"    ->     NaN
+undefined * "5 5"    ->     NaN
+undefined % "5 5"    ->     NaN
+undefined + "5 5"    ->     undefined5 5
+undefined - "5 5"    ->     NaN
+undefined / "5 5"    ->     NaN
+undefined<< "5 5"    ->     0
+undefined>> "5 5"    ->     0
+undefined>>>"5 5"    ->     0
+undefined & "5 5"    ->     0
+undefined ^ "5 5"    ->     0
+undefined | "5 5"    ->     0
+undefined **"5 a"    ->     NaN
+undefined * "5 a"    ->     NaN
+undefined % "5 a"    ->     NaN
+undefined + "5 a"    ->     undefined5 a
+undefined - "5 a"    ->     NaN
+undefined / "5 a"    ->     NaN
+undefined<< "5 a"    ->     0
+undefined>> "5 a"    ->     0
+undefined>>>"5 a"    ->     0
+undefined & "5 a"    ->     0
+undefined ^ "5 a"    ->     0
+undefined | "5 a"    ->     0

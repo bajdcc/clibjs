@@ -11,6 +11,7 @@ Reference: quickjs
 - [ ] Build VM.
 - [x] Closure.
 - [x] GC, cache unused object
+- [x] Binop\(tested in `test_4.js`\)
 
 ## Environment
 
