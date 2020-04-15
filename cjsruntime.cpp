@@ -25,12 +25,14 @@ namespace clib {
         if (s.empty()) {
             return s;
         }
-        s.erase(0, s.find_first_not_of(" "));
-        s.erase(s.find_last_not_of(" ") + 1);
+        s.erase(0, s.find_first_not_of(' '));
+        s.erase(s.find_last_not_of(' ') + 1);
         return s;
     }
 
     double fix(const double &d) {
+        if (std::isinf(d) || std::isnan(d))
+            return 0.0;
         if (d == 0) {
             return d;
         }
@@ -73,6 +75,8 @@ namespace clib {
         global_env.insert({permanents._debug_print->name, permanents._debug_print});
         permanents.__nan->attr |= js_value::at_readonly;
         global_env.insert({"NaN", permanents.__nan});
+        permanents._inf->attr |= js_value::at_readonly;
+        global_env.insert({"Infinity", permanents._inf});
         // set const
         permanents._null->attr |= js_value::at_const;
         permanents._undefined->attr |= js_value::at_const;
@@ -90,6 +94,10 @@ namespace clib {
     }
 
     void cjsruntime::eval(cjs_code_result::ref code) {
+        if (code->code->codes.empty()) {
+            std::cout << "Compile failed." << std::endl;
+            return;
+        }
         stack.clear();
         stack.push_back(new_stack(code->code));
         current_stack = stack.back();
@@ -691,7 +699,9 @@ namespace clib {
         if (!stack.empty() && !stack.front()->stack.empty())
             std::cout << std::setfill('=') << std::setw(60) << "" << std::endl;
         for (auto s = stack.rbegin(); s != stack.rend(); s++) {
-            fprintf(stdout, "**** Stack [%p] \"%.100s\"\n", s->get(), (*s)->name.c_str());
+            fprintf(stdout, "**** Stack [%p] \"%.100s\" '%.100s'\n",
+                    s->get(), (*s)->name.c_str(),
+                    (*s)->info ? (*s)->info->text.c_str() : "[builtin]");
             const auto &st = (*s)->stack;
             auto sti = (int) st.size();
             for (auto s2 = st.rbegin(); s2 != st.rend(); s2++) {
@@ -840,7 +850,7 @@ namespace clib {
         }
     }
 
-    cjs_function::ref cjsruntime::new_stack(const sym_code_t::ref& code) {
+    cjs_function::ref cjsruntime::new_stack(const sym_code_t::ref &code) {
         if (reuse_stack.empty()) {
             return std::make_shared<cjs_function>(code);
         } else {
@@ -851,7 +861,7 @@ namespace clib {
         }
     }
 
-    cjs_function::ref cjsruntime::new_stack(const cjs_function_info::ref& code) {
+    cjs_function::ref cjsruntime::new_stack(const cjs_function_info::ref &code) {
         if (reuse_stack.empty()) {
             return std::make_shared<cjs_function>(code);
         } else {
@@ -862,7 +872,7 @@ namespace clib {
         }
     }
 
-    void cjsruntime::delete_stack(const cjs_function::ref& f) {
+    void cjsruntime::delete_stack(const cjs_function::ref &f) {
         f->clear();
         reuse_stack.push_back(f);
     }

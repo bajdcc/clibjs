@@ -12,6 +12,7 @@
 #define JS_BOOL(op) (std::dynamic_pointer_cast<jsv_boolean>(op)->b)
 #define JS_NUM(op) (std::dynamic_pointer_cast<jsv_number>(op)->number)
 #define JS_STR(op) (std::dynamic_pointer_cast<jsv_string>(op)->str)
+#define JS_STR2NUM(op,d) std::dynamic_pointer_cast<jsv_string>(op)->to_number(d)
 #define JS_STRF(op) (std::dynamic_pointer_cast<jsv_function>(op)->code->text)
 
 namespace clib {
@@ -95,6 +96,7 @@ namespace clib {
         void mark(int n) override;
         void print(std::ostream &os) override;
         std::string to_string() const override;
+        int to_number(double &d) const;
         ref clear();
         std::string str;
         double number{0};
@@ -177,7 +179,7 @@ namespace clib {
         using ref = std::shared_ptr<jsv_function>;
         using weak_ref = std::weak_ptr<jsv_function>;
         jsv_function() = default;
-        explicit jsv_function(const sym_code_t::ref& c);
+        explicit jsv_function(const sym_code_t::ref &c);
         runtime_t get_type() override;
         js_value::ref binary_op(js_value_new &n, int code, const js_value::ref &op) override;
         js_value::ref unary_op(js_value_new &n, int code) override;
@@ -213,9 +215,9 @@ namespace clib {
     public:
         using ref = std::shared_ptr<cjs_function>;
         using weak_ref = std::weak_ptr<cjs_function>;
-        explicit cjs_function(const sym_code_t::ref& code);
+        explicit cjs_function(const sym_code_t::ref &code);
         explicit cjs_function(cjs_function_info::ref code);
-        void reset(const sym_code_t::ref& code);
+        void reset(const sym_code_t::ref &code);
         void reset(cjs_function_info::ref code);
         void clear();
         void store_name(const std::string &name, js_value::weak_ref obj);
@@ -273,9 +275,9 @@ namespace clib {
         void dump_step3() const;
 
         void reuse_value(const js_value::ref &);
-        cjs_function::ref new_stack(const sym_code_t::ref& code);
-        cjs_function::ref new_stack(const cjs_function_info::ref& code);
-        void delete_stack(const cjs_function::ref&);
+        cjs_function::ref new_stack(const sym_code_t::ref &code);
+        cjs_function::ref new_stack(const cjs_function_info::ref &code);
+        void delete_stack(const cjs_function::ref &);
 
         void gc();
 

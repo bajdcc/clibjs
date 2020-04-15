@@ -46,7 +46,7 @@ namespace clib {
         }
         if (!calc_number)
             calc();
-        if (number_state != 2) {
+        if (number_state != 3) {
             switch (code) {
                 case COMPARE_LESS:
                     switch (op->get_type()) {
@@ -153,7 +153,7 @@ namespace clib {
                 case BINARY_POWER:
                     switch (op->get_type()) {
                         case r_number: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
+                            const auto &s = JS_NUM(op);
                             if (s == 0.0)
                                 return n.new_number(1.0);
                             if (s == 1.0)
@@ -161,26 +161,25 @@ namespace clib {
                             return n.new_number(pow(number, s));
                         }
                         case r_string: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
-                            if (s.empty())
-                                return n.new_number(1.0);
-                            std::stringstream ss;
-                            ss << trim(s);
-                            if (ss.str().empty())
-                                return n.new_number(1.0);
                             double d;
-                            ss >> d;
-                            if (ss.eof() && !ss.fail()) {
-                                if (d == 0.0)
+                            switch (JS_STR2NUM(op, d)) {
+                                case 0:
+                                case 1:
                                     return n.new_number(1.0);
-                                if (d == 1.0)
-                                    return n.new_number(number);
-                                return n.new_number(pow(number, d));
+                                case 2:
+                                    if (d == 0.0)
+                                        return n.new_number(1.0);
+                                    if (d == 1.0)
+                                        return n.new_number(number);
+                                    return n.new_number(pow(number, d));
+                                case 3:
+                                    return n.new_number(NAN);
+                                default:
+                                    break;
                             }
-                            return n.new_number(NAN);
                         }
                         case r_boolean:
-                            return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
+                            return JS_BOOL(op) ?
                                    n.new_number(number) :
                                    n.new_number(1.0);
                         case r_object:
@@ -198,34 +197,39 @@ namespace clib {
                 case BINARY_MULTIPLY:
                     switch (op->get_type()) {
                         case r_number: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
+                            const auto &s = JS_NUM(op);
                             return n.new_number(number * s);
                         }
                         case r_string: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
-                            if (s.empty())
-                                return n.new_number(std::signbit(number) == 0 ? 0.0 : -0.0);
-                            std::stringstream ss;
-                            ss << trim(s);
-                            if (ss.str().empty())
-                                return n.new_number(std::signbit(number) == 0 ? 0.0 : -0.0);
                             double d;
-                            ss >> d;
-                            if (ss.eof() && !ss.fail()) {
-                                if (number == 0.0)
-                                    return n.new_number(number);
-                                if (d == 0.0)
+                            switch (JS_STR2NUM(op, d)) {
+                                case 0:
+                                case 1:
+                                    if (std::isinf(number)) {
+                                        return n.new_number(NAN);
+                                    }
                                     return n.new_number(std::signbit(number) == 0 ? 0.0 : -0.0);
-                                if (number == 1.0)
-                                    return op;
-                                if (d == 1.0)
-                                    return n.new_number(number);
-                                return n.new_number(number * d);
+                                case 2:
+                                    if (std::isinf(number) && std::isinf(d))
+                                        return n.new_number(number * d);
+                                    if (number == 0.0)
+                                        return n.new_number(std::isinf(d) ? NAN : number);
+                                    if (number == 1.0)
+                                        return op;
+                                    if (d == 0.0)
+                                        return n.new_number(std::signbit(number) == 0 ? 0.0 : -0.0);
+                                    return n.new_number(number * d);
+                                case 3:
+                                    return n.new_number(NAN);
+                                default:
+                                    break;
                             }
-                            return n.new_number(NAN);
                         }
                         case r_boolean:
-                            return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
+                            if (std::isinf(number) && !JS_BOOL(op)) {
+                                return n.new_number(NAN);
+                            }
+                            return JS_BOOL(op) ?
                                    n.new_number(number) :
                                    n.new_number(std::signbit(number) == 0 ? 0.0 : -0.0);
                         case r_object:
@@ -233,6 +237,9 @@ namespace clib {
                         case r_function:
                             return n.new_number(NAN);
                         case r_null:
+                            if (std::isinf(number)) {
+                                return n.new_number(NAN);
+                            }
                             return n.new_number(std::signbit(number) == 0 ? 0.0 : -0.0);
                         case r_undefined:
                             return n.new_number(NAN);
@@ -243,34 +250,42 @@ namespace clib {
                 case BINARY_MODULO:
                     switch (op->get_type()) {
                         case r_number: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
+                            const auto &s = JS_NUM(op);
+                            if (std::isinf(number) || std::isnan(s))
+                                return n.new_number(NAN);
                             if (s == 0.0)
                                 return n.new_number(NAN);
-                            if (number == 0.0)
+                            if (number == 0.0 || std::isinf(s))
                                 return n.new_number(number);
                             return n.new_number(fmod(number, s));
                         }
                         case r_string: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
-                            if (s.empty())
-                                return n.new_number(NAN);
-                            std::stringstream ss;
-                            ss << trim(s);
-                            if (ss.str().empty())
-                                return n.new_number(NAN);
                             double d;
-                            ss >> d;
-                            if (ss.eof() && !ss.fail()) {
-                                if (d == 0.0)
+                            switch (JS_STR2NUM(op, d)) {
+                                case 0:
+                                case 1:
+                                    if (std::isinf(d))
+                                        return n.new_number(0.0);
                                     return n.new_number(NAN);
-                                if (number == 0.0)
-                                    return n.new_number(number);
-                                return n.new_number(fmod(number, d));
+                                case 2:
+                                    if (number == 0.0)
+                                        return std::isinf(d) ? n.new_number(0.0) : n.new_number(number);
+                                    if (std::isinf(d))
+                                        return std::isinf(number) ? n.new_number(NAN) : n.new_number(number);
+                                    if (d == 0.0)
+                                        return n.new_number(NAN);
+                                    return n.new_number(fmod(number, d));
+                                case 3:
+                                    return n.new_number(NAN);
+                                default:
+                                    break;
                             }
-                            return n.new_number(NAN);
                         }
                         case r_boolean:
-                            return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
+                            if (std::isinf(number) && JS_BOOL(op)) {
+                                return n.new_number(NAN);
+                            }
+                            return JS_BOOL(op) ?
                                    n.new_number(std::signbit(number) == 0 ? 0.0 : -0.0) :
                                    n.new_number(NAN);
                         case r_object:
@@ -288,28 +303,27 @@ namespace clib {
                 case BINARY_SUBTRACT:
                     switch (op->get_type()) {
                         case r_number: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
+                            const auto &s = JS_NUM(op);
                             return n.new_number(number - s);
                         }
                         case r_string: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
-                            if (s.empty())
-                                return n.new_number(number);
-                            std::stringstream ss;
-                            ss << trim(s);
-                            if (ss.str().empty())
-                                return n.new_number(number);
                             double d;
-                            ss >> d;
-                            if (ss.eof() && !ss.fail()) {
-                                if (d == 0.0)
+                            switch (JS_STR2NUM(op, d)) {
+                                case 0:
+                                case 1:
                                     return n.new_number(number);
-                                return n.new_number(number - d);
+                                case 2:
+                                    if (d == 0.0)
+                                        return n.new_number(number);
+                                    return n.new_number(number - d);
+                                case 3:
+                                    return n.new_number(NAN);
+                                default:
+                                    break;
                             }
-                            return n.new_number(NAN);
                         }
                         case r_boolean:
-                            return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
+                            return JS_BOOL(op) ?
                                    n.new_number(
                                            number - 1.0) :
                                    n.new_number(number);
@@ -330,33 +344,31 @@ namespace clib {
                 case BINARY_TRUE_DIVIDE:
                     switch (op->get_type()) {
                         case r_number: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
+                            const auto &s = JS_NUM(op);
                             if (s == 0.0 && number == 0.0)
                                 return n.new_number(NAN);
                             return n.new_number(number / s);
                         }
                         case r_string: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
-                            if (s.empty())
-                                return number == 0.0 ? n.new_number(NAN) :
-                                       n.new_number(std::signbit(number) == 0 ? INFINITY : -INFINITY);
-                            std::stringstream ss;
-                            ss << trim(s);
-                            if (ss.str().empty())
-                                return number == 0.0 ? n.new_number(NAN) :
-                                       n.new_number(std::signbit(number) == 0 ? INFINITY : -INFINITY);
                             double d;
-                            ss >> d;
-                            if (ss.eof() && !ss.fail()) {
-                                if (d == 0.0)
+                            switch (JS_STR2NUM(op, d)) {
+                                case 0:
+                                case 1:
                                     return number == 0.0 ? n.new_number(NAN) :
                                            n.new_number(std::signbit(number) == 0 ? INFINITY : -INFINITY);
-                                return n.new_number(number / d);
+                                case 2:
+                                    if (d == 0.0)
+                                        return number == 0.0 ? n.new_number(NAN) :
+                                               n.new_number(std::signbit(number) == 0 ? INFINITY : -INFINITY);
+                                    return n.new_number(number / d);
+                                case 3:
+                                    return n.new_number(NAN);
+                                default:
+                                    break;
                             }
-                            return n.new_number(NAN);
                         }
                         case r_boolean:
-                            return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
+                            return JS_BOOL(op) ?
                                    n.new_number(number) :
                                    (number == 0.0 ? n.new_number(NAN) :
                                     n.new_number(std::signbit(number) == 0 ? INFINITY : -INFINITY));
@@ -376,7 +388,7 @@ namespace clib {
                 case BINARY_LSHIFT:
                     switch (op->get_type()) {
                         case r_number: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
+                            const auto &s = JS_NUM(op);
                             if (s == 0.0)
                                 return n.new_number(fix(number) == 0.0 ? 0.0 : fix(number));
                             auto a = uint32_t(fix(number));
@@ -385,27 +397,27 @@ namespace clib {
                             return n.new_number(double(int(a << c)));
                         }
                         case r_string: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
-                            if (s.empty())
-                                return n.new_number(fix(number) == 0.0 ? 0.0 : fix(number));
-                            std::stringstream ss;
-                            ss << trim(s);
-                            if (ss.str().empty())
-                                return n.new_number(fix(number) == 0.0 ? 0.0 : fix(number));
                             double d;
-                            ss >> d;
-                            if (ss.eof() && !ss.fail()) {
-                                if (d == 0.0)
-                                    return number == 0.0 ? n.new_number(0.0) : n.new_number(number);
-                                auto a = uint32_t(fix(number));
-                                auto b = fix(d);
-                                auto c = b > 0 ? (uint32_t(b) % 32) : uint32_t(int(fmod(b, 32)) + 32);
-                                return n.new_number(double(int(a << c)));
+                            switch (JS_STR2NUM(op, d)) {
+                                case 0:
+                                case 1:
+                                    return n.new_number(fix(number) == 0.0 ? 0.0 : fix(number));
+                                case 2: {
+                                    if (d == 0.0)
+                                        return number == 0.0 ? n.new_number(0.0) : n.new_number(number);
+                                    auto a = uint32_t(fix(number));
+                                    auto b = fix(d);
+                                    auto c = b > 0 ? (uint32_t(b) % 32) : uint32_t(int(fmod(b, 32)) + 32);
+                                    return n.new_number(double(int(a << c)));
+                                }
+                                case 3:
+                                    return n.new_number(fix(number) == 0.0 ? 0.0 : fix(number));
+                                default:
+                                    break;
                             }
-                            return n.new_number(fix(number) == 0.0 ? 0.0 : fix(number));
                         }
                         case r_boolean: {
-                            if (!std::dynamic_pointer_cast<jsv_boolean>(op)->b)
+                            if (!JS_BOOL(op))
                                 return number == 0 ?
                                        n.new_number(0.0) : n.new_number(fix(number));
                             auto a = uint32_t(fix(number));
@@ -430,7 +442,7 @@ namespace clib {
                 case BINARY_RSHIFT:
                     switch (op->get_type()) {
                         case r_number: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
+                            const auto &s = JS_NUM(op);
                             if (s == 0.0)
                                 return n.new_number(fix(number) == 0.0 ? 0.0 : fix(number));
                             auto a = int(fix(number));
@@ -439,27 +451,27 @@ namespace clib {
                             return n.new_number(double(int(a >> c)));
                         }
                         case r_string: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
-                            if (s.empty())
-                                return n.new_number(fix(number) == 0.0 ? 0.0 : fix(number));
-                            std::stringstream ss;
-                            ss << trim(s);
-                            if (ss.str().empty())
-                                return n.new_number(fix(number) == 0.0 ? 0.0 : fix(number));
                             double d;
-                            ss >> d;
-                            if (ss.eof() && !ss.fail()) {
-                                if (d == 0.0)
-                                    return number == 0.0 ? n.new_number(0.0) : n.new_number(number);
-                                auto a = int(fix(number));
-                                auto b = fix(d);
-                                auto c = b > 0 ? (uint32_t(b) % 32) : uint32_t(int(fmod(b, 32)) + 32);
-                                return n.new_number(double(int(a >> c)));
+                            switch (JS_STR2NUM(op, d)) {
+                                case 0:
+                                case 1:
+                                    return n.new_number(fix(number) == 0.0 ? 0.0 : fix(number));
+                                case 2: {
+                                    if (d == 0.0)
+                                        return number == 0.0 ? n.new_number(0.0) : n.new_number(number);
+                                    auto a = int(fix(number));
+                                    auto b = fix(d);
+                                    auto c = b > 0 ? (uint32_t(b) % 32) : uint32_t(int(fmod(b, 32)) + 32);
+                                    return n.new_number(double(int(a >> c)));
+                                }
+                                case 3:
+                                    return n.new_number(fix(number) == 0.0 ? 0.0 : fix(number));
+                                default:
+                                    break;
                             }
-                            return n.new_number(fix(number) == 0.0 ? 0.0 : fix(number));
                         }
                         case r_boolean: {
-                            if (!std::dynamic_pointer_cast<jsv_boolean>(op)->b)
+                            if (!JS_BOOL(op))
                                 return number == 0 ?
                                        n.new_number(0.0) : n.new_number(fix(number));
                             auto a = int(fix(number));
@@ -484,7 +496,7 @@ namespace clib {
                 case BINARY_URSHIFT:
                     switch (op->get_type()) {
                         case r_number: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
+                            const auto &s = JS_NUM(op);
                             if (s == 0.0)
                                 return n.new_number(fix(number) == 0.0 ? 0.0 : fix(number));
                             auto a = uint32_t(fix(number));
@@ -493,28 +505,28 @@ namespace clib {
                             return n.new_number(double(uint32_t(a >> c)));
                         }
                         case r_string: {
-                            double d = 0.0;
-                            const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
-                            std::stringstream ss;
-                            if (!s.empty()) {
-                                ss << trim(s);
-                                if (!ss.str().empty()) {
-                                    ss >> d;
-                                    if (!(ss.eof() && !ss.fail())) {
-                                        d = 0.0;
-                                    }
+                            double d;
+                            switch (JS_STR2NUM(op, d)) {
+                                case 0:
+                                case 1:
+                                    return n.new_number(double(uint32_t(fix(number))));
+                                case 2: {
+                                    auto a = uint32_t(fix(number));
+                                    if (d == 0.0)
+                                        return n.new_number(double(a));
+                                    auto b = fix(d);
+                                    auto c = b > 0 ? (uint32_t(b) % 32) : uint32_t(int(fmod(b, 32)) + 32);
+                                    return n.new_number(double(uint32_t(a >> c)));
                                 }
+                                case 3:
+                                    return n.new_number(double(uint32_t(fix(number))));
+                                default:
+                                    break;
                             }
-                            auto a = uint32_t(fix(number));
-                            if (d == 0.0)
-                                return n.new_number(double(a));
-                            auto b = fix(d);
-                            auto c = b > 0 ? (uint32_t(b) % 32) : uint32_t(int(fmod(b, 32)) + 32);
-                            return n.new_number(double(uint32_t(a >> c)));
                         }
                         case r_boolean: {
                             auto a = uint32_t(fix(number));
-                            if (!std::dynamic_pointer_cast<jsv_boolean>(op)->b)
+                            if (!JS_BOOL(op))
                                 return n.new_number(double(a));
                             return n.new_number(double(uint32_t(a >> 1U)));
                         }
@@ -537,7 +549,7 @@ namespace clib {
                 case BINARY_AND:
                     switch (op->get_type()) {
                         case r_number: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
+                            const auto &s = JS_NUM(op);
                             if (s == 0.0)
                                 return n.new_number(0.0);
                             auto a = uint32_t(fix(number));
@@ -545,26 +557,26 @@ namespace clib {
                             return n.new_number(double(int(a & b)));
                         }
                         case r_string: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
-                            if (s.empty())
-                                return n.new_number(0.0);
-                            std::stringstream ss;
-                            ss << trim(s);
-                            if (ss.str().empty())
-                                return n.new_number(0.0);
                             double d;
-                            ss >> d;
-                            if (ss.eof() && !ss.fail()) {
-                                if (d == 0.0)
-                                    return n.new_number(number);
-                                auto a = uint32_t(fix(number));
-                                auto b = uint32_t(fix(d));
-                                return n.new_number(double(int(a & b)));
+                            switch (JS_STR2NUM(op, d)) {
+                                case 0:
+                                case 1:
+                                    return n.new_number(0.0);
+                                case 2: {
+                                    if (d == 0.0)
+                                        return n.new_number(number);
+                                    auto a = uint32_t(fix(number));
+                                    auto b = uint32_t(fix(d));
+                                    return n.new_number(double(int(a & b)));
+                                }
+                                case 3:
+                                    return n.new_number(0.0);
+                                default:
+                                    break;
                             }
-                            return n.new_number(0.0);
                         }
                         case r_boolean: {
-                            if (!std::dynamic_pointer_cast<jsv_boolean>(op)->b)
+                            if (!JS_BOOL(op))
                                 return n.new_number(0.0);
                             auto a = uint32_t(fix(number));
                             return n.new_number(double(int(a & 1U)));
@@ -584,7 +596,7 @@ namespace clib {
                 case BINARY_XOR:
                     switch (op->get_type()) {
                         case r_number: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
+                            const auto &s = JS_NUM(op);
                             if (s == 0.0)
                                 return n.new_number(number == 0.0 ? number : fix(number));
                             auto a = uint32_t(fix(number));
@@ -592,26 +604,28 @@ namespace clib {
                             return n.new_number(double(int(a ^ b)));
                         }
                         case r_string: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
-                            if (s.empty())
-                                return number == 0.0 ? n.new_number(0.0) : n.new_number(fix(number));
-                            std::stringstream ss;
-                            ss << trim(s);
-                            if (ss.str().empty())
-                                return number == 0.0 ? n.new_number(0.0) : n.new_number(fix(number));
                             double d;
-                            ss >> d;
-                            if (ss.eof() && !ss.fail()) {
-                                if (d == 0.0)
-                                    return n.new_number(0.0);
-                                auto a = uint32_t(fix(number));
-                                auto b = uint32_t(fix(d));
-                                return n.new_number(double(int(a ^ b)));
+                            switch (JS_STR2NUM(op, d)) {
+                                case 0:
+                                case 1:
+                                    return number == 0.0 ? n.new_number(0.0) : n.new_number(fix(number));
+                                case 2: {
+                                    if (d == 0.0)
+                                        return n.new_number(0.0);
+                                    auto a = uint32_t(fix(number));
+                                    auto b = uint32_t(fix(d));
+                                    return n.new_number(double(int(a ^ b)));
+                                }
+                                case 3:
+                                    return number == 0.0 ? n.new_number(0.0) : n.new_number(fix(number));
+                                default:
+                                    break;
                             }
-                            return number == 0.0 ? n.new_number(0.0) : n.new_number(fix(number));
                         }
                         case r_boolean: {
-                            if (!std::dynamic_pointer_cast<jsv_boolean>(op)->b)
+                            if (std::isinf(number))
+                                return n.new_number(JS_BOOL(op));
+                            if (!JS_BOOL(op))
                                 return number == 0 ?
                                        n.new_number(0.0) : n.new_number(number);
                             auto a = uint32_t(fix(number));
@@ -636,7 +650,7 @@ namespace clib {
                 case BINARY_OR:
                     switch (op->get_type()) {
                         case r_number: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
+                            const auto &s = JS_NUM(op);
                             if (s == 0.0)
                                 return n.new_number(fix(number) == 0.0 ? 0.0 : fix(number));
                             auto a = uint32_t(fix(number));
@@ -644,26 +658,28 @@ namespace clib {
                             return n.new_number(double(int(a | b)));
                         }
                         case r_string: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
-                            if (s.empty())
-                                return n.new_number(fix(number) == 0.0 ? 0.0 : fix(number));
-                            std::stringstream ss;
-                            ss << trim(s);
-                            if (ss.str().empty())
-                                return n.new_number(fix(number) == 0.0 ? 0.0 : fix(number));
                             double d;
-                            ss >> d;
-                            if (ss.eof() && !ss.fail()) {
-                                if (d == 0.0)
-                                    return n.new_number(number);
-                                auto a = uint32_t(fix(number));
-                                auto b = uint32_t(fix(d));
-                                return n.new_number(double(int(a | b)));
+                            switch (JS_STR2NUM(op, d)) {
+                                case 0:
+                                case 1:
+                                    return number == 0.0 ? n.new_number(0.0) : n.new_number(fix(number));
+                                case 2: {
+                                    if (d == 0.0)
+                                        return n.new_number(number);
+                                    auto a = uint32_t(fix(number));
+                                    auto b = uint32_t(fix(d));
+                                    return n.new_number(double(int(a | b)));
+                                }
+                                case 3:
+                                    return number == 0.0 ? n.new_number(0.0) : n.new_number(fix(number));
+                                default:
+                                    break;
                             }
-                            return n.new_number(fix(number) == 0.0 ? 0.0 : fix(number));
                         }
                         case r_boolean: {
-                            if (!std::dynamic_pointer_cast<jsv_boolean>(op)->b)
+                            if (std::isinf(number))
+                                return n.new_number(JS_BOOL(op));
+                            if (!JS_BOOL(op))
                                 return number == 0 ?
                                        n.new_number(0.0) : n.new_number(number);
                             auto a = uint32_t(fix(number));
@@ -780,30 +796,30 @@ namespace clib {
                 case BINARY_POWER:
                     switch (op->get_type()) {
                         case r_number: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
+                            const auto &s = JS_NUM(op);
                             if (s == 0.0)
                                 return n.new_number(1.0);
                             return n.new_number(NAN);
                         }
                         case r_string: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
-                            if (s.empty())
-                                return n.new_number(1.0);
-                            std::stringstream ss;
-                            ss << trim(s);
-                            if (ss.str().empty())
-                                return n.new_number(1.0);
                             double d;
-                            ss >> d;
-                            if (ss.eof() && !ss.fail()) {
-                                if (d == 0.0)
+                            switch (JS_STR2NUM(op, d)) {
+                                case 0:
+                                case 1:
                                     return n.new_number(1.0);
-                                return n.new_number(NAN);
+                                case 2: {
+                                    if (d == 0.0)
+                                        return n.new_number(1.0);
+                                    return n.new_number(NAN);
+                                }
+                                case 3:
+                                    return n.new_number(NAN);
+                                default:
+                                    break;
                             }
-                            return n.new_number(NAN);
                         }
                         case r_boolean:
-                            return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
+                            return JS_BOOL(op) ?
                                    n.new_number(NAN) :
                                    n.new_number(1.0);
                         case r_object:
@@ -840,26 +856,27 @@ namespace clib {
                 case BINARY_OR:
                     switch (op->get_type()) {
                         case r_number: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_number>(op)->number;
+                            const auto &s = JS_NUM(op);
+                            if (s == 0.0 || std::isnan(s) || std::isinf(s))
+                                return n.new_number(0.0);
                             return n.new_number(fix(s) == 0.0 ? 0.0 : fix(s));
                         }
                         case r_string: {
-                            const auto &s = std::dynamic_pointer_cast<jsv_string>(op)->str;
-                            if (s.empty())
-                                return n.new_number(0.0);
-                            std::stringstream ss;
-                            ss << trim(s);
-                            if (ss.str().empty())
-                                return n.new_number(0.0);
                             double d;
-                            ss >> d;
-                            if (ss.eof() && !ss.fail()) {
-                                return n.new_number(fix(d) == 0.0 ? 0.0 : fix(d));
+                            switch (JS_STR2NUM(op, d)) {
+                                case 0:
+                                case 1:
+                                    return n.new_number(0.0);
+                                case 2:
+                                    return n.new_number(fix(d) == 0.0 ? 0.0 : fix(d));
+                                case 3:
+                                    return n.new_number(0.0);
+                                default:
+                                    break;
                             }
-                            return n.new_number(0.0);
                         }
                         case r_boolean:
-                            return std::dynamic_pointer_cast<jsv_boolean>(op)->b ?
+                            return JS_BOOL(op) ?
                                    n.new_number(1.0) : n.new_number(0.0);
                         case r_object:
                             return n.new_number(0.0);
@@ -882,14 +899,33 @@ namespace clib {
 
     js_value::ref jsv_string::unary_op(js_value_new &n, int code) {
         switch (code) {
-            case UNARY_POSITIVE:
-                break;
-            case UNARY_NEGATIVE:
-                break;
+            case UNARY_POSITIVE: {
+                if (!calc_number)
+                    calc();
+                if (number_state <= 1)
+                    return n.new_number(0.0);
+                if (number_state == 2)
+                    return n.new_number(number);
+                return n.new_number(NAN);
+            }
+            case UNARY_NEGATIVE: {
+                if (!calc_number)
+                    calc();
+                if (number_state <= 1)
+                    return n.new_number(-0.0);
+                if (number_state == 2)
+                    return n.new_number(-number);
+                return n.new_number(NAN);
+            }
             case UNARY_NOT:
-                break;
-            case UNARY_INVERT:
-                break;
+                return n.new_boolean(str.empty());
+            case UNARY_INVERT: {
+                if (!calc_number)
+                    calc();
+                if (number_state == 2)
+                    return n.new_number((double) (int) ~(uint32_t) fix(number));
+                return n.new_number(-1.0);
+            }
             case UNARY_NEW:
                 break;
             case UNARY_DELETE:
@@ -903,23 +939,7 @@ namespace clib {
     }
 
     void jsv_string::calc() {
-        // state=0  empty
-        // state=1  normal
-        // state=2  parse error
-        calc_number = true;
-        if (str.empty()) {
-            return;
-        }
-        std::stringstream ss;
-        ss << trim(str);
-        if (ss.str().empty())
-            return;
-        ss >> number;
-        if (ss.eof() && !ss.fail()) {
-            number_state = 1;
-        } else {
-            number_state = 2;
-        }
+        number_state = to_number(number);
     }
 
     bool jsv_string::to_bool() const {
@@ -945,5 +965,33 @@ namespace clib {
             calc_number = false;
         }
         return std::dynamic_pointer_cast<jsv_string>(shared_from_this());
+    }
+
+    int jsv_string::to_number(double &d) const {
+        // 0: empty
+        // 1: trim -> empty
+        // 2: number
+        // 3: error
+        const auto &s = str;
+        if (s.empty())
+            return 0;
+        auto t = trim(s);
+        if (t == "Infinity") {
+            d = INFINITY;
+            return 2;
+        }
+        if (t == "-Infinity") {
+            d = -INFINITY;
+            return 2;
+        }
+        std::stringstream ss;
+        ss << t;
+        if (ss.str().empty())
+            return 1;
+        ss >> d;
+        if (ss.eof() && !ss.fail()) {
+            return 2;
+        }
+        return 3;
     }
 }
