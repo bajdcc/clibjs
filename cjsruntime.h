@@ -177,7 +177,7 @@ namespace clib {
         using ref = std::shared_ptr<jsv_function>;
         using weak_ref = std::weak_ptr<jsv_function>;
         jsv_function() = default;
-        explicit jsv_function(sym_code_t::ref c);
+        explicit jsv_function(const sym_code_t::ref& c);
         runtime_t get_type() override;
         js_value::ref binary_op(js_value_new &n, int code, const js_value::ref &op) override;
         js_value::ref unary_op(js_value_new &n, int code) override;
@@ -213,8 +213,11 @@ namespace clib {
     public:
         using ref = std::shared_ptr<cjs_function>;
         using weak_ref = std::weak_ptr<cjs_function>;
-        explicit cjs_function(sym_code_t::ref code);
+        explicit cjs_function(const sym_code_t::ref& code);
         explicit cjs_function(cjs_function_info::ref code);
+        void reset(const sym_code_t::ref& code);
+        void reset(cjs_function_info::ref code);
+        void clear();
         void store_name(const std::string &name, js_value::weak_ref obj);
         void store_fast(const std::string &name, js_value::weak_ref obj);
         cjs_function_info::ref info;
@@ -270,6 +273,9 @@ namespace clib {
         void dump_step3() const;
 
         void reuse_value(const js_value::ref &);
+        cjs_function::ref new_stack(const sym_code_t::ref& code);
+        cjs_function::ref new_stack(const cjs_function_info::ref& code);
+        void delete_stack(const cjs_function::ref&);
 
         void gc();
 
@@ -278,6 +284,7 @@ namespace clib {
     private:
         std::vector<cjs_function::ref> stack;
         cjs_function::ref current_stack;
+        std::vector<cjs_function::ref> reuse_stack;
         std::unordered_map<std::string, js_value::weak_ref> global_env;
         std::list<js_value::ref> objs;
         struct _permanents_t {

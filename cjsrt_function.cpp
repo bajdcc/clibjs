@@ -11,7 +11,7 @@
 
 namespace clib {
 
-    jsv_function::jsv_function(sym_code_t::ref c) {
+    jsv_function::jsv_function(const sym_code_t::ref& c) {
         code = std::make_shared<cjs_function_info>(std::move(c));
     }
 
@@ -342,12 +342,12 @@ namespace clib {
         return std::dynamic_pointer_cast<jsv_function>(shared_from_this());
     }
 
-    cjs_function::cjs_function(sym_code_t::ref code) {
-        info = std::make_shared<cjs_function_info>(std::move(code));
+    cjs_function::cjs_function(const sym_code_t::ref& code) {
+        reset(code);
     }
 
-    cjs_function::cjs_function(cjs_function_info::ref code) : info(std::move(code)) {
-
+    cjs_function::cjs_function(cjs_function_info::ref code) {
+        reset(std::move(code));
     }
 
     void cjs_function::store_name(const std::string &n, js_value::weak_ref obj) {
@@ -360,6 +360,24 @@ namespace clib {
 
     void cjs_function::store_fast(const std::string &n, js_value::weak_ref obj) {
         envs.lock()->obj.insert({n, std::move(obj)});
+    }
+
+    void cjs_function::clear() {
+        info = nullptr;
+        name = "UNKNOWN";
+        pc = 0;
+        stack.clear();
+        ret_value.reset();
+        envs.reset();
+        closure.reset();
+    }
+
+    void cjs_function::reset(const sym_code_t::ref& code) {
+        info = std::make_shared<cjs_function_info>(code);
+    }
+
+    void cjs_function::reset(cjs_function_info::ref code) {
+        info = std::move(code);
     }
 
     cjs_function_info::cjs_function_info(

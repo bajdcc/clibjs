@@ -91,10 +91,9 @@ namespace clib {
 
     void cjsruntime::eval(cjs_code_result::ref code) {
         stack.clear();
-        stack.push_back(std::make_shared<cjs_function>(code->code));
+        stack.push_back(new_stack(code->code));
         current_stack = stack.back();
         current_stack->envs = new_object();
-        current_stack->closure = new_object();
         std::swap(global_env, current_stack->envs.lock()->obj);
         code = nullptr;
         auto r = 0;
@@ -130,12 +129,14 @@ namespace clib {
             }
             ret = stack.back()->ret_value;
             if (stack.size() > 1) {
+                delete_stack(current_stack);
                 stack.pop_back();
                 current_stack = stack.back();
                 push(ret);
             } else {
                 global_env.clear();
                 std::swap(global_env, current_stack->envs.lock()->obj);
+                delete_stack(current_stack);
                 stack.pop_back();
             }
         }
@@ -486,10 +487,9 @@ namespace clib {
                     func->builtin(current_stack, args, *this);
                     break;
                 }
-                stack.push_back(std::make_shared<cjs_function>(func->code));
+                stack.push_back(new_stack(func->code));
                 auto new_stack = stack.back();
                 new_stack->envs = new_object();
-                new_stack->closure = new_object();
                 new_stack->name = func->name;
                 for (auto i = 0; i < code.op1; i++) {
                     new_stack->envs.lock()->obj.insert({func->code->args.at(i), args.at(i)});
@@ -512,9 +512,11 @@ namespace clib {
                     auto func = new_function();
                     func->code = parent->code;
                     func->name = std::dynamic_pointer_cast<jsv_string>(name.lock())->str;
-                    auto c = new_object();
-                    c->obj = std::dynamic_pointer_cast<jsv_object>(closure.lock())->obj;
-                    func->closure = c;
+                    if (closure.lock()) {
+                        auto c = new_object();
+                        c->obj = std::dynamic_pointer_cast<jsv_object>(closure.lock())->obj;
+                        func->closure = c;
+                    }
                     push(func);
                 } else {
                     auto name = pop();
@@ -633,9 +635,11 @@ namespace clib {
 
     js_value::ref cjsruntime::load_closure(const std::string &name) {
         for (auto i = stack.rbegin(); i != stack.rend(); i++) {
-            auto L = (*i)->closure.lock()->obj.find(name);
-            if (L != (*i)->closure.lock()->obj.end()) {
-                return L->second.lock();
+            if ((*i)->closure.lock()) {
+                auto L = (*i)->closure.lock()->obj.find(name);
+                if (L != (*i)->closure.lock()->obj.end()) {
+                    return L->second.lock();
+                }
             }
             auto L2 = (*i)->envs.lock()->obj.find(name);
             if (L2 != (*i)->envs.lock()->obj.end()) {
@@ -647,9 +651,11 @@ namespace clib {
     }
 
     js_value::ref cjsruntime::load_deref(const std::string &name) {
-        auto f = current_stack->closure.lock()->obj.find(name);
-        if (f != current_stack->closure.lock()->obj.end()) {
-            return f->second.lock();
+        if (current_stack->closure.lock()) {
+            auto f = current_stack->closure.lock()->obj.find(name);
+            if (f != current_stack->closure.lock()->obj.end()) {
+                return f->second.lock();
+            }
         }
         assert(!"cannot load deref by name");
         return permanents._undefined;
@@ -702,10 +708,10 @@ namespace clib {
                     print(e.second.lock(), 0, std::cout);
                 }
             }
-            const auto &c = (*s)->closure.lock()->obj;
-            if (!c.empty()) {
+            if ((*s)->closure.lock()) {
+                const auto &cl = (*s)->closure.lock()->obj;
                 std::cout << std::setfill('-') << std::setw(60) << "" << std::endl;
-                for (const auto &e : c) {
+                for (const auto &e : cl) {
                     fprintf(stdout, " Clo | [%p] \"%.100s\" '%.100s' ",
                             e.second.lock().get(), e.first.c_str(),
                             e.second.lock()->to_string().c_str());
@@ -834,6 +840,33 @@ namespace clib {
         }
     }
 
+    cjs_function::ref cjsruntime::new_stack(const sym_code_t::ref& code) {
+        if (reuse_stack.empty()) {
+            return std::make_shared<cjs_function>(code);
+        } else {
+            auto st = reuse_stack.back();
+            reuse_stack.pop_back();
+            st->reset(code);
+            return st;
+        }
+    }
+
+    cjs_function::ref cjsruntime::new_stack(const cjs_function_info::ref& code) {
+        if (reuse_stack.empty()) {
+            return std::make_shared<cjs_function>(code);
+        } else {
+            auto st = reuse_stack.back();
+            reuse_stack.pop_back();
+            st->reset(code);
+            return st;
+        }
+    }
+
+    void cjsruntime::delete_stack(const cjs_function::ref& f) {
+        f->clear();
+        reuse_stack.push_back(f);
+    }
+
     void cjsruntime::gc() {
         std::for_each(objs.begin(), objs.end(), [](auto &x) { x->mark(0); });
         for (const auto &s : stack) {
@@ -845,7 +878,8 @@ namespace clib {
                     s2.lock()->mark(1);
             }
             env.lock()->mark(2);
-            closure.lock()->mark(2);
+            if (closure.lock())
+                closure.lock()->mark(2);
         }
 #if DUMP_STEP && DUMP_GC
         dump_step3();

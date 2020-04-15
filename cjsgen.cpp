@@ -12,9 +12,9 @@
 #include "cjsast.h"
 #include "cjsruntime.h"
 
-#define PRINT_CODE 1
-#define DUMP_CODE 1
-#define DUMP_CODE2 1
+#define PRINT_CODE 0
+#define DUMP_CODE 0
+#define DUMP_CODE2 0
 #define PRINT_AST 0
 
 #define AST_IS_KEYWORD(node) ((node)->flag == a_keyword)
