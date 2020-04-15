@@ -10,9 +10,10 @@
 #include <cassert>
 #include "cjsgen.h"
 #include "cjsast.h"
+#include "cjsruntime.h"
 
-#define PRINT_CODE 0
-#define DUMP_CODE 0
+#define PRINT_CODE 1
+#define DUMP_CODE 1
 #define DUMP_CODE2 1
 #define PRINT_AST 0
 
@@ -71,8 +72,13 @@ namespace clib {
         }
         if (type == gs_string) {
             assert(str.size() > 1);
-            auto s = std::string(str.c_str() + 1);
-            s.pop_back();
+            std::string s;
+            if (str.front() == str.back() && (str.front() == '"' || str.front() == '\'')) {
+                s = std::string(str.c_str() + 1);
+                s.pop_back();
+            } else {
+                s = str;
+            }
             auto f = strings.find(s);
             if (f == strings.end()) {
                 auto idx = index++;
@@ -178,7 +184,7 @@ namespace clib {
                     fprintf(stdout, "C [#%03d] [STRING] %s\n", i, ((std::string *) x)->c_str());
                     break;
                 case r_number:
-                    fprintf(stdout, "C [#%03d] [NUMBER] %lf\n", i, *(double *) x);
+                    fprintf(stdout, "C [#%03d] [NUMBER] %s\n", i, jsv_number::number_to_string(*(double *) x).c_str());
                     break;
                 case r_function: {
                     auto f = functions.at(i).lock();
@@ -1059,7 +1065,7 @@ namespace clib {
             case c_arrowFunction: {
                 auto code = std::make_shared<sym_code_t>();
                 copy_info(code, asts[0]);
-                code->end = asts.back()->end;
+                code->end = tmps.back()->end;
                 asts.pop_back();
                 decltype(code->args) _asts;
                 if (AST_IS_ID(asts.front())) { // single ID
@@ -1869,6 +1875,12 @@ namespace clib {
                             return f->second.lock();
                         }
                     }
+                    const auto &args = (*i)->args;
+                    for (const auto &arg : args) {
+                        if (name == arg->node->data._identifier) {
+                            return arg;
+                        }
+                    }
                 }
                 return nullptr;
             }
@@ -1883,8 +1895,36 @@ namespace clib {
     }
 
     void cjsgen::add_closure(std::shared_ptr<sym_var_id_t> c) {
-        codes.back()->closure_str.push_back(c->node->data._identifier);
-        codes.back()->closure.push_back(std::move(c));
+        auto name = std::string(c->node->data._identifier);
+        for (auto i = codes.rbegin(); i != codes.rend(); i++) {
+            if ((*i)->closure_str.find(name) != (*i)->closure_str.end())
+                return;
+            auto has_find = false;
+            const auto &scope = (*i)->scopes;
+            for (auto s = scope.rbegin(); s != scope.rend(); s++) {
+                const auto &vars = s->vars;
+                auto f = vars.find(name);
+                if (f != vars.end()) {
+                    has_find = true;
+                    break;
+                }
+            }
+            if (has_find) {
+                break;
+            }
+            const auto &args = (*i)->args;
+            for (const auto &arg : args) {
+                if (name == arg->node->data._identifier) {
+                    has_find = true;
+                    break;
+                }
+            }
+            if (has_find) {
+                break;
+            }
+            (*i)->closure_str.insert(name);
+            (*i)->closure.push_back(c);
+        }
     }
 
     int cjsgen::get_func_level() const {

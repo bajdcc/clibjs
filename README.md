@@ -11,7 +11,8 @@ Reference: quickjs
 - [ ] Build VM.
 - [x] Closure.
 - [x] GC, cache unused object
-- [x] Binop\(tested in `test_4.js`\)
+- [x] Binop\(tested in `test_4.js`\), BinComp, Unary
+- [x] Y-combinator recursion.\(tested in `test_6.js`\)
 
 ## Environment
 

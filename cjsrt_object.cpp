@@ -12,16 +12,119 @@ namespace clib {
 
     std::string jsv_object::_str = "[object Object]";
 
-    js_value::ref jsv_object::clone() const {
-        return nullptr;
-    }
-
     runtime_t jsv_object::get_type() {
         return r_object;
     }
 
-    js_value::ref jsv_object::binary_op(js_value_new &n, int code, js_value::ref op) {
+    js_value::ref jsv_object::binary_op(js_value_new &n, int code, const js_value::ref &op) {
         switch (code) {
+            case COMPARE_LESS:
+                switch (op->get_type()) {
+                    case r_number:
+                        return n.new_boolean(false);
+                    case r_string:
+                        return n.new_boolean(to_string() < op->to_string());
+                    case r_boolean:
+                        return n.new_boolean(false);
+                    case r_object:
+                    case r_function:
+                        return n.new_boolean(to_string() < op->to_string());
+                    case r_null:
+                    case r_undefined:
+                        return n.new_boolean(false);
+                    default:
+                        break;
+                }
+                break;
+            case COMPARE_LESS_EQUAL:
+                switch (op->get_type()) {
+                    case r_number:
+                        return n.new_boolean(false);
+                    case r_string:
+                        return n.new_boolean(to_string() <= op->to_string());
+                    case r_boolean:
+                        return n.new_boolean(false);
+                    case r_object:
+                    case r_function:
+                        return n.new_boolean(to_string() <= op->to_string());
+                    case r_null:
+                    case r_undefined:
+                        return n.new_boolean(false);
+                    default:
+                        break;
+                }
+                break;
+            case COMPARE_EQUAL:
+                switch (op->get_type()) {
+                    case r_number:
+                    case r_string:
+                    case r_boolean:
+                    case r_null:
+                    case r_undefined:
+                        return n.new_boolean(false);
+                    case r_object:
+                        return n.new_boolean(shared_from_this() == op);
+                    case r_function:
+                        return n.new_boolean(to_string() == op->to_string());
+                    default:
+                        break;
+                }
+                break;
+            case COMPARE_NOT_EQUAL:
+                return n.new_boolean(!JS_BOOL(binary_op(n, COMPARE_EQUAL, op)));
+            case COMPARE_GREATER:
+                switch (op->get_type()) {
+                    case r_number:
+                        return n.new_boolean(false);
+                    case r_string:
+                        return n.new_boolean(to_string() > op->to_string());
+                    case r_boolean:
+                        return n.new_boolean(false);
+                    case r_object:
+                    case r_function:
+                        return n.new_boolean(to_string() > op->to_string());
+                    case r_null:
+                    case r_undefined:
+                        return n.new_boolean(false);
+                    default:
+                        break;
+                }
+                break;
+            case COMPARE_GREATER_EQUAL:
+                switch (op->get_type()) {
+                    case r_number:
+                        return n.new_boolean(false);
+                    case r_string:
+                        return n.new_boolean(to_string() >= op->to_string());
+                    case r_boolean:
+                        return n.new_boolean(false);
+                    case r_object:
+                    case r_function:
+                        return n.new_boolean(to_string() >= op->to_string());
+                    case r_null:
+                    case r_undefined:
+                        return n.new_boolean(false);
+                    default:
+                        break;
+                }
+                break;
+            case COMPARE_FEQUAL:
+                switch (op->get_type()) {
+                    case r_object:
+                        return n.new_boolean(shared_from_this() == op);
+                    case r_null:
+                    case r_boolean:
+                    case r_number:
+                    case r_string:
+                    case r_function:
+                    case r_undefined:
+                        return n.new_boolean(false);
+                    default:
+                        break;
+                }
+                break;
+            case COMPARE_FNOT_EQUAL:
+                return n.new_boolean(!JS_BOOL(binary_op(n, COMPARE_FEQUAL, op)));
             case BINARY_POWER:
                 switch (op->get_type()) {
                     case r_number: {
@@ -196,12 +299,38 @@ namespace clib {
         return nullptr;
     }
 
+    js_value::ref jsv_object::unary_op(js_value_new &n, int code) {
+        switch (code) {
+            case UNARY_POSITIVE:
+                break;
+            case UNARY_NEGATIVE:
+                break;
+            case UNARY_NOT:
+                break;
+            case UNARY_INVERT:
+                break;
+            case UNARY_NEW:
+                break;
+            case UNARY_DELETE:
+                break;
+            case UNARY_TYPEOF:
+                return n.new_string("object");
+            default:
+                break;
+        }
+        return nullptr;
+    }
+
     bool jsv_object::to_bool() const {
         return true;
     }
 
     void jsv_object::mark(int n) {
         marked = n;
+        for (const auto &s : obj) {
+            if ((s.second.lock()->marked > 0 ? 1 : 0) != (n > 0 ? 1 : 0))
+                s.second.lock()->mark(n);
+        }
     }
 
     void jsv_object::print(std::ostream &os) {

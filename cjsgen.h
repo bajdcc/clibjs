@@ -449,7 +449,7 @@ namespace clib {
         std::vector<cjs_scope> scopes;
         std::vector<cjs_code> codes;
         std::vector<sym_var_id_t::ref> closure;
-        std::vector<std::string> closure_str;
+        std::unordered_set<std::string> closure_str;
     };
 
     struct cjs_code_result {

@@ -14,16 +14,102 @@ namespace clib {
 
     std::string jsv_undefined::_str = "undefined";
 
-    js_value::ref jsv_undefined::clone() const {
-        return nullptr;
-    }
-
     runtime_t jsv_undefined::get_type() {
         return r_undefined;
     }
 
-    js_value::ref jsv_undefined::binary_op(js_value_new &n, int code, js_value::ref op) {
+    js_value::ref jsv_undefined::binary_op(js_value_new &n, int code, const js_value::ref &op) {
         switch (code) {
+            case COMPARE_LESS:
+                switch (op->get_type()) {
+                    case r_number:
+                    case r_string:
+                    case r_boolean:
+                    case r_object:
+                    case r_function:
+                    case r_null:
+                    case r_undefined:
+                        return n.new_boolean(false);
+                    default:
+                        break;
+                }
+                break;
+            case COMPARE_LESS_EQUAL:
+                switch (op->get_type()) {
+                    case r_number:
+                    case r_string:
+                    case r_boolean:
+                    case r_object:
+                    case r_function:
+                    case r_null:
+                    case r_undefined:
+                        return n.new_boolean(false);
+                    default:
+                        break;
+                }
+                break;
+            case COMPARE_EQUAL:
+                switch (op->get_type()) {
+                    case r_number:
+                    case r_string:
+                    case r_boolean:
+                    case r_object:
+                    case r_function:
+                        return n.new_boolean(false);
+                    case r_null:
+                    case r_undefined:
+                        return n.new_boolean(true);
+                    default:
+                        break;
+                }
+                break;
+            case COMPARE_NOT_EQUAL:
+                return n.new_boolean(!JS_BOOL(binary_op(n, COMPARE_EQUAL, op)));
+            case COMPARE_GREATER:
+                switch (op->get_type()) {
+                    case r_number:
+                    case r_string:
+                    case r_boolean:
+                    case r_object:
+                    case r_function:
+                    case r_null:
+                    case r_undefined:
+                        return n.new_boolean(false);
+                    default:
+                        break;
+                }
+                break;
+            case COMPARE_GREATER_EQUAL:
+                switch (op->get_type()) {
+                    case r_number:
+                    case r_string:
+                    case r_boolean:
+                    case r_object:
+                    case r_function:
+                    case r_null:
+                    case r_undefined:
+                        return n.new_boolean(false);
+                    default:
+                        break;
+                }
+                break;
+            case COMPARE_FEQUAL:
+                switch (op->get_type()) {
+                    case r_number:
+                    case r_string:
+                    case r_boolean:
+                    case r_object:
+                    case r_function:
+                    case r_null:
+                        return n.new_boolean(false);
+                    case r_undefined:
+                        return n.new_boolean(true);
+                    default:
+                        break;
+                }
+                break;
+            case COMPARE_FNOT_EQUAL:
+                return n.new_boolean(!JS_BOOL(binary_op(n, COMPARE_FEQUAL, op)));
             case BINARY_POWER:
                 switch (op->get_type()) {
                     case r_number: {
@@ -198,6 +284,28 @@ namespace clib {
                         break;
                 }
                 break;
+            default:
+                break;
+        }
+        return nullptr;
+    }
+
+    js_value::ref jsv_undefined::unary_op(js_value_new &n, int code) {
+        switch (code) {
+            case UNARY_POSITIVE:
+                break;
+            case UNARY_NEGATIVE:
+                break;
+            case UNARY_NOT:
+                break;
+            case UNARY_INVERT:
+                break;
+            case UNARY_NEW:
+                break;
+            case UNARY_DELETE:
+                break;
+            case UNARY_TYPEOF:
+                return n.new_string("undefined");
             default:
                 break;
         }

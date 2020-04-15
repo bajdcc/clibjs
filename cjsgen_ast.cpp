@@ -274,13 +274,13 @@ namespace clib {
                 gen.emit(this, DUP_TOP);
                 if (exp->gen_lvalue(gen) == no_lvalue)
                     gen.error(this, "unsupported unop");
-                return can_be_lvalue;
+                break;
             case T_DEC:
                 gen.emit(this, BINARY_DEC);
                 gen.emit(this, DUP_TOP);
                 if (exp->gen_lvalue(gen) == no_lvalue)
                     gen.error(this, "unsupported unop");
-                return can_be_lvalue;
+                break;
             default:
                 gen.error(this, "unsupported unop");
                 break;
@@ -296,28 +296,30 @@ namespace clib {
                 gen.emit(this, DUP_TOP);
                 if (exp->gen_lvalue(gen) == no_lvalue)
                     gen.error(this, "unsupported unop");
-                return can_be_lvalue;
+                break;
             case T_DEC:
                 gen.emit(this, BINARY_DEC);
                 gen.emit(this, DUP_TOP);
                 if (exp->gen_lvalue(gen) == no_lvalue)
                     gen.error(this, "unsupported unop");
-                return can_be_lvalue;
+                break;
             case T_LOG_NOT:
                 gen.emit(this, UNARY_NOT);
-                exp->gen_rvalue(gen);
                 break;
             case T_BIT_NOT:
                 gen.emit(this, UNARY_INVERT);
-                exp->gen_rvalue(gen);
                 break;
             case T_ADD:
                 gen.emit(this, UNARY_POSITIVE);
-                exp->gen_rvalue(gen);
                 break;
             case T_SUB:
                 gen.emit(this, UNARY_NEGATIVE);
-                exp->gen_rvalue(gen);
+                break;
+            case K_DELETE:
+                gen.emit(this, UNARY_DELETE);
+                break;
+            case K_TYPEOF:
+                gen.emit(this, UNARY_TYPEOF);
                 break;
             default:
                 gen.error(this, "unsupported unop");
@@ -357,13 +359,13 @@ namespace clib {
                 gen.emit(this, BINARY_INC);
                 if (exp->gen_lvalue(gen) == no_lvalue)
                     gen.error(this, "unsupported sinop");
-                return can_be_lvalue;
+                break;
             case T_DEC:
                 gen.emit(this, DUP_TOP);
                 gen.emit(this, BINARY_DEC);
                 if (exp->gen_lvalue(gen) == no_lvalue)
                     gen.error(this, "unsupported sinop");
-                return can_be_lvalue;
+                break;
             default:
                 gen.error(this, "unsupported sinop");
                 break;
@@ -506,28 +508,28 @@ namespace clib {
                 gen.emit(this, BINARY_POWER);
                 break;
             case T_LESS:
-                gen.emit(this, COMPARE_OP, 0);
+                gen.emit(this, COMPARE_LESS);
                 break;
             case T_LESS_EQUAL:
-                gen.emit(this, COMPARE_OP, 1);
+                gen.emit(this, COMPARE_LESS_EQUAL);
                 break;
             case T_EQUAL:
-                gen.emit(this, COMPARE_OP, 2);
+                gen.emit(this, COMPARE_EQUAL);
                 break;
             case T_NOT_EQUAL:
-                gen.emit(this, COMPARE_OP, 3);
+                gen.emit(this, COMPARE_NOT_EQUAL);
                 break;
             case T_GREATER:
-                gen.emit(this, COMPARE_OP, 4);
+                gen.emit(this, COMPARE_GREATER);
                 break;
             case T_GREATER_EQUAL:
-                gen.emit(this, COMPARE_OP, 5);
+                gen.emit(this, COMPARE_GREATER_EQUAL);
                 break;
             case T_FEQUAL:
-                gen.emit(this, COMPARE_OP, 6);
+                gen.emit(this, COMPARE_FEQUAL);
                 break;
             case T_FNOT_EQUAL:
-                gen.emit(this, COMPARE_OP, 7);
+                gen.emit(this, COMPARE_FNOT_EQUAL);
                 break;
             case T_BIT_AND:
                 gen.emit(this, BINARY_AND);

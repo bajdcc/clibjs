@@ -9,6 +9,11 @@
 #include <list>
 #include "cjsgen.h"
 
+#define JS_BOOL(op) (std::dynamic_pointer_cast<jsv_boolean>(op)->b)
+#define JS_NUM(op) (std::dynamic_pointer_cast<jsv_number>(op)->number)
+#define JS_STR(op) (std::dynamic_pointer_cast<jsv_string>(op)->str)
+#define JS_STRF(op) (std::dynamic_pointer_cast<jsv_function>(op)->code->text)
+
 namespace clib {
 
     std::string trim(std::string s);
@@ -43,14 +48,15 @@ namespace clib {
     class js_value : public std::enable_shared_from_this<js_value> {
     public:
         enum attr_t {
-            at_const = 1,
+            at_const = 1U << 0,
+            at_readonly = 1U << 1,
         };
 
         using ref = std::shared_ptr<js_value>;
         using weak_ref = std::weak_ptr<js_value>;
-        virtual js_value::ref clone() const = 0;
         virtual runtime_t get_type() = 0;
-        virtual js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) = 0;
+        virtual js_value::ref binary_op(js_value_new &n, int code, const js_value::ref &op) = 0;
+        virtual js_value::ref unary_op(js_value_new &n, int code) = 0;
         virtual bool to_bool() const = 0;
         virtual void mark(int n) = 0;
         virtual void print(std::ostream &os) = 0;
@@ -66,9 +72,9 @@ namespace clib {
         using ref = std::shared_ptr<jsv_number>;
         using weak_ref = std::weak_ptr<jsv_number>;
         explicit jsv_number(double n);
-        js_value::ref clone() const override;
         runtime_t get_type() override;
-        js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
+        js_value::ref binary_op(js_value_new &n, int code, const js_value::ref &op) override;
+        js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
@@ -82,9 +88,9 @@ namespace clib {
         using ref = std::shared_ptr<jsv_string>;
         using weak_ref = std::weak_ptr<jsv_string>;
         explicit jsv_string(std::string s);
-        js_value::ref clone() const override;
         runtime_t get_type() override;
-        js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
+        js_value::ref binary_op(js_value_new &n, int code, const js_value::ref &op) override;
+        js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
@@ -105,17 +111,17 @@ namespace clib {
         using ref = std::shared_ptr<jsv_boolean>;
         using weak_ref = std::weak_ptr<jsv_boolean>;
         explicit jsv_boolean(bool flag);
-        js_value::ref clone() const override;
         runtime_t get_type() override;
-        js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
+        js_value::ref binary_op(js_value_new &n, int code, const js_value::ref &op) override;
+        js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
         std::string to_string() const override;
         bool b{false};
     private:
-        js_value::ref binary_true(js_value_new &n, int code, js_value::ref op);
-        js_value::ref binary_false(js_value_new &n, int code, js_value::ref op);
+        js_value::ref binary_true(js_value_new &n, int code, const js_value::ref &op);
+        js_value::ref binary_false(js_value_new &n, int code, const js_value::ref &op);
     };
 
     class jsv_object : public js_value {
@@ -123,9 +129,9 @@ namespace clib {
         static std::string _str;
         using ref = std::shared_ptr<jsv_object>;
         using weak_ref = std::weak_ptr<jsv_object>;
-        js_value::ref clone() const override;
         runtime_t get_type() override;
-        js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
+        js_value::ref binary_op(js_value_new &n, int code, const js_value::ref &op) override;
+        js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
@@ -139,9 +145,9 @@ namespace clib {
         static std::string _str;
         using ref = std::shared_ptr<jsv_null>;
         using weak_ref = std::weak_ptr<jsv_null>;
-        js_value::ref clone() const override;
         runtime_t get_type() override;
-        js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
+        js_value::ref binary_op(js_value_new &n, int code, const js_value::ref &op) override;
+        js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
@@ -153,9 +159,9 @@ namespace clib {
         static std::string _str;
         using ref = std::shared_ptr<jsv_undefined>;
         using weak_ref = std::weak_ptr<jsv_undefined>;
-        js_value::ref clone() const override;
         runtime_t get_type() override;
-        js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
+        js_value::ref binary_op(js_value_new &n, int code, const js_value::ref &op) override;
+        js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
@@ -172,9 +178,9 @@ namespace clib {
         using weak_ref = std::weak_ptr<jsv_function>;
         jsv_function() = default;
         explicit jsv_function(sym_code_t::ref c);
-        js_value::ref clone() const override;
         runtime_t get_type() override;
-        js_value::ref binary_op(js_value_new &n, int code, js_value::ref op) override;
+        js_value::ref binary_op(js_value_new &n, int code, const js_value::ref &op) override;
+        js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
         void print(std::ostream &os) override;
@@ -216,8 +222,8 @@ namespace clib {
         int pc{0};
         std::vector<js_value::weak_ref> stack;
         js_value::weak_ref ret_value;
-        std::unordered_map<std::string, js_value::weak_ref> envs;
-        std::unordered_map<std::string, js_value::weak_ref> closure;
+        jsv_object::weak_ref envs;
+        jsv_object::weak_ref closure;
     };
 
     struct cjs_runtime_reuse {

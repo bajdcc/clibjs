@@ -351,6 +351,7 @@ namespace clib {
         arrayLiteralExpression = arrayLiteral;
         objectLiteralExpression = objectLiteral;
         parenthesizedExpression = _T_LPARAN + expressionSequence + _T_RPARAN;
+        newExpression = _K_NEW + singleExpression + *arguments;
         functionExpression = anonymousFunction
                              | classExpression
                              | thisExpression
@@ -359,7 +360,8 @@ namespace clib {
                              | literalExpression
                              | arrayLiteralExpression
                              | objectLiteralExpression
-                             | parenthesizedExpression;
+                             | parenthesizedExpression
+                             | newExpression;
         classExpression = _K_CLASS + ~_ID + classTail;
         memberIndexExpression = _T_LSQUARE + expressionSequence + _T_RSQUARE;
         memberDotExpression = *_T_QUERY + ~_T_DOT + *_T_SHARP + identifierName;
@@ -372,16 +374,15 @@ namespace clib {
                              | argumentsExpression
                              | _RULE_NO_LINE + postIncrementExpression
                              | _RULE_NO_LINE + postDecreaseExpression);
-        newExpression = _K_NEW + singleExpression + *arguments;
         deleteExpression = _K_DELETE;
         voidExpression = _K_VOID;
         typeofExpression = _K_TYPEOF;
         preIncrementExpression = _T_INC;
         preDecreaseExpression = _T_DEC;
-        unaryPlusExpression = _T_ADD + *unaryPlusExpression;
-        unaryMinusExpression = _T_SUB + *unaryMinusExpression;
-        bitNotExpression = _T_BIT_NOT + *bitNotExpression;
-        notExpression = _T_LOG_NOT + *notExpression;
+        unaryPlusExpression = _T_ADD;
+        unaryMinusExpression = _T_SUB;
+        bitNotExpression = _T_BIT_NOT;
+        notExpression = _T_LOG_NOT;
         prefixExpression = *prefixExpression +
                            (newExpression
                             | deleteExpression

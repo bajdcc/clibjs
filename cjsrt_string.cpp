@@ -14,22 +14,142 @@ namespace clib {
 
     }
 
-    js_value::ref jsv_string::clone() const {
-        return std::make_shared<jsv_string>(str);
-    }
-
     runtime_t jsv_string::get_type() {
         return r_string;
     }
 
-    js_value::ref jsv_string::binary_op(js_value_new &n, int code, js_value::ref op) {
+    js_value::ref jsv_string::binary_op(js_value_new &n, int code, const js_value::ref &op) {
         if (code == BINARY_ADD) {
             return n.new_string(to_string() + op->to_string());
+        }
+        if (op->get_type() == r_string) {
+            switch (code) {
+                case COMPARE_LESS:
+                    return n.new_boolean(str < JS_STR(op));
+                case COMPARE_LESS_EQUAL:
+                    return n.new_boolean(str <= JS_STR(op));
+                case COMPARE_EQUAL:
+                    return n.new_boolean(str == JS_STR(op));
+                case COMPARE_NOT_EQUAL:
+                    return n.new_boolean(str != JS_STR(op));
+                case COMPARE_GREATER:
+                    return n.new_boolean(str > JS_STR(op));
+                case COMPARE_GREATER_EQUAL:
+                    return n.new_boolean(str >= JS_STR(op));
+                case COMPARE_FEQUAL:
+                    return n.new_boolean(str == JS_STR(op));
+                case COMPARE_FNOT_EQUAL:
+                    return n.new_boolean(str != JS_STR(op));
+                default:
+                    break;
+            }
         }
         if (!calc_number)
             calc();
         if (number_state != 2) {
             switch (code) {
+                case COMPARE_LESS:
+                    switch (op->get_type()) {
+                        case r_number:
+                            return n.new_boolean(number < JS_NUM(op));
+                        case r_boolean:
+                            return n.new_boolean(number < (JS_BOOL(op) ? 1.0 : 0.0));
+                        case r_object:
+                        case r_function:
+                            return n.new_boolean(str < op->to_string());
+                        case r_null:
+                            return n.new_boolean(number < 0.0);
+                        case r_undefined:
+                            return n.new_boolean(false);
+                        default:
+                            break;
+                    }
+                    break;
+                case COMPARE_LESS_EQUAL:
+                    switch (op->get_type()) {
+                        case r_number:
+                            return n.new_boolean(number <= JS_NUM(op));
+                        case r_boolean:
+                            return n.new_boolean(number <= (JS_BOOL(op) ? 1.0 : 0.0));
+                        case r_object:
+                        case r_function:
+                            return n.new_boolean(str <= op->to_string());
+                        case r_null:
+                            return n.new_boolean(number <= 0.0);
+                        case r_undefined:
+                            return n.new_boolean(false);
+                        default:
+                            break;
+                    }
+                    break;
+                case COMPARE_EQUAL:
+                    switch (op->get_type()) {
+                        case r_number:
+                            return n.new_boolean(number == JS_NUM(op));
+                        case r_boolean:
+                            return n.new_boolean(number == (JS_BOOL(op) ? 1.0 : 0.0));
+                        case r_null:
+                            return n.new_boolean(false);
+                        case r_object:
+                        case r_function:
+                            return n.new_boolean(str == op->to_string());
+                        case r_undefined:
+                            return n.new_boolean(false);
+                        default:
+                            break;
+                    }
+                    break;
+                case COMPARE_NOT_EQUAL:
+                    return n.new_boolean(!JS_BOOL(binary_op(n, COMPARE_EQUAL, op)));
+                case COMPARE_GREATER:
+                    switch (op->get_type()) {
+                        case r_number:
+                            return n.new_boolean(number > JS_NUM(op));
+                        case r_boolean:
+                            return n.new_boolean(number > (JS_BOOL(op) ? 1.0 : 0.0));
+                        case r_object:
+                        case r_function:
+                            return n.new_boolean(str > op->to_string());
+                        case r_null:
+                            return n.new_boolean(number > 0.0);
+                        case r_undefined:
+                            return n.new_boolean(false);
+                        default:
+                            break;
+                    }
+                    break;
+                case COMPARE_GREATER_EQUAL:
+                    switch (op->get_type()) {
+                        case r_number:
+                            return n.new_boolean(number >= JS_NUM(op));
+                        case r_boolean:
+                            return n.new_boolean(number >= (JS_BOOL(op) ? 1.0 : 0.0));
+                        case r_object:
+                        case r_function:
+                            return n.new_boolean(str >= op->to_string());
+                        case r_null:
+                            return n.new_boolean(number >= 0.0);
+                        case r_undefined:
+                            return n.new_boolean(false);
+                        default:
+                            break;
+                    }
+                    break;
+                case COMPARE_FEQUAL:
+                    switch (op->get_type()) {
+                        case r_null:
+                        case r_boolean:
+                        case r_number:
+                        case r_object:
+                        case r_function:
+                        case r_undefined:
+                            return n.new_boolean(false);
+                        default:
+                            break;
+                    }
+                    break;
+                case COMPARE_FNOT_EQUAL:
+                    return n.new_boolean(!JS_BOOL(binary_op(n, COMPARE_FEQUAL, op)));
                 case BINARY_POWER:
                     switch (op->get_type()) {
                         case r_number: {
@@ -570,6 +690,93 @@ namespace clib {
             }
         } else {
             switch (code) {
+                case COMPARE_LESS:
+                    switch (op->get_type()) {
+                        case r_object:
+                        case r_function:
+                            return n.new_boolean(str < op->to_string());
+                        case r_number:
+                        case r_boolean:
+                        case r_null:
+                        case r_undefined:
+                            return n.new_boolean(false);
+                        default:
+                            break;
+                    }
+                    break;
+                case COMPARE_LESS_EQUAL:
+                    switch (op->get_type()) {
+                        case r_object:
+                        case r_function:
+                            return n.new_boolean(str <= op->to_string());
+                        case r_number:
+                        case r_boolean:
+                        case r_null:
+                        case r_undefined:
+                            return n.new_boolean(false);
+                        default:
+                            break;
+                    }
+                    break;
+                case COMPARE_EQUAL:
+                    switch (op->get_type()) {
+                        case r_object:
+                        case r_function:
+                            return n.new_boolean(str == op->to_string());
+                        case r_number:
+                        case r_boolean:
+                        case r_null:
+                        case r_undefined:
+                            return n.new_boolean(false);
+                        default:
+                            break;
+                    }
+                    break;
+                case COMPARE_NOT_EQUAL:
+                    return n.new_boolean(!JS_BOOL(binary_op(n, COMPARE_EQUAL, op)));
+                case COMPARE_GREATER:
+                    switch (op->get_type()) {
+                        case r_object:
+                        case r_function:
+                            return n.new_boolean(str > op->to_string());
+                        case r_number:
+                        case r_boolean:
+                        case r_null:
+                        case r_undefined:
+                            return n.new_boolean(false);
+                        default:
+                            break;
+                    }
+                    break;
+                case COMPARE_GREATER_EQUAL:
+                    switch (op->get_type()) {
+                        case r_object:
+                        case r_function:
+                            return n.new_boolean(str > op->to_string());
+                        case r_number:
+                        case r_boolean:
+                        case r_null:
+                        case r_undefined:
+                            return n.new_boolean(false);
+                        default:
+                            break;
+                    }
+                    break;
+                case COMPARE_FEQUAL:
+                    switch (op->get_type()) {
+                        case r_boolean:
+                        case r_number:
+                        case r_object:
+                        case r_function:
+                        case r_null:
+                        case r_undefined:
+                            return n.new_boolean(false);
+                        default:
+                            break;
+                    }
+                    break;
+                case COMPARE_FNOT_EQUAL:
+                    return n.new_boolean(!JS_BOOL(binary_op(n, COMPARE_FEQUAL, op)));
                 case BINARY_POWER:
                     switch (op->get_type()) {
                         case r_number: {
@@ -669,6 +876,28 @@ namespace clib {
                 default:
                     break;
             }
+        }
+        return nullptr;
+    }
+
+    js_value::ref jsv_string::unary_op(js_value_new &n, int code) {
+        switch (code) {
+            case UNARY_POSITIVE:
+                break;
+            case UNARY_NEGATIVE:
+                break;
+            case UNARY_NOT:
+                break;
+            case UNARY_INVERT:
+                break;
+            case UNARY_NEW:
+                break;
+            case UNARY_DELETE:
+                break;
+            case UNARY_TYPEOF:
+                return n.new_string("string");
+            default:
+                break;
         }
         return nullptr;
     }

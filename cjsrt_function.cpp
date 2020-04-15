@@ -15,16 +15,107 @@ namespace clib {
         code = std::make_shared<cjs_function_info>(std::move(c));
     }
 
-    js_value::ref jsv_function::clone() const {
-        return nullptr;
-    }
-
     runtime_t jsv_function::get_type() {
         return r_function;
     }
 
-    js_value::ref jsv_function::binary_op(js_value_new &n, int c, js_value::ref op) {
+    js_value::ref jsv_function::binary_op(js_value_new &n, int c, const js_value::ref &op) {
         switch (c) {
+            case COMPARE_LESS:
+                switch (op->get_type()) {
+                    case r_string:
+                    case r_function:
+                    case r_object:
+                        return n.new_boolean(code->text < op->to_string());
+                    case r_number:
+                    case r_boolean:
+                    case r_null:
+                    case r_undefined:
+                        return n.new_boolean(false);
+                    default:
+                        break;
+                }
+                break;
+            case COMPARE_LESS_EQUAL:
+                switch (op->get_type()) {
+                    case r_string:
+                    case r_function:
+                    case r_object:
+                        return n.new_boolean(code->text <= op->to_string());
+                    case r_number:
+                    case r_boolean:
+                    case r_null:
+                    case r_undefined:
+                        return n.new_boolean(false);
+                    default:
+                        break;
+                }
+                break;
+            case COMPARE_EQUAL:
+                switch (op->get_type()) {
+                    case r_string:
+                    case r_object:
+                        return n.new_boolean(code->text == op->to_string());
+                    case r_function:
+                        return n.new_boolean(shared_from_this() == op);
+                    case r_number:
+                    case r_boolean:
+                    case r_null:
+                    case r_undefined:
+                        return n.new_boolean(false);
+                    default:
+                        break;
+                }
+                break;
+            case COMPARE_NOT_EQUAL:
+                return n.new_boolean(!JS_BOOL(binary_op(n, COMPARE_EQUAL, op)));
+            case COMPARE_GREATER:
+                switch (op->get_type()) {
+                    case r_string:
+                    case r_function:
+                    case r_object:
+                        return n.new_boolean(code->text > op->to_string());
+                    case r_number:
+                    case r_boolean:
+                    case r_null:
+                    case r_undefined:
+                        return n.new_boolean(false);
+                    default:
+                        break;
+                }
+                break;
+            case COMPARE_GREATER_EQUAL:
+                switch (op->get_type()) {
+                    case r_string:
+                    case r_function:
+                    case r_object:
+                        return n.new_boolean(code->text >= op->to_string());
+                    case r_number:
+                    case r_boolean:
+                    case r_null:
+                    case r_undefined:
+                        return n.new_boolean(false);
+                    default:
+                        break;
+                }
+                break;
+            case COMPARE_FEQUAL:
+                switch (op->get_type()) {
+                    case r_function:
+                        return n.new_boolean(shared_from_this() == op);
+                    case r_boolean:
+                    case r_number:
+                    case r_string:
+                    case r_object:
+                    case r_null:
+                    case r_undefined:
+                        return n.new_boolean(false);
+                    default:
+                        break;
+                }
+                break;
+            case COMPARE_FNOT_EQUAL:
+                return n.new_boolean(!JS_BOOL(binary_op(n, COMPARE_FEQUAL, op)));
             case BINARY_POWER:
                 switch (op->get_type()) {
                     case r_number: {
@@ -199,6 +290,28 @@ namespace clib {
         return nullptr;
     }
 
+    js_value::ref jsv_function::unary_op(js_value_new &n, int code) {
+        switch (code) {
+            case UNARY_POSITIVE:
+                break;
+            case UNARY_NEGATIVE:
+                break;
+            case UNARY_NOT:
+                break;
+            case UNARY_INVERT:
+                break;
+            case UNARY_NEW:
+                break;
+            case UNARY_DELETE:
+                break;
+            case UNARY_TYPEOF:
+                return n.new_string("function");
+            default:
+                break;
+        }
+        return nullptr;
+    }
+
     bool jsv_function::to_bool() const {
         return true;
     }
@@ -217,7 +330,9 @@ namespace clib {
     }
 
     std::string jsv_function::to_string() const {
-        return code->text;
+        if (builtin)
+            return name;
+        return code ? code->text : "UNKNOWN";
     }
 
     jsv_function::ref jsv_function::clear() {
@@ -236,18 +351,22 @@ namespace clib {
     }
 
     void cjs_function::store_name(const std::string &n, js_value::weak_ref obj) {
-        envs.insert({n, std::move(obj)});
+        auto f = envs.lock()->obj.find(n);
+        if (f != envs.lock()->obj.end() && f->second.lock()->attr & js_value::at_readonly) {
+            return;
+        }
+        envs.lock()->obj.insert({n, std::move(obj)});
     }
 
     void cjs_function::store_fast(const std::string &n, js_value::weak_ref obj) {
-        envs.insert({n, std::move(obj)});
+        envs.lock()->obj.insert({n, std::move(obj)});
     }
 
     cjs_function_info::cjs_function_info(
             const sym_code_t::ref &code) {
         fullname = std::move(code->fullname);
         args = std::move(code->args_str);
-        closure = std::move(code->closure_str);
+        std::copy(code->closure_str.begin(), code->closure_str.end(), std::back_inserter(closure));
         codes = std::move(code->codes);
         text = std::move(code->text);
         const auto &c = code->consts;
