@@ -13,7 +13,8 @@ int main() {
     //std::ifstream file("..\\test\\test_3.js");
     //std::ifstream file("..\\test\\test_4.js");
     //std::ifstream file("..\\test\\test_5.js");
-    std::ifstream file("..\\test\\test_6.js");
+    //std::ifstream file("..\\test\\test_6.js");
+    std::ifstream file("..\\test\\test_7.js");
     clib::cjs js;
     if (file) {
         std::stringstream buffer;

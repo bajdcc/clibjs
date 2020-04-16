@@ -1295,11 +1295,10 @@ namespace clib {
                 asts.clear();
             }
                 break;
-            case c_thisExpression:
-                break;
             case c_literal:
             case c_literalExpression:
-            case c_identifierExpression: {
+            case c_identifierExpression:
+            case c_thisExpression: {
                 if (tmps.empty()) {
                     auto pri = primary_node(asts[0]);
                     copy_info(pri, asts[0]);
@@ -1365,7 +1364,8 @@ namespace clib {
                 return std::make_shared<sym_var_t>(node);
             case a_keyword: {
                 if (AST_IS_KEYWORD_K(node, K_TRUE) || AST_IS_KEYWORD_K(node, K_FALSE) ||
-                    AST_IS_KEYWORD_K(node, K_NULL) || AST_IS_KEYWORD_K(node, K_UNDEFINED))
+                    AST_IS_KEYWORD_K(node, K_NULL) || AST_IS_KEYWORD_K(node, K_UNDEFINED) ||
+                    AST_IS_KEYWORD_K(node, K_THIS))
                     return std::make_shared<sym_var_t>(node);
                 else
                     error(node, "invalid var keyword type: ", true);

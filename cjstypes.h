@@ -288,6 +288,7 @@ namespace clib {
             LOAD_TRUE,
             LOAD_FALSE,
             LOAD_ZERO,
+            LOAD_THIS,
             POP_TOP,
             ROT_TWO,
             ROT_THREE,

@@ -21,7 +21,7 @@ namespace clib {
     void cjsmem::free(char *ptr) {
         auto f = map_data.find(ptr);
         if (f != map_data.end()) {
-            if (data[f->second].size() > 1 << 8)
+            if (data[f->second].size() > 1U << 8U)
                 data[f->second].clear();
             if (f->second + 1 == data.size()) {
                 map_data.erase(ptr);

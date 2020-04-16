@@ -12,7 +12,7 @@
 #define JS_BOOL(op) (std::dynamic_pointer_cast<jsv_boolean>(op)->b)
 #define JS_NUM(op) (std::dynamic_pointer_cast<jsv_number>(op)->number)
 #define JS_STR(op) (std::dynamic_pointer_cast<jsv_string>(op)->str)
-#define JS_STR2NUM(op,d) std::dynamic_pointer_cast<jsv_string>(op)->to_number(d)
+#define JS_STR2NUM(op, d) std::dynamic_pointer_cast<jsv_string>(op)->to_number(d)
 #define JS_STRF(op) (std::dynamic_pointer_cast<jsv_function>(op)->code->text)
 
 namespace clib {
@@ -49,8 +49,8 @@ namespace clib {
     class js_value : public std::enable_shared_from_this<js_value> {
     public:
         enum attr_t {
-            at_const = 1U << 0,
-            at_readonly = 1U << 1,
+            at_const = 1U << 0U,
+            at_readonly = 1U << 1U,
         };
 
         using ref = std::shared_ptr<js_value>;
@@ -66,6 +66,7 @@ namespace clib {
         uint8_t attr{0};
         uint8_t reserved1{0};
         uint8_t reserved2{0};
+        weak_ref __proto__;
     };
 
     class jsv_number : public js_value {
@@ -179,7 +180,7 @@ namespace clib {
         using ref = std::shared_ptr<jsv_function>;
         using weak_ref = std::weak_ptr<jsv_function>;
         jsv_function() = default;
-        explicit jsv_function(const sym_code_t::ref &c);
+        explicit jsv_function(const sym_code_t::ref &c, js_value_new &n);
         runtime_t get_type() override;
         js_value::ref binary_op(js_value_new &n, int code, const js_value::ref &op) override;
         js_value::ref unary_op(js_value_new &n, int code) override;
@@ -189,7 +190,7 @@ namespace clib {
         std::string to_string() const override;
         ref clear();
         std::shared_ptr<cjs_function_info> code;
-        std::function<void(std::shared_ptr<cjs_function> &, std::vector<js_value::weak_ref> &, js_value_new &)> builtin;
+        std::function<void(std::shared_ptr<cjs_function> &, js_value::weak_ref &_this, std::vector<js_value::weak_ref> &, js_value_new &)> builtin;
         jsv_object::weak_ref closure;
         std::string name;
     };
@@ -198,8 +199,8 @@ namespace clib {
     public:
         using ref = std::shared_ptr<cjs_function_info>;
         using weak_ref = std::weak_ptr<cjs_function_info>;
-        explicit cjs_function_info(const sym_code_t::ref &code);
-        static js_value::ref load_const(const cjs_consts &c, int op);
+        explicit cjs_function_info(const sym_code_t::ref &code, js_value_new &n);
+        static js_value::ref load_const(const cjs_consts &c, int op, js_value_new &n);
         std::string fullname;
         std::string text;
         std::vector<std::string> args;
@@ -215,9 +216,9 @@ namespace clib {
     public:
         using ref = std::shared_ptr<cjs_function>;
         using weak_ref = std::weak_ptr<cjs_function>;
-        explicit cjs_function(const sym_code_t::ref &code);
+        explicit cjs_function(const sym_code_t::ref &code, js_value_new &n);
         explicit cjs_function(cjs_function_info::ref code);
-        void reset(const sym_code_t::ref &code);
+        void reset(const sym_code_t::ref &code, js_value_new &n);
         void reset(cjs_function_info::ref code);
         void clear();
         void store_name(const std::string &name, js_value::weak_ref obj);
@@ -227,6 +228,7 @@ namespace clib {
         int pc{0};
         std::vector<js_value::weak_ref> stack;
         js_value::weak_ref ret_value;
+        js_value::weak_ref _this;
         jsv_object::weak_ref envs;
         jsv_object::weak_ref closure;
     };
@@ -281,6 +283,14 @@ namespace clib {
 
         void gc();
 
+        jsv_number::ref _new_number(double n, uint32_t attr = 0U);
+        jsv_string::ref _new_string(const std::string &s, uint32_t attr = 0U);
+        jsv_boolean::ref _new_boolean(bool b, uint32_t attr = 0U);
+        jsv_object::ref _new_object(uint32_t attr = 0U);
+        jsv_function::ref _new_function(uint32_t attr = 0U);
+        jsv_null::ref _new_null(uint32_t attr = 0U);
+        jsv_undefined::ref _new_undefined(uint32_t attr = 0U);
+
         static void print(const js_value::ref &value, int level, std::ostream &os);
 
     private:
@@ -303,6 +313,17 @@ namespace clib {
             jsv_number::ref _minus_one;
             jsv_string::ref _empty;
             jsv_function::ref _debug_print;
+            jsv_function::ref _debug_dump;
+            // proto
+            jsv_object::ref _proto_boolean;
+            jsv_object::ref _proto_function;
+            jsv_object::ref _proto_number;
+            jsv_object::ref _proto_object;
+            jsv_object::ref _proto_string;
+            jsv_object::ref _proto_root;
+            // console
+            jsv_object::ref console;
+            jsv_function::ref console_log;
         } permanents;
         cjs_runtime_reuse reuse;
     };

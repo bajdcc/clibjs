@@ -7,12 +7,13 @@ Reference: quickjs
 ## Features
 
 - [x] Parsing `jquery.js` and `Vue.js` in 1s.
-- [ ] Translate javascript file into **Python Bytecode** temporarily.
-- [ ] Build VM.
+- [x] Translate javascript file into **Python Bytecode** temporarily.
+- [x] Build VM.
 - [x] Closure.
 - [x] GC, cache unused object
 - [x] Binop\(tested in `test_4.js`\), BinComp, Unary
 - [x] Y-combinator recursion.\(tested in `test_6.js`\)
+- [x] Prototype, Attribute, Method
 
 ## Environment
 
@@ -24,11 +25,12 @@ Reference: quickjs
 - [x] Lexer\(scanned js files in `test` dir\)
 - [x] Parser\(Use LALR1 Parser with backtrace, see [clibparser](https://github.com/bajdcc/clibparser), Grammar: antlr/grammars-v4/javascript\)
 - [x] Syntax Tree\(**Auto-generation** by LALR1 Parser\)
-- [ ] AST\(On progress\)
+- [x] AST\(On progress\)
 - [x] IL Design\(**Use [Python Bytecode](https://github.com/python/cpython/blob/master/Include/opcode.h)** temporarily\)
-- [ ] Gen\(On progress\)
-- [ ] GC\(On progress\)
-- [ ] Runtime\(On progress\)
+- [x] Gen\(On progress\)
+- [x] GC\(On progress\)
+- [x] Runtime\(On progress\)
+- [x] Prototype\(On progress\)
 - [ ] Interface
 
 ## Control Flow
@@ -168,6 +170,34 @@ Output:
 
 See [Output4.txt](https://github.com/bajdcc/clibjs/blob/master/test/output4.txt), for parsing and running  `test/test_3.js` file.
 
+Input: (**test/test_7.js**) -- Method and prototype
+
+```javascript
+console.log("a".debug_dump());
+console.log(0 .debug_dump());
+console.log({}.debug_dump());
+console.log(null.debug_dump());
+console.log(undefined.debug_dump());
+console.log(this.debug_dump());
+console.log(true.debug_dump());
+console.log(false.debug_dump());
+console.log(console.debug_dump());
+```
+
+Output:
+
+```
+Str: a, Type: string, Ptr: 00fa3928
+Str: 0, Type: number, Ptr: 015074e0
+Str: [object Object], Type: object, Ptr: 0158f79c
+Str: null, Type: object, Ptr: 01507374
+Str: undefined, Type: undefined, Ptr: 015073a4
+Str: [object Object], Type: object, Ptr: 0158f004
+Str: true, Type: boolean, Ptr: 015073d4
+Str: false, Type: boolean, Ptr: 01507404
+Str: [object Object], Type: object, Ptr: 015077f4
+undefined
+```
 
 ## Grammar
 
@@ -180,7 +210,7 @@ variableDeclarationList = *(variableDeclarationList + ~_T_COMMA) + variableDecla
 variableDeclaration = assignable + *(~_T_ASSIGN + singleExpression);
 emptyStatement = _T_SEMI;
 expressionStatement = expressionSequence + eos;
-ifStatement = _K_IF + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement + *(_K_ELSE + statement);
+ifStatement = _K_IF + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement + *(~_K_ELSE + statement);
 iterationStatement = doStatement | whileStatement | forStatement | forInStatement;
 doStatement = _K_DO + statement + _K_WHILE + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + eos;
 whileStatement = _K_WHILE + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement;
@@ -203,8 +233,6 @@ tryStatement = _K_TRY + block + (catchProduction + *finallyProduction | finallyP
 catchProduction = _K_CATCH + *(~_T_LPARAN + *assignable + ~_T_RPARAN) + block;
 finallyProduction = _K_FINALLY + block;
 debuggerStatement = _K_DEBUGGER + eos;
-functionDeclaration = _K_FUNCTION + _ID + ~_T_LPARAN + *formalParameterList + ~_T_RPARAN +
-                      ~_T_LBRACE + *functionBody + ~_T_RBRACE;
 classDeclaration = _K_CLASS + _ID + classTail;
 classTail = ~_T_LBRACE + classElements + ~_T_RBRACE;
 classElements = *(classElements + ~_T_COMMA) + classElement;
@@ -234,7 +262,7 @@ statement = block
             | throwStatement
             | tryStatement
             | debuggerStatement
-            | functionDeclaration;
+            | functionStatement;
 block = ~_T_LBRACE + *statementList + ~_T_RBRACE;
 statementList = *statementList + statement;
 expressionStatement = expressionSequence + eos;
@@ -246,6 +274,7 @@ literalExpression = literal;
 arrayLiteralExpression = arrayLiteral;
 objectLiteralExpression = objectLiteral;
 parenthesizedExpression = _T_LPARAN + expressionSequence + _T_RPARAN;
+newExpression = _K_NEW + singleExpression + *arguments;
 functionExpression = anonymousFunction
                      | classExpression
                      | thisExpression
@@ -254,7 +283,8 @@ functionExpression = anonymousFunction
                      | literalExpression
                      | arrayLiteralExpression
                      | objectLiteralExpression
-                     | parenthesizedExpression;
+                     | parenthesizedExpression
+                     | newExpression;
 classExpression = _K_CLASS + ~_ID + classTail;
 memberIndexExpression = _T_LSQUARE + expressionSequence + _T_RSQUARE;
 memberDotExpression = *_T_QUERY + ~_T_DOT + *_T_SHARP + identifierName;
@@ -267,16 +297,15 @@ postfixExpression = *postfixExpression +
                      | argumentsExpression
                      | _RULE_NO_LINE + postIncrementExpression
                      | _RULE_NO_LINE + postDecreaseExpression);
-newExpression = _K_NEW + singleExpression + *arguments;
 deleteExpression = _K_DELETE;
 voidExpression = _K_VOID;
 typeofExpression = _K_TYPEOF;
 preIncrementExpression = _T_INC;
 preDecreaseExpression = _T_DEC;
-unaryPlusExpression = _T_ADD + *unaryPlusExpression;
-unaryMinusExpression = _T_SUB + *unaryMinusExpression;
-bitNotExpression = _T_BIT_NOT + *bitNotExpression;
-notExpression = _T_LOG_NOT + *notExpression;
+unaryPlusExpression = _T_ADD;
+unaryMinusExpression = _T_SUB;
+bitNotExpression = _T_BIT_NOT;
+notExpression = _T_LOG_NOT;
 prefixExpression = *prefixExpression +
                    (newExpression
                     | deleteExpression
@@ -313,9 +342,10 @@ assignmentOperatorExpression = *(assignmentOperatorExpression +
                                ternaryExpression;
 assignmentExpression = *(assignmentExpression + _T_ASSIGN) + assignmentOperatorExpression;
 singleExpression = assignmentExpression;
-literal = _K_NULL | _K_TRUE | _K_FALSE | _STRING | _REGEX | _NUMBER;
+literal = _K_NULL | _K_UNDEFINED | _K_TRUE | _K_FALSE | _STRING | _REGEX | _NUMBER;
+commaList = *commaList + _T_COMMA;
 arrayLiteral = _T_LSQUARE + *elementList + _T_RSQUARE;
-elementList = *(elementList + ~_T_COMMA) + arrayElement;
+elementList = *(elementList) + *commaList + arrayElement + *commaList;
 arrayElement = *_T_ELLIPSIS + singleExpression;
 objectLiteral = _T_LBRACE + *propertyAssignments + *~_T_COMMA + _T_RBRACE;
 identifierName = _ID | reservedWord;
@@ -323,7 +353,7 @@ reservedWord = keyword | _K_TRUE | _K_FALSE;
 numericLiteral = _NUMBER;
 assignable = _ID | arrayLiteral | objectLiteral;
 arguments = ~_T_LPARAN + *argument + _T_RPARAN;
-argument = *(argument + ~_T_COMMA) + *~_T_ELLIPSIS + (singleExpression | _ID);
+argument = *(argument + ~_T_COMMA) + *~_T_ELLIPSIS + singleExpression;
 propertyAssignments = *(propertyAssignments + ~_T_COMMA) + propertyAssignment;
 propertyAssignment = propertyExpressionAssignment
                      | computedPropertyExpressionAssignment
@@ -336,15 +366,18 @@ propertyName = identifierName
                | _STRING
                | numericLiteral
                | ~_T_LSQUARE + singleExpression + ~_T_RSQUARE;
+functionStatement = anonymousFunction;
 anonymousFunction = functionDecl
                     | anoymousFunctionDecl
                     | arrowFunction;
 functionDecl = functionDeclaration;
+functionDeclaration = _K_FUNCTION + _ID + ~_T_LPARAN + *formalParameterList + ~_T_RPARAN +
+                      ~_T_LBRACE + *functionBody + _T_RBRACE;
 anoymousFunctionDecl = _K_FUNCTION + ~_T_LPARAN + *formalParameterList + ~_T_RPARAN +
-                       ~_T_LBRACE + *functionBody + ~_T_RBRACE;
+                       ~_T_LBRACE + *functionBody + _T_RBRACE;
 arrowFunction = arrowFunctionParameters + ~_T_ARROW + arrowFunctionBody;
-arrowFunctionParameters = _ID | ~_T_LPARAN + *formalParameterList + ~_T_RPARAN;
-arrowFunctionBody = singleExpression | _T_LBRACE + *functionBody + _T_RBRACE;
+arrowFunctionParameters = _ID | _T_LPARAN + *formalParameterList + _T_RPARAN;
+arrowFunctionBody = singleExpression | ~_T_LBRACE + *functionBody + _T_RBRACE;
 eos = (~~_T_SEMI)((void *) &clear_bk) | _RULE_EOF | _RULE_LINE | _RULE_RBRACE;
 keyword = _K_BREAK
           | _K_DO

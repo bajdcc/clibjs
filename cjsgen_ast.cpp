@@ -197,6 +197,8 @@ namespace clib {
                     gen.emit(this, LOAD_NULL);
                 else if (node->data._keyword == K_UNDEFINED)
                     gen.emit(this, LOAD_UNDEFINED);
+                else if (node->data._keyword == K_THIS)
+                    gen.emit(this, LOAD_THIS);
                 else
                     gen.error(this, "unsupported var type");
                 break;

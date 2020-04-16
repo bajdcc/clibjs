@@ -11,8 +11,8 @@
 
 namespace clib {
 
-    jsv_function::jsv_function(const sym_code_t::ref &c) {
-        code = std::make_shared<cjs_function_info>(std::move(c));
+    jsv_function::jsv_function(const sym_code_t::ref &c, js_value_new &n) {
+        code = std::make_shared<cjs_function_info>(std::move(c), n);
     }
 
     runtime_t jsv_function::get_type() {
@@ -340,8 +340,8 @@ namespace clib {
         return std::dynamic_pointer_cast<jsv_function>(shared_from_this());
     }
 
-    cjs_function::cjs_function(const sym_code_t::ref &code) {
-        reset(code);
+    cjs_function::cjs_function(const sym_code_t::ref &code, js_value_new &n) {
+        reset(code, n);
     }
 
     cjs_function::cjs_function(cjs_function_info::ref code) {
@@ -366,20 +366,20 @@ namespace clib {
         pc = 0;
         stack.clear();
         ret_value.reset();
+        _this.reset();
         envs.reset();
         closure.reset();
     }
 
-    void cjs_function::reset(const sym_code_t::ref &code) {
-        info = std::make_shared<cjs_function_info>(code);
+    void cjs_function::reset(const sym_code_t::ref &code, js_value_new &n) {
+        info = std::make_shared<cjs_function_info>(code, n);
     }
 
     void cjs_function::reset(cjs_function_info::ref code) {
         info = std::move(code);
     }
 
-    cjs_function_info::cjs_function_info(
-            const sym_code_t::ref &code) {
+    cjs_function_info::cjs_function_info(const sym_code_t::ref &code, js_value_new &n) {
         fullname = std::move(code->fullname);
         args = std::move(code->args_str);
         std::copy(code->closure_str.begin(), code->closure_str.end(), std::back_inserter(closure));
@@ -397,25 +397,28 @@ namespace clib {
                   std::back_inserter(derefs));
         consts.resize(c.get_consts_data().size());
         for (size_t i = 0; i < c.get_consts_data().size(); i++) {
-            consts[i] = load_const(c, i);
+            consts[i] = load_const(c, i, n);
             consts[i]->attr |= js_value::at_const;
         }
     }
 
-    js_value::ref cjs_function_info::load_const(const cjs_consts &c, int op) {
+    js_value::ref cjs_function_info::load_const(const cjs_consts &c, int op, js_value_new &n) {
         auto t = c.get_type(op);
         switch (t) {
             case r_number:
-                return std::make_shared<jsv_number>(*(double *) c.get_data(op));
+                return n.new_number(*(double *) c.get_data(op));
             case r_string:
-                return std::make_shared<jsv_string>(*(std::string *) c.get_data(op));
+                return n.new_string(*(std::string *) c.get_data(op));
             case r_boolean:
                 break;
             case r_object:
                 break;
-            case r_function:
-                return std::make_shared<jsv_function>(((
-                        sym_code_t::weak_ref *) c.get_data(op))->lock());
+            case r_function: {
+                auto f = n.new_function();
+                auto code = ((sym_code_t::weak_ref *) c.get_data(op))->lock();
+                f->code = std::make_shared<cjs_function_info>(code, n);
+                return f;
+            }
             default:
                 break;
         }

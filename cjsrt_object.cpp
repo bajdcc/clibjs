@@ -341,6 +341,7 @@ namespace clib {
 
     jsv_object::ref jsv_object::clear() {
         obj.clear();
+        __proto__.reset();
         return std::dynamic_pointer_cast<jsv_object>(shared_from_this());
     }
 }
