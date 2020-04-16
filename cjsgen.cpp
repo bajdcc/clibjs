@@ -71,7 +71,6 @@ namespace clib {
             return f->second;
         }
         if (type == gs_string) {
-            assert(str.size() > 1);
             std::string s;
             if (str.front() == str.back() && (str.front() == '"' || str.front() == '\'')) {
                 s = std::string(str.c_str() + 1);
@@ -1019,6 +1018,9 @@ namespace clib {
                     }
                     copy_info(p, asts.front());
                     p->end = tmps.back()->end;
+                    if (AST_IS_ID(asts.front())) {
+                        asts.front()->flag = a_string;
+                    }
                     p->key = to_exp(primary_node(asts.front()));
                     copy_info(p->key, asts.front());
                     p->value = to_exp(tmps.back());
@@ -1079,6 +1081,7 @@ namespace clib {
                             i++;
                             break;
                         }
+                        _asts.push_back(primary_node(*i));
                         code->args_str.emplace_back((*i)->data._identifier);
                     }
                     asts.erase(asts.begin(), i);
