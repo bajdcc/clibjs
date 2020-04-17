@@ -315,6 +315,7 @@ namespace clib {
     }
 
     void jsv_function::mark(int n) {
+        jsv_object::mark(n);
         if (builtin)
             return;
         marked = n;
@@ -336,7 +337,8 @@ namespace clib {
         return code ? code->text : "builtin";
     }
 
-    jsv_function::ref jsv_function::clear() {
+    jsv_function::ref jsv_function::clear2() {
+        jsv_object::clear();
         code = nullptr;
         closure.reset();
         name.clear();

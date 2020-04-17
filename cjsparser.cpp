@@ -384,8 +384,7 @@ namespace clib {
         bitNotExpression = _T_BIT_NOT;
         notExpression = _T_LOG_NOT;
         prefixExpression = *prefixExpression +
-                           (newExpression
-                            | deleteExpression
+                           (deleteExpression
                             | voidExpression
                             | typeofExpression
                             | preIncrementExpression

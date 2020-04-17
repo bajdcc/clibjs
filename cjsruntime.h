@@ -180,7 +180,7 @@ namespace clib {
 
     class cjs_function;
 
-    class jsv_function : public js_value {
+    class jsv_function : public jsv_object {
     public:
         using ref = std::shared_ptr<jsv_function>;
         using weak_ref = std::weak_ptr<jsv_function>;
@@ -193,7 +193,7 @@ namespace clib {
         void mark(int n) override;
         void print(std::ostream &os) override;
         std::string to_string() const override;
-        ref clear();
+        ref clear2();
         std::shared_ptr<cjs_function_info> code;
         std::function<int(std::shared_ptr<cjs_function> &, js_value::weak_ref &_this, std::vector<js_value::weak_ref> &, js_value_new &)> builtin;
         jsv_object::weak_ref closure;

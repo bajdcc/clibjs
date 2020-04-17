@@ -33,6 +33,7 @@ namespace clib {
         s_array,
         s_object,
         s_object_pair,
+        s_new,
         s_call_method,
         s_call_function,
         s_ctrl,
@@ -257,9 +258,20 @@ namespace clib {
         sym_exp_t::ref key, value;
     };
 
+    class sym_new_t : public sym_exp_t {
+    public:
+        using ref = std::shared_ptr<sym_new_t>;
+        symbol_t get_type() const override;
+        std::string to_string() const override;
+        int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
+        sym_exp_t::ref obj;
+        std::vector<sym_exp_t::ref> args;
+    };
+
     class sym_object_t : public sym_exp_t {
     public:
-        using ref = std::shared_ptr<sym_array_t>;
+        using ref = std::shared_ptr<sym_object_t>;
         symbol_t get_type() const override;
         std::string to_string() const override;
         int gen_rvalue(ijsgen &gen) override;
@@ -269,7 +281,7 @@ namespace clib {
 
     class sym_call_method_t : public sym_exp_t {
     public:
-        using ref = std::shared_ptr<sym_array_t>;
+        using ref = std::shared_ptr<sym_call_method_t>;
         symbol_t get_type() const override;
         std::string to_string() const override;
         int gen_rvalue(ijsgen &gen) override;
@@ -281,7 +293,7 @@ namespace clib {
 
     class sym_call_function_t : public sym_exp_t {
     public:
-        using ref = std::shared_ptr<sym_array_t>;
+        using ref = std::shared_ptr<sym_call_function_t>;
         symbol_t get_type() const override;
         std::string to_string() const override;
         int gen_rvalue(ijsgen &gen) override;
@@ -301,7 +313,7 @@ namespace clib {
 
     class sym_stmt_var_t : public sym_stmt_t {
     public:
-        using ref = std::shared_ptr<sym_stmt_t>;
+        using ref = std::shared_ptr<sym_stmt_var_t>;
         symbol_t get_type() const override;
         std::string to_string() const override;
         int gen_rvalue(ijsgen &gen) override;
@@ -321,7 +333,7 @@ namespace clib {
 
     class sym_stmt_return_t : public sym_stmt_t {
     public:
-        using ref = std::shared_ptr<sym_stmt_exp_t>;
+        using ref = std::shared_ptr<sym_stmt_return_t>;
         symbol_t get_type() const override;
         std::string to_string() const override;
         int gen_rvalue(ijsgen &gen) override;

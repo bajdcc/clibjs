@@ -246,12 +246,17 @@ namespace clib {
     }
 
     void sym_var_id_t::init_id(ijsgen &gen) {
-        auto i = gen.get_var(node->data._identifier, sq_local_func);
+        auto str = std::string(node->data._identifier);
+        if (str == "arguments") {
+            clazz = gen.get_func_level() == 1 ? global : fast;
+            return;
+        }
+        auto i = gen.get_var(str, sq_local_func);
         if (i) {
             id = i;
             clazz = gen.get_func_level() == 1 ? local : fast;
         } else {
-            i = gen.get_var(node->data._identifier, sq_all);
+            i = gen.get_var(str, sq_all);
             if (i) {
                 id = i;
                 clazz = closure;
@@ -782,6 +787,33 @@ namespace clib {
     int sym_object_pair_t::set_parent(sym_t::ref node) {
         key->set_parent(shared_from_this());
         value->set_parent(shared_from_this());
+        return sym_t::set_parent(node);
+    }
+
+    // ----
+
+    symbol_t sym_new_t::get_type() const {
+        return s_new;
+    }
+
+    std::string sym_new_t::to_string() const {
+        return sym_t::to_string();
+    }
+
+    int sym_new_t::gen_rvalue(ijsgen &gen) {
+        obj->gen_rvalue(gen);
+        for (const auto &s : args) {
+            s->gen_rvalue(gen);
+        }
+        gen.emit(this, CALL_FUNCTION_EX, args.size());
+        return sym_t::gen_rvalue(gen);
+    }
+
+    int sym_new_t::set_parent(sym_t::ref node) {
+        obj->set_parent(shared_from_this());
+        for (const auto &s : args) {
+            s->set_parent(shared_from_this());
+        }
         return sym_t::set_parent(node);
     }
 

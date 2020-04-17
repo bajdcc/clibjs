@@ -411,10 +411,10 @@ namespace clib {
             case STORE_ATTR: {
                 auto n = code.op1;
                 auto key = current_stack->info->names.at(n);
-                auto obj = pop();
+                auto obj = pop().lock();
                 auto value = top();
-                auto o = std::dynamic_pointer_cast<jsv_object>(obj.lock());
-                if (obj.lock()->get_type() == r_object) {
+                auto o = std::dynamic_pointer_cast<jsv_object>(obj);
+                if (obj->get_type() == r_object || obj->get_type() == r_function) {
                     auto f = o->obj.find(key);
                     if (f != o->obj.end() && f->second.lock()->attr & js_value::at_readonly) {
                         break;
@@ -492,7 +492,7 @@ namespace clib {
                 auto n = code.op1;
                 auto key = current_stack->info->names.at(n);
                 auto obj = pop().lock();
-                if (obj->get_type() == r_object) {
+                if (obj->get_type() == r_object || obj->get_type() == r_function) {
                     auto o = std::dynamic_pointer_cast<jsv_object>(obj);
                     auto f = o->obj.find(key);
                     if (f != o->obj.end()) {
@@ -636,9 +636,20 @@ namespace clib {
                 auto env = new_stack->envs.lock();
                 if (!func->code->arrow && func->name.front() != '<')
                     env->obj[func->name] = f;
-                for (auto i = 0; i < code.op1; i++) {
-                    env->obj[func->code->args.at(i)] = args.at(i);
+                auto arg = new_object();
+                env->obj["arguments"] = arg;
+                size_t i = 0;
+                for (; i < code.op1; i++) {
+                    std::stringstream ss;
+                    ss << i;
+                    arg->obj[ss.str()] = args.at(i);
+                    if (i < func->code->args.size())
+                        env->obj[func->code->args.at(i)] = args.at(i);
                 }
+                for (; i < func->code->args.size(); i++) {
+                    env->obj[func->code->args.at(i)] = new_undefined();
+                }
+                arg->obj["length"] = new_number(code.op1);
                 if (func->closure.lock())
                     new_stack->closure = func->closure;
                 current_stack->pc++;
@@ -703,7 +714,91 @@ namespace clib {
                 break;
             case CALL_FUNCTION_KW:
                 break;
-            case CALL_FUNCTION_EX:
+            case CALL_FUNCTION_EX: {
+                auto n = code.op1;
+                assert((int) current_stack->stack.size() > n);
+                std::vector<js_value::weak_ref> args(n);
+                while (n-- > 0) {
+                    args[n] = pop();
+                }
+                auto f = pop();
+                if (f.lock()->get_type() != r_function) {
+                    push(new_undefined());
+                    break;
+                }
+                auto func = std::dynamic_pointer_cast<jsv_function>(f.lock());
+                auto _this = new_object();
+                auto prototype = func->obj["prototype"].lock();
+                if (!prototype)
+                    _this->__proto__ = permanents._proto_object;
+                else
+                    _this->__proto__ = prototype;
+                if (func->builtin) {
+                    js_value::weak_ref _t = _this;
+                    auto r = func->builtin(current_stack, _t, args, *this);
+                    if (r != 0)
+                        return r;
+                    break;
+                }
+                auto p = _this->__proto__.lock();
+                js_value::weak_ref constructor;
+                while (p) {
+                    if (p->get_type() != r_object) {
+                        push(new_undefined()); // type error
+                        break;
+                    }
+                    auto ob = std::dynamic_pointer_cast<jsv_object>(p);
+                    auto cons = ob->obj.find("constructor");
+                    if (cons != ob->obj.end()) {
+                        if (cons->second.lock()->get_type() == r_function) {
+                            constructor = cons->second;
+                        }
+                        break;
+                    }
+                    p = p->__proto__.lock();
+                }
+                if (!constructor.lock()) {
+                    push(new_undefined()); // no constructor error
+                    break;
+                }
+                if (constructor.lock()->get_type() != r_function) {
+                    push(new_undefined()); // type error
+                    break;
+                }
+                auto cons_func = std::dynamic_pointer_cast<jsv_function>(constructor.lock());
+                if (cons_func->builtin) {
+                    js_value::weak_ref _t = _this;
+                    auto r = cons_func->builtin(current_stack, _t, args, *this);
+                    if (r != 0)
+                        return r;
+                    break;
+                }
+                stack.push_back(new_stack(cons_func->code));
+                auto new_stack = stack.back();
+                new_stack->_this = _this;
+                new_stack->name = cons_func->name;
+                auto env = new_stack->envs.lock();
+                if (!cons_func->code->arrow && cons_func->name.front() != '<')
+                    env->obj[cons_func->name] = f;
+                auto arg = new_object();
+                env->obj["arguments"] = arg;
+                size_t i = 0;
+                for (; i < code.op1; i++) {
+                    std::stringstream ss;
+                    ss << i;
+                    arg->obj[ss.str()] = args.at(i);
+                    if (i < cons_func->code->args.size())
+                        env->obj[cons_func->code->args.at(i)] = args.at(i);
+                }
+                for (; i < cons_func->code->args.size(); i++) {
+                    env->obj[cons_func->code->args.at(i)] = new_undefined();
+                }
+                arg->obj["length"] = new_number(code.op1);
+                if (cons_func->closure.lock())
+                    new_stack->closure = cons_func->closure;
+                current_stack->pc++;
+                return 1;
+            }
                 break;
             case SETUP_WITH:
                 break;
@@ -795,9 +890,20 @@ namespace clib {
                 auto env = new_stack->envs.lock();
                 if (!func->code->arrow && func->name.front() != '<')
                     env->obj[func->name] = f;
-                for (auto i = 0; i < code.op1; i++) {
-                    env->obj[func->code->args.at(i)] = args.at(i);
+                auto arg = new_object();
+                env->obj["arguments"] = arg;
+                size_t i = 0;
+                for (; i < code.op1; i++) {
+                    std::stringstream ss;
+                    ss << i;
+                    arg->obj[ss.str()] = args.at(i);
+                    if (i < func->code->args.size())
+                        env->obj[func->code->args.at(i)] = args.at(i);
                 }
+                for (; i < func->code->args.size(); i++) {
+                    env->obj[func->code->args.at(i)] = new_undefined();
+                }
+                arg->obj["length"] = new_number(code.op1);
                 if (func->closure.lock())
                     new_stack->closure = func->closure;
                 current_stack->pc++;
@@ -1067,7 +1173,7 @@ namespace clib {
                 break;
             case r_function:
                 reuse.reuse_functions.push_back(
-                        std::dynamic_pointer_cast<jsv_function>(v)->clear());
+                        std::dynamic_pointer_cast<jsv_function>(v)->clear2());
                 break;
             default:
                 break;
@@ -1176,6 +1282,9 @@ namespace clib {
         auto s = std::make_shared<jsv_function>();
         if (attr > 0U) s->attr = attr;
         s->__proto__ = permanents._proto_function;
+        auto prototype = new_object();
+        prototype->obj["constructor"] = s;
+        s->obj["prototype"] = prototype;
         return s;
     }
 

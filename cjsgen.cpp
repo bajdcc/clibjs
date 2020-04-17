@@ -1202,7 +1202,31 @@ namespace clib {
                 asts.clear();
             }
                 break;
-            case c_newExpression:
+            case c_newExpression: {
+                auto exp = std::make_shared<sym_new_t>();
+                if (tmps.size() == 1 && tmps.front()->get_type() == s_call_function) {
+                    auto call = std::dynamic_pointer_cast<sym_call_function_t>(tmps.front());
+                    copy_info(exp, asts.front());
+                    exp->end = call->end;
+                    exp->obj = call->obj;
+                    exp->args = call->args;
+                }else {
+                    copy_info(exp, asts.front());
+                    exp->end = tmps.back()->end;
+                    assert(tmps.front()->get_base_type() == s_expression);
+                    exp->obj = to_exp(tmps.front());
+                    std::transform(tmps.begin() + 1, tmps.end(),
+                                   std::back_inserter(exp->args),
+                                   [](auto s) {
+                                       assert(s->get_base_type() == s_expression);
+                                       return std::dynamic_pointer_cast<sym_exp_t>(s);
+                                   });
+                }
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(exp);
+            }
+                break;
             case c_deleteExpression:
             case c_voidExpression:
             case c_typeofExpression:
@@ -1635,8 +1659,8 @@ namespace clib {
                        << n->method->column << ":"
                        << n->method->start << ":"
                        << n->method->end << "]" << std::endl;
-                    os << std::setfill(' ') << std::setw(level + 1) << "";
                     if (!n->args.empty()) {
+                        os << std::setfill(' ') << std::setw(level + 1) << "";
                         os << "args" << std::endl;
                         for (const auto &s : n->args) {
                             print(s, level + 2, os);
@@ -1655,8 +1679,28 @@ namespace clib {
                     os << std::setfill(' ') << std::setw(level + 1) << "";
                     os << "obj" << std::endl;
                     print(n->obj, level + 2, os);
-                    os << std::setfill(' ') << std::setw(level + 1) << "";
                     if (!n->args.empty()) {
+                        os << std::setfill(' ') << std::setw(level + 1) << "";
+                        os << "args" << std::endl;
+                        for (const auto &s : n->args) {
+                            print(s, level + 2, os);
+                        }
+                    }
+                }
+                break;
+            case s_new:
+                os << "new"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_new_t>(node);
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << "obj" << std::endl;
+                    print(n->obj, level + 2, os);
+                    if (!n->args.empty()) {
+                        os << std::setfill(' ') << std::setw(level + 1) << "";
                         os << "args" << std::endl;
                         for (const auto &s : n->args) {
                             print(s, level + 2, os);

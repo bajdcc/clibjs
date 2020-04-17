@@ -10,7 +10,7 @@
 #include "cjsparser.h"
 #include "cjsgen.h"
 
-#define LOG_AST 0
+#define LOG_AST 1
 #define LOG_FILE 0
 
 namespace clib {
