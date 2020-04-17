@@ -146,6 +146,7 @@ namespace clib {
         std::string to_string() const override;
         ref clear();
         std::unordered_map<std::string, js_value::weak_ref> obj;
+        std::unordered_map<std::string, js_value::weak_ref> special;
     };
 
     class jsv_null : public js_value {
@@ -182,6 +183,9 @@ namespace clib {
 
     class jsv_function : public jsv_object {
     public:
+        enum attr_t {
+            at_new_function = 1U << 1U,
+        };
         using ref = std::shared_ptr<jsv_function>;
         using weak_ref = std::weak_ptr<jsv_function>;
         jsv_function() = default;
@@ -195,7 +199,7 @@ namespace clib {
         std::string to_string() const override;
         ref clear2();
         std::shared_ptr<cjs_function_info> code;
-        std::function<int(std::shared_ptr<cjs_function> &, js_value::weak_ref &_this, std::vector<js_value::weak_ref> &, js_value_new &)> builtin;
+        std::function<int(std::shared_ptr<cjs_function> &, js_value::weak_ref &_this, std::vector<js_value::weak_ref> &, js_value_new &, uint32_t attr)> builtin;
         jsv_object::weak_ref closure;
         std::string name;
     };
@@ -332,6 +336,9 @@ namespace clib {
             // console
             jsv_object::ref console;
             jsv_function::ref console_log;
+            // function
+            jsv_function::ref f_number;
+            jsv_function::ref f_boolean;
         } permanents;
         cjs_runtime_reuse reuse;
     };

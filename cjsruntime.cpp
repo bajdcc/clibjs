@@ -13,8 +13,8 @@
 #include "cjsruntime.h"
 #include "cjsast.h"
 
-#define DUMP_STEP 0
-#define DUMP_GC 0
+#define DUMP_STEP 1
+#define DUMP_GC 1
 #define GC_PERIOD 128
 #define DUMP_PRINT_FILE_ENABLE 1
 #define DUMP_PRINT_FILE_AUTO_CLEAR 1
@@ -51,16 +51,16 @@ namespace clib {
         permanents._proto_function = _new_object(js_value::at_const | js_value::at_readonly);
         permanents._proto_function_call = _new_function(js_value::at_const | js_value::at_readonly);
         permanents._proto_function_call->name = "call";
-        permanents._proto_function_call->builtin = [](auto &func, auto &_this, auto &args, auto &js) {
+        permanents._proto_function_call->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
             auto f = _this.lock();
             assert(f->get_type() == r_function);
             auto fun = std::dynamic_pointer_cast<jsv_function>(f);
             if (fun->builtin) {
                 if (args.empty())
-                    return fun->builtin(func, _this, args, js);
+                    return fun->builtin(func, _this, args, js, 0);
                 typename std::remove_reference<decltype(args)>::type
                         _args(args.begin() + 1, args.end());
-                return fun->builtin(func, args.front(), _args, js);
+                return fun->builtin(func, args.front(), _args, js, 0);
             }
             auto new_stack = js.new_func(fun->code);
             new_stack->_this = args.empty() ? _this : args.front();
@@ -103,7 +103,7 @@ namespace clib {
 #endif
 #endif
 #if DUMP_PRINT_FILE_ENABLE
-        permanents._debug_print->builtin = [](auto &func, auto &_this, auto &args, auto &js) {
+        permanents._debug_print->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
             std::ofstream ofs(DUMP_PRINT_FILE, std::ios::app);
             for (size_t i = 0; i < args.size(); i++) {
                 args[i].lock()->print(ofs);
@@ -121,7 +121,7 @@ namespace clib {
         // debug
         permanents._debug_dump = _new_function(js_value::at_const | js_value::at_readonly);
         permanents._debug_dump->name = "debug_dump";
-        permanents._debug_dump->builtin = [](auto &func, auto &_this, auto &args, auto &js) {
+        permanents._debug_dump->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
             char buf[128];
             auto t = _this.lock();
             assert(t);
@@ -137,7 +137,7 @@ namespace clib {
         permanents.console = _new_object(js_value::at_const | js_value::at_readonly);
         permanents.console_log = _new_function(js_value::at_const | js_value::at_readonly);
         permanents.console_log->name = "log";
-        permanents.console_log->builtin = [](auto &func, auto &_this, auto &args, auto &js) {
+        permanents.console_log->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
             std::stringstream ss;
             for (size_t i = 0; i < args.size(); i++) {
                 args[i].lock()->print(ss);
@@ -152,6 +152,78 @@ namespace clib {
         };
         permanents.console->obj.insert({permanents.console_log->name, permanents.console_log});
         global_env.insert({"console", permanents.console});
+        // number
+        permanents.f_number = _new_function(js_value::at_const | js_value::at_readonly);
+        permanents.f_number->name = "Number";
+        permanents.f_number->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
+            js_value::ref pri;
+            if (args.empty()) {
+                pri = js.new_number(0.0);
+            } else {
+                auto n = args.front().lock();
+                switch ((runtime_t) n->get_type()) {
+                    case r_number:
+                        func->stack.push_back(n);
+                        break;
+                    case r_string: {
+                        double d = 0.0;
+                        switch (JS_STR2NUM(n, d)) {
+                            case 0:
+                            case 1:
+                                pri = js.new_number(0.0);
+                            case 2:
+                                pri = js.new_number(d);
+                                break;
+                            case 3:
+                                pri = js.new_number(NAN);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                        break;
+                    case r_boolean:
+                        pri = js.new_number(JS_NUM(n));
+                        break;
+                    case r_function:
+                    case r_object:
+                    case r_null:
+                    case r_undefined:
+                        pri = js.new_number(NAN);
+                        break;
+                    default:
+                        assert(!"invalid number type");
+                        break;
+                }
+            }
+            if (attr & jsv_function::at_new_function) {
+                auto new_pri = js.new_object();
+                new_pri->special.insert({"PrimitiveValue", pri});
+                pri = new_pri;
+            }
+            func->stack.push_back(pri);
+            return 0;
+        };
+        global_env.insert({permanents.f_number->name, permanents.f_number});
+        // boolean
+        permanents.f_boolean = _new_function(js_value::at_const | js_value::at_readonly);
+        permanents.f_boolean->name = "Boolean";
+        permanents.f_boolean->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
+            js_value::ref pri;
+            if (args.empty()) {
+                pri = js.new_boolean(false);
+            } else {
+                pri = js.new_boolean(args.front().lock()->to_bool());
+            }
+            if (attr & jsv_function::at_new_function) {
+                auto new_pri = js.new_object();
+                new_pri->special.insert({"PrimitiveValue", pri});
+                pri = new_pri;
+            }
+            func->stack.push_back(pri);
+            return 0;
+        };
+        global_env.insert({permanents.f_boolean->name, permanents.f_boolean});
     }
 
     void cjsruntime::eval(cjs_code_result::ref code) {
@@ -627,7 +699,7 @@ namespace clib {
                 auto func = std::dynamic_pointer_cast<jsv_function>(f.lock());
                 if (func->builtin) {
                     js_value::weak_ref _this = std::dynamic_pointer_cast<js_value>(stack.front()->envs.lock());
-                    func->builtin(current_stack, _this, args, *this);
+                    func->builtin(current_stack, _this, args, *this, 0);
                     break;
                 }
                 stack.push_back(new_stack(func->code));
@@ -735,7 +807,7 @@ namespace clib {
                     _this->__proto__ = prototype;
                 if (func->builtin) {
                     js_value::weak_ref _t = _this;
-                    auto r = func->builtin(current_stack, _t, args, *this);
+                    auto r = func->builtin(current_stack, _t, args, *this, jsv_function::at_new_function);
                     if (r != 0)
                         return r;
                     break;
@@ -768,7 +840,7 @@ namespace clib {
                 auto cons_func = std::dynamic_pointer_cast<jsv_function>(constructor.lock());
                 if (cons_func->builtin) {
                     js_value::weak_ref _t = _this;
-                    auto r = cons_func->builtin(current_stack, _t, args, *this);
+                    auto r = cons_func->builtin(current_stack, _t, args, *this, jsv_function::at_new_function);
                     if (r != 0)
                         return r;
                     break;
@@ -878,7 +950,7 @@ namespace clib {
                 auto func = std::dynamic_pointer_cast<jsv_function>(f.lock());
                 if (func->builtin) {
                     js_value::weak_ref t = _this;
-                    auto r = func->builtin(current_stack, t, args, *this);
+                    auto r = func->builtin(current_stack, t, args, *this, 0);
                     if (r != 0)
                         return r;
                     break;
@@ -1331,11 +1403,15 @@ namespace clib {
                 break;
             case r_object: {
                 auto n = std::dynamic_pointer_cast<jsv_object>(value);
-                os << "object: " << std::endl;
-                for (const auto &s : n->obj) {
-                    os << std::setfill(' ') << std::setw(level) << "";
-                    os << s.first << ": " << std::endl;
-                    print(s.second.lock(), level + 1, os);
+                if (!n->special.empty()) {
+                    os << "object: [[primitive]] " << n->to_string() << std::endl;
+                } else {
+                    os << "object: " << std::endl;
+                    for (const auto &s : n->obj) {
+                        os << std::setfill(' ') << std::setw(level) << "";
+                        os << s.first << ": " << std::endl;
+                        print(s.second.lock(), level + 1, os);
+                    }
                 }
             }
                 break;

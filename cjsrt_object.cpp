@@ -329,18 +329,36 @@ namespace clib {
             if ((s.second.lock()->marked > 0 ? 1 : 0) != (n > 0 ? 1 : 0))
                 s.second.lock()->mark(n);
         }
+        for (const auto &s : special) {
+            if ((s.second.lock()->marked > 0 ? 1 : 0) != (n > 0 ? 1 : 0))
+                s.second.lock()->mark(n);
+        }
     }
 
     void jsv_object::print(std::ostream &os) {
+        if (!special.empty()) {
+            auto f = special.find("PrimitiveValue");
+            if (f != special.end()) {
+                os << f->second.lock()->to_string();
+                return;
+            }
+        }
         os << _str;
     }
 
     std::string jsv_object::to_string() const {
+        if (!special.empty()) {
+            auto f = special.find("PrimitiveValue");
+            if (f != special.end()) {
+                return f->second.lock()->to_string();
+            }
+        }
         return _str;
     }
 
     jsv_object::ref jsv_object::clear() {
         obj.clear();
+        special.clear();
         __proto__.reset();
         return std::dynamic_pointer_cast<jsv_object>(shared_from_this());
     }
