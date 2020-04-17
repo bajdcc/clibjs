@@ -349,15 +349,11 @@ namespace clib {
     }
 
     void cjs_function::store_name(const std::string &n, js_value::weak_ref obj) {
-        auto f = envs.lock()->obj.find(n);
-        if (f != envs.lock()->obj.end() && f->second.lock()->attr & js_value::at_readonly) {
-            return;
-        }
-        envs.lock()->obj.insert({n, std::move(obj)});
+        envs.lock()->obj[n] = std::move(obj);
     }
 
     void cjs_function::store_fast(const std::string &n, js_value::weak_ref obj) {
-        envs.lock()->obj.insert({n, std::move(obj)});
+        envs.lock()->obj[n] = std::move(obj);
     }
 
     void cjs_function::clear() {
@@ -380,6 +376,7 @@ namespace clib {
     }
 
     cjs_function_info::cjs_function_info(const sym_code_t::ref &code, js_value_new &n) {
+        arrow = std::move(code->arrow);
         fullname = std::move(code->fullname);
         args = std::move(code->args_str);
         std::copy(code->closure_str.begin(), code->closure_str.end(), std::back_inserter(closure));

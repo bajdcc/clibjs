@@ -1066,6 +1066,7 @@ namespace clib {
                 break;
             case c_arrowFunction: {
                 auto code = std::make_shared<sym_code_t>();
+                code->arrow = true;
                 copy_info(code, asts[0]);
                 code->end = tmps.back()->end;
                 asts.pop_back();
@@ -1894,7 +1895,7 @@ namespace clib {
     }
 
     void cjsgen::add_var(const std::string &name, std::shared_ptr<sym_t> id) {
-        codes.back()->scopes.back().vars.insert({name, id});
+        codes.back()->scopes.back().vars[name] = id;
     }
 
     void cjsgen::add_closure(std::shared_ptr<sym_var_id_t> c) {
@@ -1947,6 +1948,10 @@ namespace clib {
         }
         ss << name;
         return ss.str();
+    }
+
+    bool cjsgen::is_arrow_func() const {
+        return codes.back()->arrow;
     }
 
     void cjsgen::error(ast_node_index *idx, const std::string &str) const {

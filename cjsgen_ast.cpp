@@ -79,6 +79,14 @@ namespace clib {
         return sym_t::gen_rvalue(gen);
     }
 
+    int sym_id_t::gen_rvalue_decl(ijsgen &gen) {
+        gen.emit(this, LOAD_UNDEFINED);
+        for (const auto &s : ids) {
+            s->gen_lvalue(gen);
+        }
+        return sym_t::gen_rvalue(gen);
+    }
+
     int sym_id_t::set_parent(sym_t::ref node) {
         for (auto &s : ids) {
             s->set_parent(shared_from_this());
@@ -1020,7 +1028,34 @@ namespace clib {
 
     int sym_block_t::gen_rvalue(ijsgen &gen) {
         gen.enter(sp_block);
+        decltype(stmts) func_stmts;
+        decltype(stmts) var_decls;
+        decltype(stmts) others;
         for (const auto &s : stmts) {
+            if (s->get_type() == s_statement_exp) {
+                auto exp = std::dynamic_pointer_cast<sym_stmt_exp_t>(s);
+                const auto c = exp->seq->exps;
+                if (c.size() == 1) {
+                    if (c.front()->get_type() == s_code) {
+                        func_stmts.push_back(s);
+                        continue;
+                    } else {
+                        if (c.front()->get_type() == s_id) {
+                            var_decls.push_back(s);
+                            continue;
+                        }
+                    }
+                }
+            }
+            others.push_back(s);
+        }
+        for (const auto &s : func_stmts) {
+            s->gen_rvalue(gen);
+        }
+        for (const auto &s : var_decls) {
+            std::dynamic_pointer_cast<sym_id_t>(s)->gen_rvalue_decl(gen);
+        }
+        for (const auto &s : others) {
             s->gen_rvalue(gen);
         }
         gen.leave();
@@ -1047,11 +1082,19 @@ namespace clib {
     int sym_code_t::gen_rvalue(ijsgen &gen) {
         if (!args.empty())
             gen.enter(sp_param);
+        fullname = gen.get_fullname(name ? name->data._identifier : LAMBDA_ID);
         auto id = gen.push_function(std::dynamic_pointer_cast<sym_code_t>(shared_from_this()));
         if (body) {
+            if (!arrow && name) {
+                gen.enter(sp_block);
+                gen.add_var(fullname, shared_from_this());
+            }
             body->gen_rvalue(gen);
             if (body->get_base_type() == s_expression)
                 gen.emit(nullptr, RETURN_VALUE);
+            if (!arrow && name) {
+                gen.leave();
+            }
         }
         gen.pop_function();
         uint32_t flag = 0;
@@ -1063,12 +1106,12 @@ namespace clib {
             flag |= 8U;
             gen.emit(nullptr, BUILD_MAP, closure.size());
         }
-        fullname = gen.get_fullname(name ? name->data._identifier : LAMBDA_ID);
         if (name) {
             gen.emit(name, LOAD_CONST, id);
             gen.emit(name, LOAD_CONST, gen.load_string(fullname, cjs_consts::get_string_t::gs_string));
             gen.emit(this, MAKE_FUNCTION, (int) flag);
-            gen.emit(name, STORE_NAME, gen.load_string(name->data._identifier, cjs_consts::get_string_t::gs_name));
+            if (parent.lock()->get_type() == s_statement_exp)
+                gen.emit(name, STORE_NAME, gen.load_string(name->data._identifier, cjs_consts::get_string_t::gs_name));
         } else {
             gen.emit(nullptr, LOAD_CONST, id);
             gen.emit(nullptr, LOAD_CONST, gen.load_string(fullname, cjs_consts::get_string_t::gs_string));

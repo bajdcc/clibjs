@@ -70,6 +70,7 @@ namespace clib {
         virtual void add_closure(std::shared_ptr<sym_var_id_t>) = 0;
         virtual int get_func_level() const = 0;
         virtual std::string get_fullname(const std::string &name) const = 0;
+        virtual bool is_arrow_func() const = 0;
         virtual void error(ast_node_index *, const std::string &) const = 0;
     };
 
@@ -138,6 +139,8 @@ namespace clib {
         std::string to_string() const override;
         int gen_lvalue(ijsgen &gen) override;
         int gen_rvalue(ijsgen &gen) override;
+        int gen_rvalue_decl(ijsgen &gen);
+        int gen_rvalue_impl(ijsgen &gen);
         int set_parent(sym_t::ref node) override;
         void parse();
         std::vector<sym_var_t::ref> ids;
@@ -440,6 +443,7 @@ namespace clib {
         int gen_rvalue(ijsgen &gen) override;
         int set_parent(sym_t::ref node) override;
         ast_node *name{nullptr};
+        bool arrow{false};
         std::string fullname;
         std::string text;
         std::vector<sym_var_t::ref> args;
@@ -487,6 +491,7 @@ namespace clib {
         void add_closure(std::shared_ptr<sym_var_id_t>) override;
         int get_func_level() const override;
         std::string get_fullname(const std::string &name) const override;
+        bool is_arrow_func() const override;
         void error(ast_node_index *, const std::string &) const override;
 
     private:

@@ -35,6 +35,10 @@ namespace clib {
 
     class jsv_null;
 
+    class cjs_function;
+
+    class cjs_function_info;
+
     class js_value_new {
     public:
         virtual std::shared_ptr<jsv_number> new_number(double n) = 0;
@@ -44,6 +48,7 @@ namespace clib {
         virtual std::shared_ptr<jsv_function> new_function() = 0;
         virtual std::shared_ptr<jsv_null> new_null() = 0;
         virtual std::shared_ptr<jsv_undefined> new_undefined() = 0;
+        virtual std::shared_ptr<cjs_function> new_func(const std::shared_ptr<cjs_function_info> &code) = 0;
     };
 
     class js_value : public std::enable_shared_from_this<js_value> {
@@ -190,7 +195,7 @@ namespace clib {
         std::string to_string() const override;
         ref clear();
         std::shared_ptr<cjs_function_info> code;
-        std::function<void(std::shared_ptr<cjs_function> &, js_value::weak_ref &_this, std::vector<js_value::weak_ref> &, js_value_new &)> builtin;
+        std::function<int(std::shared_ptr<cjs_function> &, js_value::weak_ref &_this, std::vector<js_value::weak_ref> &, js_value_new &)> builtin;
         jsv_object::weak_ref closure;
         std::string name;
     };
@@ -201,6 +206,7 @@ namespace clib {
         using weak_ref = std::weak_ptr<cjs_function_info>;
         explicit cjs_function_info(const sym_code_t::ref &code, js_value_new &n);
         static js_value::ref load_const(const cjs_consts &c, int op, js_value_new &n);
+        bool arrow{false};
         std::string fullname;
         std::string text;
         std::vector<std::string> args;
@@ -258,6 +264,7 @@ namespace clib {
         jsv_function::ref new_function() override;
         jsv_null::ref new_null() override;
         jsv_undefined::ref new_undefined() override;
+        cjs_function::ref new_func(const cjs_function_info::ref &code) override;
 
     private:
         int run(const sym_code_t::ref &fun, const cjs_code &code);
@@ -317,6 +324,7 @@ namespace clib {
             // proto
             jsv_object::ref _proto_boolean;
             jsv_object::ref _proto_function;
+            jsv_function::ref _proto_function_call;
             jsv_object::ref _proto_number;
             jsv_object::ref _proto_object;
             jsv_object::ref _proto_string;
