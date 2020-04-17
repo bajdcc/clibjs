@@ -224,6 +224,63 @@ namespace clib {
             return 0;
         };
         global_env.insert({permanents.f_boolean->name, permanents.f_boolean});
+        // object
+        permanents.f_object = _new_function(js_value::at_const | js_value::at_readonly);
+        permanents.f_object->name = "Object";
+        permanents.f_object->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
+            js_value::ref pri;
+            if (args.empty()) {
+                pri = js.new_boolean(false);
+            } else {
+                pri = js.new_boolean(args.front().lock()->to_bool());
+            }
+            if (attr & jsv_function::at_new_function) {
+                auto new_pri = js.new_object();
+                new_pri->special.insert({"PrimitiveValue", pri});
+                pri = new_pri;
+            }
+            func->stack.push_back(pri);
+            return 0;
+        };
+        global_env.insert({permanents.f_object->name, permanents.f_object});
+        // string
+        permanents.f_string = _new_function(js_value::at_const | js_value::at_readonly);
+        permanents.f_string->name = "String";
+        permanents.f_string->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
+            js_value::ref pri;
+            if (args.empty()) {
+                pri = js.new_string("");
+            } else {
+                pri = js.new_string(args.front().lock()->to_string());
+            }
+            if (attr & jsv_function::at_new_function) {
+                auto new_pri = js.new_object();
+                new_pri->special.insert({"PrimitiveValue", pri});
+                pri = new_pri;
+            }
+            func->stack.push_back(pri);
+            return 0;
+        };
+        global_env.insert({permanents.f_string->name, permanents.f_string});
+        // function
+        permanents.f_function = _new_function(js_value::at_const | js_value::at_readonly);
+        permanents.f_function->name = "Function";
+        permanents.f_function->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
+            js_value::ref pri;
+            if (args.empty()) {
+                pri = js.new_boolean(false);
+            } else {
+                pri = js.new_boolean(args.front().lock()->to_bool());
+            }
+            if (attr & jsv_function::at_new_function) {
+                auto new_pri = js.new_object();
+                new_pri->special.insert({"PrimitiveValue", pri});
+                pri = new_pri;
+            }
+            func->stack.push_back(pri);
+            return 0;
+        };
+        global_env.insert({permanents.f_function->name, permanents.f_function});
     }
 
     void cjsruntime::eval(cjs_code_result::ref code) {
@@ -272,7 +329,8 @@ namespace clib {
                 continue;
             }
             if (r == 2) {
-                current_stack->ret_value = pop();
+                if (!current_stack->ret_value.lock())
+                    current_stack->ret_value = pop();
             }
             ret = stack.back()->ret_value;
             if (stack.size() > 1) {
@@ -388,7 +446,44 @@ namespace clib {
                 push(result);
             }
                 break;
-            case BINARY_SUBSCR:
+            case BINARY_SUBSCR: {
+                auto n = code.op1;
+                auto key = pop().lock()->to_string();
+                auto obj = pop().lock();
+                if (obj->get_type() == r_object || obj->get_type() == r_function) {
+                    auto o = std::dynamic_pointer_cast<jsv_object>(obj);
+                    auto f = o->obj.find(key);
+                    if (f != o->obj.end()) {
+                        push(f->second);
+                        break;
+                    }
+                }
+                if (key == "__proto__") {
+                    auto p = obj->__proto__.lock();
+                    push(p ? p : permanents._null);
+                    break;
+                }
+                auto proto = obj->__proto__.lock();
+                if (!proto) {
+                    push(new_undefined()); // type error
+                    break;
+                }
+                auto p = proto;
+                auto failed = true;
+                while (p) {
+                    assert(p->get_type() == r_object);
+                    auto o = std::dynamic_pointer_cast<jsv_object>(p);
+                    auto f = o->obj.find(key);
+                    if (f != o->obj.end()) {
+                        push(f->second);
+                        failed = false;
+                        break;
+                    }
+                    p = p->__proto__.lock();
+                }
+                if (failed)
+                    push(new_undefined());
+            }
                 break;
             case BINARY_INC:
             case BINARY_DEC: {
@@ -419,7 +514,21 @@ namespace clib {
                 break;
             case INPLACE_MODULO:
                 break;
-            case STORE_SUBSCR:
+            case STORE_SUBSCR: {
+                auto n = code.op1;
+                auto key = pop().lock()->to_string();
+                auto obj = pop().lock();
+                auto value = top();
+                auto o = std::dynamic_pointer_cast<jsv_object>(obj);
+                if (obj->get_type() == r_object || obj->get_type() == r_function) {
+                    auto f = o->obj.find(key);
+                    if (f != o->obj.end() && f->second.lock()->attr & js_value::at_readonly) {
+                        break;
+                    }
+                    o->obj[key] = std::move(value);
+                    break;
+                }
+            }
                 break;
             case DELETE_SUBSCR:
                 break;
@@ -848,6 +957,7 @@ namespace clib {
                 stack.push_back(new_stack(cons_func->code));
                 auto new_stack = stack.back();
                 new_stack->_this = _this;
+                new_stack->ret_value = _this;
                 new_stack->name = cons_func->name;
                 auto env = new_stack->envs.lock();
                 if (!cons_func->code->arrow && cons_func->name.front() != '<')
@@ -1260,6 +1370,7 @@ namespace clib {
             return st;
         } else {
             auto st = reuse_stack.back();
+            st->envs = new_object();
             reuse_stack.pop_back();
             st->reset(code, *this);
             return st;
@@ -1274,6 +1385,7 @@ namespace clib {
             return st;
         } else {
             auto st = reuse_stack.back();
+            st->envs = new_object();
             reuse_stack.pop_back();
             st->reset(code);
             return st;
@@ -1289,6 +1401,7 @@ namespace clib {
         std::for_each(objs.begin(), objs.end(), [](auto &x) { x->mark(0); });
         for (const auto &s : stack) {
             const auto &st = s->stack;
+            const auto &ret = s->ret_value.lock();
             const auto &th = s->_this.lock();
             const auto &env = s->envs.lock();
             const auto &closure = s->closure.lock();
@@ -1301,6 +1414,8 @@ namespace clib {
                 closure->mark(2);
             if (th)
                 th->mark(3);
+            if (ret)
+                th->mark(4);
         }
 #if DUMP_STEP && DUMP_GC
         dump_step3();

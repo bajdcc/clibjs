@@ -1837,6 +1837,10 @@ namespace clib {
             codes.back()->codes.push_back({0, 0, 0, 0, i, 2, a, b});
     }
 
+    int cjsgen::get_ins(int n) const {
+        return codes.back()->codes.at(n).code;
+    }
+
     int cjsgen::code_length() const {
         return (int) codes.back()->codes.size();
     }

@@ -975,7 +975,7 @@ namespace clib {
         if (seq)
             seq->gen_rvalue(gen);
         else
-            gen.emit(nullptr, LOAD_NULL);
+            gen.emit(nullptr, LOAD_UNDEFINED);
         gen.emit(this, RETURN_VALUE);
         return sym_stmt_t::gen_rvalue(gen);
     }
@@ -1124,6 +1124,10 @@ namespace clib {
             body->gen_rvalue(gen);
             if (body->get_base_type() == s_expression)
                 gen.emit(nullptr, RETURN_VALUE);
+            auto l = gen.code_length();
+            if (l > 0 && gen.get_ins(l - 1) != RETURN_VALUE) {
+                gen.emit(nullptr, RETURN_VALUE);
+            }
             if (!arrow && name) {
                 gen.leave();
             }

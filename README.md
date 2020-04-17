@@ -201,6 +201,26 @@ Str: [object Object], Type: object, Ptr: 015077f4
 undefined
 ```
 
+Input: (**test/test_8.js**) -- New target
+
+```javascript
+function A(a, b) {
+    this.a = a;
+    this.b = b;
+    this.c = function () {
+        return this.a + ' ' + this.b;
+    };
+}
+var d = new A('123', 12.3);
+return d.c();
+```
+
+Output:
+
+```
+123 12.3
+```
+
 ## Grammar
 
 See [grammars-v4/javascript](https://github.com/antlr/grammars-v4/blob/master/javascript/javascript/JavaScriptParser.g4).

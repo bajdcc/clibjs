@@ -339,6 +339,9 @@ namespace clib {
             // function
             jsv_function::ref f_number;
             jsv_function::ref f_boolean;
+            jsv_function::ref f_object;
+            jsv_function::ref f_string;
+            jsv_function::ref f_function;
         } permanents;
         cjs_runtime_reuse reuse;
     };
