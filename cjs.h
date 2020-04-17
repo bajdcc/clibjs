@@ -14,7 +14,7 @@ namespace clib {
 
     class cjs : public csemantic {
     public:
-        cjs() = default;
+        cjs();
         ~cjs() = default;
 
         cjs(const cjs&) = delete;

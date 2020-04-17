@@ -6,4 +6,7 @@ function A(a, b) {
     };
 }
 var d = new A('123', 12.3);
-return d.c();
+console.log(d.c());
+
+var obj = {0: 'a', 1: 'b', length: 2};
+console.log([].slice.call(obj,0).slice(1));

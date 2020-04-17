@@ -14,12 +14,17 @@
 #define JS_STR(op) (std::dynamic_pointer_cast<jsv_string>(op)->str)
 #define JS_STR2NUM(op, d) std::dynamic_pointer_cast<jsv_string>(op)->to_number(d)
 #define JS_STRF(op) (std::dynamic_pointer_cast<jsv_function>(op)->code->text)
+#define JS_OBJ(op) (std::dynamic_pointer_cast<jsv_object>(op)->obj)
+#define JS_FUN(op) (std::dynamic_pointer_cast<jsv_function>(op))
+#define JS_V(op) (std::dynamic_pointer_cast<js_value>(op))
 
 namespace clib {
 
     std::string trim(std::string s);
 
     double fix(const double &d);
+
+    class js_value;
 
     class jsv_number;
 
@@ -49,6 +54,8 @@ namespace clib {
         virtual std::shared_ptr<jsv_null> new_null() = 0;
         virtual std::shared_ptr<jsv_undefined> new_undefined() = 0;
         virtual std::shared_ptr<cjs_function> new_func(const std::shared_ptr<cjs_function_info> &code) = 0;
+        virtual std::shared_ptr<jsv_object> new_array() = 0;
+        virtual bool to_number(const std::shared_ptr<js_value> &, double &) = 0;
     };
 
     class js_value : public std::enable_shared_from_this<js_value> {
@@ -253,11 +260,13 @@ namespace clib {
 
     class cjsruntime : public js_value_new {
     public:
-        cjsruntime();
+        cjsruntime() = default;
         ~cjsruntime() = default;
 
         cjsruntime(const cjsruntime &) = delete;
         cjsruntime &operator=(const cjsruntime &) = delete;
+
+        void init();
 
         void eval(cjs_code_result::ref code);
 
@@ -269,6 +278,8 @@ namespace clib {
         jsv_null::ref new_null() override;
         jsv_undefined::ref new_undefined() override;
         cjs_function::ref new_func(const cjs_function_info::ref &code) override;
+        std::shared_ptr<jsv_object> new_array() override;
+        bool to_number(const std::shared_ptr<js_value> &, double &) override;
 
     private:
         int run(const sym_code_t::ref &fun, const cjs_code &code);
@@ -342,6 +353,10 @@ namespace clib {
             jsv_function::ref f_object;
             jsv_function::ref f_string;
             jsv_function::ref f_function;
+            // array
+            jsv_object::ref _proto_array;
+            jsv_function::ref f_array;
+            jsv_function::ref f_array_slice;
         } permanents;
         cjs_runtime_reuse reuse;
     };

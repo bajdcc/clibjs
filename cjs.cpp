@@ -15,6 +15,10 @@
 
 namespace clib {
 
+    cjs::cjs() {
+        rt.init();
+    }
+
     backtrace_direction cjs::check(pda_edge_t edge, ast_node *node) {
         return b_next;
     }
