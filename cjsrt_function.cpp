@@ -324,13 +324,16 @@ namespace clib {
     }
 
     void jsv_function::print(std::ostream &os) {
-        os << code->text;
+        if (builtin)
+            os << name;
+        else
+            os << code ? code->text : "builtin";
     }
 
     std::string jsv_function::to_string() const {
         if (builtin)
             return name;
-        return code ? code->text : "UNKNOWN";
+        return code ? code->text : "builtin";
     }
 
     jsv_function::ref jsv_function::clear() {
@@ -376,7 +379,7 @@ namespace clib {
     }
 
     cjs_function_info::cjs_function_info(const sym_code_t::ref &code, js_value_new &n) {
-        arrow = std::move(code->arrow);
+        arrow = code->arrow;
         fullname = std::move(code->fullname);
         args = std::move(code->args_str);
         std::copy(code->closure_str.begin(), code->closure_str.end(), std::back_inserter(closure));

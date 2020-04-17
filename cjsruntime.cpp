@@ -65,9 +65,12 @@ namespace clib {
             auto new_stack = js.new_func(fun->code);
             new_stack->_this = args.empty() ? _this : args.front();
             new_stack->name = fun->name;
+            auto env = new_stack->envs.lock();
+            if (!fun->code->arrow && fun->name.front() != '<')
+                env->obj[fun->name] = f;
             if (!args.empty())
                 for (size_t i = 0; i < fun->code->args.size(); i++) {
-                    new_stack->envs.lock()->obj[fun->code->args.at(i)] = args.at(i + 1);
+                    env->obj[fun->code->args.at(i)] = args.at(i + 1);
                 }
             if (fun->closure.lock())
                 new_stack->closure = fun->closure;
@@ -789,8 +792,11 @@ namespace clib {
                 auto new_stack = stack.back();
                 new_stack->_this = _this;
                 new_stack->name = func->name;
+                auto env = new_stack->envs.lock();
+                if (!func->code->arrow && func->name.front() != '<')
+                    env->obj[func->name] = f;
                 for (auto i = 0; i < code.op1; i++) {
-                    new_stack->envs.lock()->obj[func->code->args.at(i)] = args.at(i);
+                    env->obj[func->code->args.at(i)] = args.at(i);
                 }
                 if (func->closure.lock())
                     new_stack->closure = func->closure;
