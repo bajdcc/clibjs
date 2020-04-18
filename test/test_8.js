@@ -5,8 +5,11 @@ function A(a, b) {
         return this.a + ' ' + this.b;
     };
 }
+
 var d = new A('123', 12.3);
 console.log(d.c());
 
 var obj = {0: 'a', 1: 'b', length: 2};
-console.log([].slice.call(obj,0).slice(1));
+console.log([].slice.call(obj, 0).slice(1));
+
+console.log([].concat.call(1, [2], 3));

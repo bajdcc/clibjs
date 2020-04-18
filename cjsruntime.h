@@ -110,6 +110,7 @@ namespace clib {
         void print(std::ostream &os) override;
         std::string to_string() const override;
         int to_number(double &d) const;
+        static int to_number(const std::string &s, double &d);
         ref clear();
         std::string str;
         double number{0};
@@ -357,6 +358,7 @@ namespace clib {
             jsv_object::ref _proto_array;
             jsv_function::ref f_array;
             jsv_function::ref f_array_slice;
+            jsv_function::ref f_array_concat;
         } permanents;
         cjs_runtime_reuse reuse;
     };

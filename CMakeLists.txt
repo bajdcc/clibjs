@@ -6,24 +6,16 @@ set(CMAKE_CXX_STANDARD 14)
 add_executable(clibjs
         main.cpp
         cjs.cpp
-        cjs.h
         cjstypes.cpp
-        cjstypes.h
         cjsmem.cpp
-        cjsmem.h
         cjsast.cpp
-        cjsast.h
         cjsunit.cpp
-        cjsunit.h
         cjslexer.cpp
-        cjslexer.h
         cjsparser.cpp
-        cjsparser.h
         cjsgen.cpp
-        cjsgen.h
         cjsgen_ast.cpp
         cjsruntime.cpp
-        cjsruntime.h
+        cjsruntime_base.cpp
         cjsrt_boolean.cpp
         cjsrt_function.cpp
         cjsrt_null.cpp

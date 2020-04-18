@@ -43,7 +43,7 @@ Reference: quickjs
 - [ ] boolean
 - [ ] string
 - [ ] function\(`call`\)
-- [ ] array\(`slice`\)
+- [ ] array\(`slice`, `concat`\)
 
 ## Control Flow
 

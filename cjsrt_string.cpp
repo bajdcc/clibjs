@@ -968,11 +968,13 @@ namespace clib {
     }
 
     int jsv_string::to_number(double &d) const {
+    }
+
+    int jsv_string::to_number(const std::string &s, double &d) {
         // 0: empty
         // 1: trim -> empty
         // 2: number
         // 3: error
-        const auto &s = str;
         if (s.empty())
             return 0;
         auto t = trim(s);
