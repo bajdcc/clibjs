@@ -328,7 +328,7 @@ namespace clib {
         if (builtin)
             os << name;
         else
-            os << code ? code->text : "builtin";
+            os << (code ? code->text : "builtin");
     }
 
     std::string jsv_function::to_string() const {

@@ -5,6 +5,7 @@
 
 #include <utility>
 #include <cmath>
+#include <cassert>
 
 #include "cjsgen.h"
 #include "cjsast.h"
@@ -65,6 +66,9 @@ namespace clib {
     }
 
     int sym_id_t::gen_lvalue(ijsgen &gen) {
+        for (const auto &s : ids) {
+            s->gen_lvalue(gen);
+        }
         return sym_t::gen_lvalue(gen);
     }
 
@@ -988,6 +992,28 @@ namespace clib {
 
     // ----
 
+    symbol_t sym_stmt_control_t::get_type() const {
+        return s_statement_control;
+    }
+
+    std::string sym_stmt_control_t::to_string() const {
+        return sym_stmt_t::to_string();
+    }
+
+    int sym_stmt_control_t::gen_rvalue(ijsgen &gen) {
+        gen.push_rewrites(gen.code_length(), keyword);
+        gen.emit(this, JUMP_ABSOLUTE, 0);
+        return sym_stmt_t::gen_rvalue(gen);
+    }
+
+    int sym_stmt_control_t::set_parent(sym_t::ref node) {
+        if (label)
+            label->set_parent(shared_from_this());
+        return sym_stmt_t::set_parent(node);
+    }
+
+    // ----
+
     symbol_t sym_stmt_if_t::get_type() const {
         return s_statement_if;
     }
@@ -1045,6 +1071,55 @@ namespace clib {
     int sym_stmt_while_t::set_parent(sym_t::ref node) {
         seq->set_parent(shared_from_this());
         stmt->set_parent(shared_from_this());
+        return sym_stmt_t::set_parent(node);
+    }
+
+    // ----
+
+    symbol_t sym_stmt_for_in_t::get_type() const {
+        return s_statement_for_in;
+    }
+
+    std::string sym_stmt_for_in_t::to_string() const {
+        return sym_stmt_t::to_string();
+    }
+
+    int sym_stmt_for_in_t::gen_rvalue(ijsgen &gen) {
+        gen.enter(sp_for_each);
+        iter->gen_rvalue(gen);
+        gen.emit(iter.get(), GET_ITER);
+        auto idx_exit = gen.code_length();
+        gen.emit(iter.get(), FOR_ITER, 0);
+        if (exp)
+            exp->gen_lvalue(gen);
+        else
+            vars->gen_lvalue(gen);
+        gen.emit(nullptr, POP_TOP);
+        body->gen_rvalue(gen);
+        gen.emit(nullptr, JUMP_ABSOLUTE, idx_exit);
+        gen.edit(idx_exit, 1, gen.code_length() - idx_exit);
+        auto j_break = gen.code_length();
+        auto j_continue = idx_exit;
+        const auto &re = gen.get_rewrites();
+        for (const auto &s : re) {
+            if (s.second == K_BREAK)
+                gen.edit(s.first, 1, j_break);
+            else if (s.second == K_CONTINUE)
+                gen.edit(s.first, 1, j_continue);
+            else
+                assert(!"invalid rewrites");
+        }
+        gen.leave();
+        return sym_stmt_t::gen_rvalue(gen);
+    }
+
+    int sym_stmt_for_in_t::set_parent(sym_t::ref node) {
+        if (exp)
+            exp->set_parent(shared_from_this());
+        else
+            vars->set_parent(shared_from_this());
+        iter->set_parent(shared_from_this());
+        body->set_parent(shared_from_this());
         return sym_stmt_t::set_parent(node);
     }
 

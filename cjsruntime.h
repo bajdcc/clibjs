@@ -55,6 +55,7 @@ namespace clib {
         virtual std::shared_ptr<jsv_undefined> new_undefined() = 0;
         virtual std::shared_ptr<cjs_function> new_func(const std::shared_ptr<cjs_function_info> &code) = 0;
         virtual std::shared_ptr<jsv_object> new_array() = 0;
+        virtual void exec(const std::string &) = 0;
         virtual bool to_number(const std::shared_ptr<js_value> &, double &) = 0;
     };
 
@@ -267,9 +268,10 @@ namespace clib {
         cjsruntime(const cjsruntime &) = delete;
         cjsruntime &operator=(const cjsruntime &) = delete;
 
-        void init();
+        void init(void *);
 
-        void eval(cjs_code_result::ref code);
+        void eval(cjs_code_result::ref code, bool top);
+        void set_readonly(bool);
 
         jsv_number::ref new_number(double n) override;
         jsv_string::ref new_string(const std::string &s) override;
@@ -279,7 +281,8 @@ namespace clib {
         jsv_null::ref new_null() override;
         jsv_undefined::ref new_undefined() override;
         cjs_function::ref new_func(const cjs_function_info::ref &code) override;
-        std::shared_ptr<jsv_object> new_array() override;
+        jsv_object::ref new_array() override;
+        void exec(const std::string &) override;
         bool to_number(const std::shared_ptr<js_value> &, double &) override;
 
     private:
@@ -310,13 +313,15 @@ namespace clib {
         jsv_string::ref _new_string(const std::string &s, uint32_t attr = 0U);
         jsv_boolean::ref _new_boolean(bool b, uint32_t attr = 0U);
         jsv_object::ref _new_object(uint32_t attr = 0U);
-        jsv_function::ref _new_function(uint32_t attr = 0U);
+        jsv_function::ref _new_function(jsv_object::ref proto, uint32_t attr = 0U);
         jsv_null::ref _new_null(uint32_t attr = 0U);
         jsv_undefined::ref _new_undefined(uint32_t attr = 0U);
 
         static void print(const js_value::ref &value, int level, std::ostream &os);
 
     private:
+        void *pjs{nullptr};
+        bool readonly{true};
         std::vector<cjs_function::ref> stack;
         cjs_function::ref current_stack;
         std::vector<cjs_function::ref> reuse_stack;
@@ -348,6 +353,9 @@ namespace clib {
             // console
             jsv_object::ref console;
             jsv_function::ref console_log;
+            // sys
+            jsv_object::ref sys;
+            jsv_function::ref sys_exec_file;
             // function
             jsv_function::ref f_number;
             jsv_function::ref f_boolean;

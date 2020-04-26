@@ -41,8 +41,10 @@ namespace clib {
         s_statement_var,
         s_statement_exp,
         s_statement_return,
+        s_statement_control,
         s_statement_if,
         s_statement_while,
+        s_statement_for_in,
         s_block,
         s_code,
     };
@@ -67,6 +69,8 @@ namespace clib {
         virtual void pop_function() = 0;
         virtual void enter(int) = 0;
         virtual void leave() = 0;
+        virtual void push_rewrites(int index, int type) = 0;
+        virtual const std::unordered_map<int, int> &get_rewrites() = 0;
         virtual std::shared_ptr<sym_t> get_var(const std::string &, int) = 0;
         virtual void add_var(const std::string &, std::shared_ptr<sym_t>) = 0;
         virtual void add_closure(std::shared_ptr<sym_var_id_t>) = 0;
@@ -342,6 +346,17 @@ namespace clib {
         sym_exp_seq_t::ref seq;
     };
 
+    class sym_stmt_control_t : public sym_stmt_t {
+    public:
+        using ref = std::shared_ptr<sym_stmt_control_t>;
+        symbol_t get_type() const override;
+        std::string to_string() const override;
+        int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
+        int keyword{0};
+        sym_var_t::ref label;
+    };
+
     class sym_stmt_if_t : public sym_stmt_t {
     public:
         using ref = std::shared_ptr<sym_stmt_if_t>;
@@ -363,6 +378,19 @@ namespace clib {
         int set_parent(sym_t::ref node) override;
         sym_exp_seq_t::ref seq;
         sym_stmt_t::ref stmt;
+    };
+
+    class sym_stmt_for_in_t : public sym_stmt_t {
+    public:
+        using ref = std::shared_ptr<sym_stmt_for_in_t>;
+        symbol_t get_type() const override;
+        std::string to_string() const override;
+        int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
+        sym_exp_t::ref exp;
+        sym_id_t::ref vars;
+        sym_exp_t::ref iter;
+        sym_stmt_t::ref body;
     };
 
     class sym_block_t : public sym_stmt_t {
@@ -439,6 +467,7 @@ namespace clib {
     struct cjs_scope {
         cjs_scope_t type;
         std::unordered_map<std::string, sym_t::weak_ref> vars;
+        std::unordered_map<int, int> rewrites;
     };
 
     struct cjs_code {
@@ -500,6 +529,8 @@ namespace clib {
         void pop_function() override;
         void enter(int) override;
         void leave() override;
+        void push_rewrites(int index, int type) override;
+        const std::unordered_map<int, int> &get_rewrites() override;
         std::shared_ptr<sym_t> get_var(const std::string &, int) override;
         void add_var(const std::string &, std::shared_ptr<sym_t>) override;
         void add_closure(std::shared_ptr<sym_var_id_t>) override;

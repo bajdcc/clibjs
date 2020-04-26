@@ -43,12 +43,13 @@ Reference: quickjs
 - [ ] boolean
 - [ ] string
 - [ ] function\(`call`\)
-- [ ] array\(`slice`, `concat`\)
+- [ ] array\(`slice`, `concat`, `map`\)
 
 ## Control Flow
 
 - [x] if
 - [x] while
+- [x] for-in
 
 ## TEST
 
@@ -221,18 +222,26 @@ function A(a, b) {
         return this.a + ' ' + this.b;
     };
 }
+
 var d = new A('123', 12.3);
 console.log(d.c());
 
 var obj = {0: 'a', 1: 'b', length: 2};
-console.log([].slice.call(obj,0).slice(1));
+console.log([].slice.call(obj, 0).slice(1));
+
+console.log([1].concat(1, [2], 3));
+
+console.log([1, 2, 3].map(x => x + 1));
 ```
 
 Output:
 
 ```
+undefined
 123 12.3
-["b"]
+[object Object]
+[object Object]
+[object Object]
 ```
 
 ## Grammar

@@ -12,9 +12,9 @@
 #include "cjsast.h"
 #include "cjsruntime.h"
 
-#define PRINT_CODE 1
-#define DUMP_CODE 1
-#define DUMP_CODE2 1
+#define PRINT_CODE 0
+#define DUMP_CODE 0
+#define DUMP_CODE2 0
 #define PRINT_AST 0
 
 #define AST_IS_KEYWORD(node) ((node)->flag == a_keyword)
@@ -787,11 +787,41 @@ namespace clib {
                 break;
             case c_forStatement:
                 break;
-            case c_forInStatement:
+            case c_forInStatement: {
+                auto _for_in = std::make_shared<sym_stmt_for_in_t>();
+                copy_info(_for_in, asts.front());
+                _for_in->end = tmps.back()->end;
+                assert(tmps.size() >= 3);
+                if (tmps[0]->get_base_type() == s_expression) {
+                    _for_in->exp = to_exp(tmps[0]);
+                } else {
+                    assert(tmps[0]->get_type() == s_statement_var);
+                    auto var = std::dynamic_pointer_cast<sym_stmt_var_t>(tmps[0]);
+                    assert(var->vars.size() == 1);
+                    _for_in->vars = var->vars.front();
+                    _for_in->vars->start = asts[1]->start;
+                }
+                assert(tmps[1]->get_base_type() == s_expression);
+                _for_in->iter = to_exp(tmps[1]);
+                assert(tmps[2]->get_base_type() == s_statement);
+                _for_in->body = std::dynamic_pointer_cast<sym_stmt_t>(tmps[2]);
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(_for_in);
+            }
                 break;
             case c_continueStatement:
-                break;
-            case c_breakStatement:
+            case c_breakStatement: {
+                auto _ctrl = std::make_shared<sym_stmt_control_t>();
+                _ctrl->keyword = asts[0]->data._keyword;
+                copy_info(_ctrl, asts.front());
+                if (!tmps.empty()) {
+                    _ctrl->end = tmps.back()->end;
+                }
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(_ctrl);
+            }
                 break;
             case c_returnStatement: {
                 auto stmt = std::make_shared<sym_stmt_return_t>();
@@ -1210,7 +1240,7 @@ namespace clib {
                     exp->end = call->end;
                     exp->obj = call->obj;
                     exp->args = call->args;
-                }else {
+                } else {
                     copy_info(exp, asts.front());
                     exp->end = tmps.back()->end;
                     assert(tmps.front()->get_base_type() == s_expression);
@@ -1576,6 +1606,9 @@ namespace clib {
                    << node->end << "]" << std::endl;
                 {
                     auto n = std::dynamic_pointer_cast<sym_member_dot_t>(node);
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << "exp" << std::endl;
+                    print(n->exp, level + 2, os);
                     for (const auto &s : n->dots) {
                         os << std::setfill(' ') << std::setw(level + 1) << "";
                         os << "dot: " << s->data._identifier
@@ -1583,6 +1616,22 @@ namespace clib {
                            << s->column << ":"
                            << s->start << ":"
                            << s->end << "]" << std::endl;
+                    }
+                }
+                break;
+            case s_member_index:
+                os << "member_index"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_member_index_t>(node);
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << "exp" << std::endl;
+                    print(n->exp, level + 2, os);
+                    for (const auto &s : n->indexes) {
+                        print(s, level + 1, os);
                     }
                 }
                 break;
@@ -1748,6 +1797,17 @@ namespace clib {
                         print(n->seq, level + 1, os);
                 }
                 break;
+            case s_statement_control: {
+                auto n = std::dynamic_pointer_cast<sym_stmt_control_t>(node);
+                os << "statement_" << lexer_string(lexer_t(n->keyword))
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                if (n->label)
+                    print(n->label, level + 1, os);
+            }
+                break;
             case s_statement_if:
                 os << "if"
                    << " " << "[" << node->line << ":"
@@ -1772,6 +1832,22 @@ namespace clib {
                     auto n = std::dynamic_pointer_cast<sym_stmt_while_t>(node);
                     print(n->seq, level + 1, os);
                     print(n->stmt, level + 1, os);
+                }
+                break;
+            case s_statement_for_in:
+                os << "for in"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_stmt_for_in_t>(node);
+                    if (n->exp)
+                        print(n->exp, level + 1, os);
+                    else
+                        print(n->vars, level + 1, os);
+                    print(n->iter, level + 1, os);
+                    print(n->body, level + 1, os);
                 }
                 break;
             case s_block:
@@ -1887,6 +1963,29 @@ namespace clib {
 
     void cjsgen::leave() {
         codes.back()->scopes.pop_back();
+    }
+
+    void cjsgen::push_rewrites(int index, int type) {
+        if (type == K_BREAK || type == K_CONTINUE) {
+            auto &scope = codes.back()->scopes;
+            for (auto s = scope.rbegin(); s != scope.rend(); s++) {
+                if (s->type == sp_for ||
+                    s->type == sp_for_each ||
+                    s->type == sp_while ||
+                    s->type == sp_do_while ||
+                    s->type == sp_switch) {
+                    s->rewrites[index] = type;
+                    return;
+                }
+            }
+            assert(!"invalid break/continue");
+        } else {
+            assert(!"invalid rewrites");
+        }
+    }
+
+    const std::unordered_map<int, int> &cjsgen::get_rewrites() {
+        return codes.back()->scopes.back().rewrites;
     }
 
     std::shared_ptr<sym_t> cjsgen::get_var(const std::string &name, int t) {
@@ -2043,6 +2142,7 @@ namespace clib {
                     case JUMP_ABSOLUTE:
                         jumps_set.insert(c.op1);
                         break;
+                    case FOR_ITER:
                     case JUMP_FORWARD:
                         jumps_set.insert(idx + c.op1);
                         break;

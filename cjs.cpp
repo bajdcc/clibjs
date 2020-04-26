@@ -16,7 +16,10 @@
 namespace clib {
 
     cjs::cjs() {
-        rt.init();
+        rt.set_readonly(false);
+        rt.init(this);
+        init_lib();
+        rt.set_readonly(true);
     }
 
     backtrace_direction cjs::check(pda_edge_t edge, ast_node *node) {
@@ -26,7 +29,7 @@ namespace clib {
     void cjs::error_handler(int, const std::vector<pda_trans> &, int &) {
     }
 
-    void cjs::exec(const std::string &filename, const std::string &input) {
+    void cjs::exec(const std::string &filename, const std::string &input, bool top) {
         auto p = std::make_unique<cjsparser>();
         p->parse(input, this);
 #if LOG_AST
@@ -43,6 +46,10 @@ namespace clib {
         auto code = std::move(g->get_code());
         assert(code);
         g = nullptr;
-        rt.eval(std::move(code));
+        rt.eval(std::move(code), top);
+    }
+
+    void cjs::init_lib() {
+        exec("lib", R"(sys.exec_file("..\\lib\\clib.js");)");
     }
 }
