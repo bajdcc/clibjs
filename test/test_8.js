@@ -13,5 +13,6 @@ var obj = {0: 'a', 1: 'b', length: 2};
 console.log([].slice.call(obj, 0).slice(1));
 
 console.log([1].concat(1, [2], 3));
-
 console.log([1, 2, 3, 4].map(x => x + 1).filter(x => x % 2 === 0));
+console.log([1, 2, 3, 4].reduce((a, b) => a + b));
+console.log([1, 2, 3, 4].reduce((a, b) => a + b, 1));

@@ -37,18 +37,19 @@ Reference: quickjs
 
 ## Prototype
 
-- [ ] root\(`debug_dump`\)
+- [ ] root\(`debug_dump(builtin)`\)
 - [ ] object\(`hasOwnProperty`\)
 - [ ] number
 - [ ] boolean
 - [ ] string
-- [ ] function\(`call`\)
-- [ ] array\(`slice`, `concat`, `map`, `filter`\)
+- [ ] function\(`call`(builtin), `apply`(builtin)\)
+- [ ] array\(`slice`, `concat`, `push`, `map`, `filter`, `reduce`\)
 
 ## Control Flow
 
 - [x] if
 - [x] while
+- [x] for
 - [x] for-in
 
 ## TEST
@@ -230,8 +231,9 @@ var obj = {0: 'a', 1: 'b', length: 2};
 console.log([].slice.call(obj, 0).slice(1));
 
 console.log([1].concat(1, [2], 3));
-
 console.log([1, 2, 3, 4].map(x => x + 1).filter(x => x % 2 === 0));
+console.log([1, 2, 3, 4].reduce((a, b) => a + b));
+console.log([1, 2, 3, 4].reduce((a, b) => a + b, 1));
 ```
 
 Output:
@@ -242,6 +244,8 @@ library loaded
 [b]
 [1, 1, 2, 3]
 [2, 4]
+10
+11
 ```
 
 ## Grammar
