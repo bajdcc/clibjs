@@ -98,7 +98,8 @@ namespace clib {
             }
             if (r == 2) {
                 if (!current_stack->ret_value.lock())
-                    current_stack->ret_value = pop();
+                    current_stack->ret_value =
+                            current_stack->stack.empty() ? new_undefined() : pop();
             }
             if (r == 3) {
                 continue;
