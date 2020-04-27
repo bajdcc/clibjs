@@ -16,6 +16,7 @@
 
 #define DUMP_STEP 0
 #define DUMP_GC 0
+#define SHOW_EXTRA 1
 #define GC_PERIOD 128
 
 namespace clib {
@@ -81,7 +82,7 @@ namespace clib {
                 dump_step(c);
 #endif
                 r = run(code->code, c);
-#if DUMP_STEP
+#if DUMP_STEP && SHOW_EXTRA
                 dump_step2(c);
 #endif
                 if (gc_period++ >= GC_PERIOD) {
@@ -175,6 +176,41 @@ namespace clib {
                 break;
             case NOP:
                 break;
+            case INSTANCE_OF: {
+                auto op2 = pop().lock();
+                auto op1 = pop().lock();
+                if (op1->get_type() != r_object) {
+                    push(new_boolean(false));
+                    break;
+                }
+                if (op2->get_type() != r_function) {
+                    push(new_boolean(false));
+                    break;
+                }
+                auto f = JS_OBJ(op2);
+                auto ff = f.find("prototype");
+                if (ff == f.end()) {
+                    push(new_boolean(false));
+                    break;
+                }
+                auto proto = op1->__proto__.lock();
+                if (!proto) {
+                    push(new_boolean(false));
+                    break;
+                }
+                auto p = proto;
+                auto failed = true;
+                while (p) {
+                    assert(p->get_type() == r_object);
+                    if (p == ff->second.lock()) {
+                        failed = false;
+                        break;
+                    }
+                    p = p->__proto__.lock();
+                }
+                push(new_boolean(!failed));
+            }
+                break;
             case UNARY_POSITIVE:
             case UNARY_NEGATIVE:
             case UNARY_NOT:
@@ -225,7 +261,7 @@ namespace clib {
                 auto key = pop().lock()->to_string();
                 auto obj = pop().lock();
                 if (obj->get_type() == r_object || obj->get_type() == r_function) {
-                    const auto& o = JS_OBJ(obj);
+                    const auto &o = JS_OBJ(obj);
                     auto f = o.find(key);
                     if (f != o.end()) {
                         push(f->second);
@@ -261,7 +297,13 @@ namespace clib {
                 break;
             case BINARY_INC:
             case BINARY_DEC: {
-                auto op1 = pop();
+                auto op1 = pop().lock();
+                auto result = op1->binary_op(
+                        *this,
+                        code.code == BINARY_INC ? BINARY_ADD : BINARY_SUBTRACT,
+                        permanents._one);
+                assert(result);
+                push(result);
             }
                 break;
             case INPLACE_FLOOR_DIVIDE:
@@ -292,7 +334,7 @@ namespace clib {
                 auto key = pop().lock()->to_string();
                 auto obj = pop().lock();
                 auto value = top();
-                auto& o = JS_OBJ(obj);
+                auto &o = JS_OBJ(obj);
                 if (obj->get_type() == r_object || obj->get_type() == r_function) {
                     auto f = o.find(key);
                     if (f != o.end() && (readonly && (f->second.lock()->attr & js_value::at_readonly))) {
@@ -309,7 +351,7 @@ namespace clib {
                 break;
             case GET_ITER: {
                 auto obj = top().lock();
-                const auto& o = JS_OBJ(obj);
+                const auto &o = JS_OBJ(obj);
                 if (obj->get_type() == r_object && obj->__proto__.lock() == permanents._proto_array) {
                     push(new_number(0.0));
                 } else {
@@ -374,32 +416,39 @@ namespace clib {
                 assert(!std::isinf(i) && !std::isnan(i));
                 auto obj = top().lock();
                 assert(obj->get_type() == r_object && obj->__proto__.lock() == permanents._proto_array);
-                const auto& o = JS_OBJ(obj);
+                const auto &o = JS_OBJ(obj);
                 auto f = o.find("length");
                 if (f != o.end()) {
                     auto len = f->second.lock();
-                    if (idx->get_type() == r_number) {
+                    if (len->get_type() == r_number) {
                         auto l = JS_NUM(len);
                         if (!std::isinf(l) && !std::isnan(l)) {
                             if (i < l) {
                                 std::stringstream ss;
+                                auto failed = true;
                                 while (i < l) {
                                     ss.str("");
                                     ss << i;
                                     if (o.find(ss.str()) != o.end()) {
                                         push(new_number(i + 1));
                                         push(new_number(i));
+                                        failed = false;
                                         break;
                                     }
                                     i++;
                                 }
+                                if (failed) {
+                                    current_stack->pc += jmp;
+                                    pop();
+                                    return 0;
+                                }
                                 break;
                             }
                             current_stack->pc += jmp;
+                            pop();
                             return 0;
                         }
                     }
-                    break;
                 }
                 assert(!"invalid iter");
             }
@@ -452,7 +501,7 @@ namespace clib {
                 assert(current_stack->stack.size() >= n);
                 auto obj = new_array();
                 std::stringstream ss;
-                for (auto i = 0; i < n; i++) {
+                for (auto i = n - 1; i >= 0; i--) {
                     auto v = pop().lock();
                     if (v) {
                         ss.str("");
@@ -939,7 +988,6 @@ namespace clib {
         if (L != current_stack->envs.lock()->obj.end()) {
             return L->second.lock();
         }
-        assert(!"cannot find value by name");
         return permanents._undefined;
     }
 
@@ -1088,6 +1136,7 @@ namespace clib {
         auto r = reuse.reuse_numbers.back();
         register_value(r);
         r->number = n;
+        r->__proto__ = permanents._proto_number;
         reuse.reuse_numbers.pop_back();
         return std::move(r);
     }
@@ -1103,6 +1152,7 @@ namespace clib {
         auto r = reuse.reuse_strings.back();
         register_value(r);
         r->str = s;
+        r->__proto__ = permanents._proto_string;
         reuse.reuse_strings.pop_back();
         return std::move(r);
     }
@@ -1120,8 +1170,31 @@ namespace clib {
         }
         auto r = reuse.reuse_objects.back();
         register_value(r);
+        r->__proto__ = permanents._proto_object;
         reuse.reuse_objects.pop_back();
         return std::move(r);
+    }
+
+    jsv_object::ref cjsruntime::new_object_box(const js_value::ref &v) {
+        auto obj = new_object();
+        switch (v->get_type()) {
+            case r_number:
+                obj->__proto__ = permanents._proto_number;
+                break;
+            case r_string:
+                obj->__proto__ = permanents._proto_string;
+                break;
+            case r_boolean:
+                obj->__proto__ = permanents._proto_boolean;
+                break;
+            case r_function:
+                obj->__proto__ = permanents._proto_function;
+                break;
+            default:
+                break;
+        }
+        obj->special.insert({"PrimitiveValue", v});
+        return obj;
     }
 
     jsv_function::ref cjsruntime::new_function() {
@@ -1132,6 +1205,7 @@ namespace clib {
         }
         auto r = reuse.reuse_functions.back();
         register_value(r);
+        r->__proto__ = permanents._proto_function;
         reuse.reuse_functions.pop_back();
         return std::move(r);
     }
@@ -1161,7 +1235,7 @@ namespace clib {
         ((cjs *) pjs)->exec("exec.txt", s, false);
     }
 
-    bool cjsruntime::to_number(const std::shared_ptr<js_value> &obj, double &d) {
+    bool cjsruntime::to_number(const js_value::ref &obj, double &d) {
         switch (obj->get_type()) {
             case r_number:
                 d = JS_NUM(obj);
@@ -1196,9 +1270,38 @@ namespace clib {
         return false;
     }
 
+    std::vector<js_value::weak_ref> cjsruntime::to_array(const js_value::ref &f) {
+        std::vector<std::weak_ptr<js_value>> ret;
+        if (f->get_type() != r_object) {
+            return ret;
+        }
+        const auto &obj = JS_OBJ(f);
+        auto l = obj.find("length");
+        if (l == obj.end()) {
+            return ret;
+        }
+        auto len = l->second.lock();
+        auto length = 0;
+        double d = 0.0;
+        if (to_number(len, d)) {
+            if (!(std::isinf(d) && std::isnan(d)))
+                length = std::floor(d);
+        }
+        for (auto i = 0; i < length; i++) {
+            std::stringstream ss;
+            ss << i;
+            auto ff = obj.find(ss.str());
+            if (ff != obj.end()) {
+                ret.push_back(ff->second);
+            }
+        }
+        return ret;
+    }
+
     void cjsruntime::reuse_value(const js_value::ref &v) {
         if (!v)
             return;
+        v->__proto__.reset();
         switch (v->get_type()) {
             case r_number:
                 reuse.reuse_numbers.push_back(

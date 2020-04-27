@@ -961,7 +961,7 @@ namespace clib {
     }
 
     // Refer: quickjs
-    void jsv_number::print(std::ostream &os) {
+    void jsv_number::print(std::ostream &os) const {
         os << number_to_string(number);
     }
 

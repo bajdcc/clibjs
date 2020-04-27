@@ -44,6 +44,7 @@ namespace clib {
         s_statement_control,
         s_statement_if,
         s_statement_while,
+        s_statement_for,
         s_statement_for_in,
         s_block,
         s_code,
@@ -378,6 +379,20 @@ namespace clib {
         int set_parent(sym_t::ref node) override;
         sym_exp_seq_t::ref seq;
         sym_stmt_t::ref stmt;
+    };
+
+    class sym_stmt_for_t : public sym_stmt_t {
+    public:
+        using ref = std::shared_ptr<sym_stmt_for_t>;
+        symbol_t get_type() const override;
+        std::string to_string() const override;
+        int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
+        sym_exp_t::ref exp;
+        sym_stmt_var_t::ref vars;
+        sym_exp_t::ref cond;
+        sym_exp_t::ref iter;
+        sym_stmt_t::ref body;
     };
 
     class sym_stmt_for_in_t : public sym_stmt_t {

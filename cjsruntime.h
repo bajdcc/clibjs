@@ -50,13 +50,13 @@ namespace clib {
         virtual std::shared_ptr<jsv_string> new_string(const std::string &s) = 0;
         virtual std::shared_ptr<jsv_boolean> new_boolean(bool b) = 0;
         virtual std::shared_ptr<jsv_object> new_object() = 0;
+        virtual std::shared_ptr<jsv_object> new_object_box(const std::shared_ptr<js_value> &) = 0;
         virtual std::shared_ptr<jsv_function> new_function() = 0;
         virtual std::shared_ptr<jsv_null> new_null() = 0;
         virtual std::shared_ptr<jsv_undefined> new_undefined() = 0;
         virtual std::shared_ptr<cjs_function> new_func(const std::shared_ptr<cjs_function_info> &code) = 0;
         virtual std::shared_ptr<jsv_object> new_array() = 0;
         virtual void exec(const std::string &) = 0;
-        virtual bool to_number(const std::shared_ptr<js_value> &, double &) = 0;
     };
 
     class js_value : public std::enable_shared_from_this<js_value> {
@@ -73,7 +73,7 @@ namespace clib {
         virtual js_value::ref unary_op(js_value_new &n, int code) = 0;
         virtual bool to_bool() const = 0;
         virtual void mark(int n) = 0;
-        virtual void print(std::ostream &os) = 0;
+        virtual void print(std::ostream &os) const = 0;
         virtual std::string to_string() const = 0;
         uint8_t marked{0};
         uint8_t attr{0};
@@ -92,7 +92,7 @@ namespace clib {
         js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
-        void print(std::ostream &os) override;
+        void print(std::ostream &os) const override;
         std::string to_string() const override;
         static std::string number_to_string(double d);
         double number;
@@ -108,7 +108,7 @@ namespace clib {
         js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
-        void print(std::ostream &os) override;
+        void print(std::ostream &os) const override;
         std::string to_string() const override;
         int to_number(double &d) const;
         static int to_number(const std::string &s, double &d);
@@ -133,7 +133,7 @@ namespace clib {
         js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
-        void print(std::ostream &os) override;
+        void print(std::ostream &os) const override;
         std::string to_string() const override;
         bool b{false};
     private:
@@ -151,7 +151,7 @@ namespace clib {
         js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
-        void print(std::ostream &os) override;
+        void print(std::ostream &os) const override;
         std::string to_string() const override;
         ref clear();
         std::unordered_map<std::string, js_value::weak_ref> obj;
@@ -168,7 +168,7 @@ namespace clib {
         js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
-        void print(std::ostream &os) override;
+        void print(std::ostream &os) const override;
         std::string to_string() const override;
     };
 
@@ -182,7 +182,7 @@ namespace clib {
         js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
-        void print(std::ostream &os) override;
+        void print(std::ostream &os) const override;
         std::string to_string() const override;
     };
 
@@ -204,7 +204,7 @@ namespace clib {
         js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
-        void print(std::ostream &os) override;
+        void print(std::ostream &os) const override;
         std::string to_string() const override;
         ref clear2();
         std::shared_ptr<cjs_function_info> code;
@@ -277,13 +277,15 @@ namespace clib {
         jsv_string::ref new_string(const std::string &s) override;
         jsv_boolean::ref new_boolean(bool b) override;
         jsv_object::ref new_object() override;
+        jsv_object::ref new_object_box(const js_value::ref &) override;
         jsv_function::ref new_function() override;
         jsv_null::ref new_null() override;
         jsv_undefined::ref new_undefined() override;
         cjs_function::ref new_func(const cjs_function_info::ref &code) override;
         jsv_object::ref new_array() override;
         void exec(const std::string &) override;
-        bool to_number(const std::shared_ptr<js_value> &, double &) override;
+        static bool to_number(const js_value::ref &, double &);
+        static std::vector<js_value::weak_ref> to_array(const js_value::ref &);
 
     private:
         int run(const sym_code_t::ref &fun, const cjs_code &code);
@@ -346,8 +348,10 @@ namespace clib {
             jsv_object::ref _proto_boolean;
             jsv_object::ref _proto_function;
             jsv_function::ref _proto_function_call;
+            jsv_function::ref _proto_function_apply;
             jsv_object::ref _proto_number;
             jsv_object::ref _proto_object;
+            jsv_function::ref _proto_object_hasOwnProperty;
             jsv_object::ref _proto_string;
             jsv_object::ref _proto_root;
             // console
@@ -365,8 +369,6 @@ namespace clib {
             // array
             jsv_object::ref _proto_array;
             jsv_function::ref f_array;
-            jsv_function::ref f_array_slice;
-            jsv_function::ref f_array_concat;
         } permanents;
         cjs_runtime_reuse reuse;
     };

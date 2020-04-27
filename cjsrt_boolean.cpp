@@ -1159,7 +1159,7 @@ namespace clib {
     void jsv_boolean::mark(int n) {
     }
 
-    void jsv_boolean::print(std::ostream &os) {
+    void jsv_boolean::print(std::ostream &os) const {
         os << std::boolalpha << b;
     }
 

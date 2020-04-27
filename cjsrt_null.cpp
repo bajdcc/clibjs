@@ -506,7 +506,7 @@ namespace clib {
     void jsv_null::mark(int n) {
     }
 
-    void jsv_null::print(std::ostream &os) {
+    void jsv_null::print(std::ostream &os) const {
         os << _str;
     }
 

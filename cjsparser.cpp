@@ -293,7 +293,7 @@ namespace clib {
         whileStatement = _K_WHILE + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement;
         forStatement = _K_FOR + ~_T_LPARAN + *(expressionSequence | _K_VAR + variableDeclarationList) +
                        _T_SEMI + *expressionSequence + _T_SEMI + *expressionSequence + ~_T_RPARAN + statement;
-        forInStatement = _K_FOR + ~_T_LPARAN + *(singleExpression | _K_VAR + variableDeclarationList) +
+        forInStatement = _K_FOR + ~_T_LPARAN + (singleExpression | _K_VAR + variableDeclarationList) +
                          ~_K_IN + expressionSequence + ~_T_RPARAN + statement;
         continueStatement = _K_CONTINUE + *(_RULE_NO_LINE + _ID) + eos;
         breakStatement = _K_BREAK + *(_RULE_NO_LINE + _ID) + eos;
@@ -340,7 +340,7 @@ namespace clib {
                     | tryStatement
                     | debuggerStatement
                     | functionStatement;
-        block = ~_T_LBRACE + *statementList + ~_T_RBRACE;
+        block = _T_LBRACE + *statementList + _T_RBRACE;
         statementList = *statementList + statement;
         expressionStatement = expressionSequence + eos;
         expressionSequence = *(expressionSequence + ~_T_COMMA) + singleExpression;

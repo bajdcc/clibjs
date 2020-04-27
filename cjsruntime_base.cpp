@@ -35,39 +35,105 @@ namespace clib {
         permanents._proto_object = _new_object(js_value::at_const | js_value::at_readonly);
         permanents._proto_object->obj["__type__"] = new_string("object");
         permanents._proto_object->__proto__ = permanents._proto_root;
+        permanents._proto_object_hasOwnProperty = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
+        permanents._proto_object_hasOwnProperty->name = "hasOwnProperty";
+        permanents._proto_object_hasOwnProperty->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
+            if (args.empty()) {
+                func->stack.push_back(js.new_boolean(false));
+                return 0;
+            }
+            auto f = _this.lock();
+            if (f->get_type() != r_object) {
+                func->stack.push_back(js.new_boolean(false));
+                return 0;
+            }
+            const auto &obj = JS_OBJ(f);
+            func->stack.push_back(js.new_boolean(obj.find(args.front().lock()->to_string()) != obj.end()));
+            return 0;
+        };
+        permanents._proto_object->obj.insert({permanents._proto_object_hasOwnProperty->name, permanents._proto_object_hasOwnProperty});
         permanents._proto_boolean = _new_object(js_value::at_const | js_value::at_readonly);
         permanents._proto_boolean->obj["__type__"] = new_string("boolean");
         permanents._proto_function = _new_object(js_value::at_const | js_value::at_readonly);
         permanents._proto_function->obj["__type__"] = new_string("function");
         permanents._proto_function_call = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
         permanents._proto_function_call->name = "call";
-        permanents._proto_function_call->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
+        permanents._proto_function_call->builtin = [](auto &func, auto &_this, auto &__args, auto &js, auto attr) {
             auto f = _this.lock();
             assert(f->get_type() == r_function);
             auto fun = JS_FUN(f);
+            auto __this = __args.empty() ? _this : __args.front();
+            auto args = __args.size() > 1 ?
+                        std::vector<js_value::weak_ref>(__args.begin() + 1, __args.end()) :
+                        std::vector<js_value::weak_ref>();
             if (fun->builtin) {
-                if (args.empty())
-                    return fun->builtin(func, _this, args, js, 0);
-                typename std::remove_reference<decltype(args)>::type
-                        _args(args.begin() + 1, args.end());
-                return fun->builtin(func, args.front(), _args, js, 0);
+                return fun->builtin(func, __this, args, js, 0);
             }
             auto new_stack = js.new_func(fun->code);
-            new_stack->_this = args.empty() ? _this : args.front();
+            new_stack->_this = __this;
             new_stack->name = fun->name;
             auto env = new_stack->envs.lock();
-            if (!fun->code->arrow && fun->name.front() != '<')
-                env->obj[fun->name] = f;
-            if (!args.empty())
-                for (size_t i = 0; i < fun->code->args.size(); i++) {
-                    env->obj[fun->code->args.at(i)] = args.at(i + 1);
-                }
+            if (!fun->code->arrow && func->name.front() != '<')
+                env->obj[func->name] = f;
+            auto arg = js.new_object();
+            env->obj["arguments"] = arg;
+            size_t i = 0;
+            for (; i < args.size(); i++) {
+                std::stringstream ss;
+                ss << i;
+                arg->obj[ss.str()] = args.at(i);
+                if (i < fun->code->args.size())
+                    env->obj[fun->code->args.at(i)] = args.at(i);
+            }
+            for (; i < fun->code->args.size(); i++) {
+                env->obj[fun->code->args.at(i)] = js.new_undefined();
+            }
+            arg->obj["length"] = js.new_number(args.size());
             if (fun->closure.lock())
                 new_stack->closure = fun->closure;
             func->pc++;
             return 1;
         };
         permanents._proto_function->obj.insert({permanents._proto_function_call->name, permanents._proto_function_call});
+        permanents._proto_function_apply = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
+        permanents._proto_function_apply->name = "apply";
+        permanents._proto_function_apply->builtin = [](auto &func, auto &_this, auto &__args, auto &js, auto attr) {
+            auto f = _this.lock();
+            assert(f->get_type() == r_function);
+            auto fun = JS_FUN(f);
+            auto __this = __args.empty() ? _this : __args.front();
+            auto args = __args.size() > 1 ?
+                        to_array(__args[1].lock()) :
+                        std::vector<js_value::weak_ref>();
+            if (fun->builtin) {
+                return fun->builtin(func, __this, args, js, 0);
+            }
+            auto new_stack = js.new_func(fun->code);
+            new_stack->_this = __this;
+            new_stack->name = fun->name;
+            auto env = new_stack->envs.lock();
+            if (!fun->code->arrow && func->name.front() != '<')
+                env->obj[func->name] = f;
+            auto arg = js.new_object();
+            env->obj["arguments"] = arg;
+            size_t i = 0;
+            for (; i < args.size(); i++) {
+                std::stringstream ss;
+                ss << i;
+                arg->obj[ss.str()] = args.at(i);
+                if (i < fun->code->args.size())
+                    env->obj[fun->code->args.at(i)] = args.at(i);
+            }
+            for (; i < fun->code->args.size(); i++) {
+                env->obj[fun->code->args.at(i)] = js.new_undefined();
+            }
+            arg->obj["length"] = js.new_number(args.size());
+            if (fun->closure.lock())
+                new_stack->closure = fun->closure;
+            func->pc++;
+            return 1;
+        };
+        permanents._proto_function->obj.insert({permanents._proto_function_apply->name, permanents._proto_function_apply});
         permanents._proto_number = _new_object(js_value::at_const | js_value::at_readonly);
         permanents._proto_number->obj["__type__"] = new_string("number");
         permanents._proto_string = _new_object(js_value::at_const | js_value::at_readonly);
@@ -187,16 +253,14 @@ namespace clib {
             } else {
                 auto n = args.front().lock();
                 double d = 0.0;
-                if (js.to_number(n, d)) {
+                if (to_number(n, d)) {
                     pri = js.new_number(d);
                 } else {
                     pri = js.new_number(NAN);
                 }
             }
             if (attr & jsv_function::at_new_function) {
-                auto new_pri = js.new_object();
-                new_pri->special.insert({"PrimitiveValue", pri});
-                pri = new_pri;
+                pri = js.new_object_box(pri);
             }
             func->stack.push_back(pri);
             return 0;
@@ -213,9 +277,7 @@ namespace clib {
                 pri = js.new_boolean(args.front().lock()->to_bool());
             }
             if (attr & jsv_function::at_new_function) {
-                auto new_pri = js.new_object();
-                new_pri->special.insert({"PrimitiveValue", pri});
-                pri = new_pri;
+                pri = js.new_object_box(pri);
             }
             func->stack.push_back(pri);
             return 0;
@@ -232,9 +294,7 @@ namespace clib {
                 pri = js.new_boolean(args.front().lock()->to_bool());
             }
             if (attr & jsv_function::at_new_function) {
-                auto new_pri = js.new_object();
-                new_pri->special.insert({"PrimitiveValue", pri});
-                pri = new_pri;
+                pri = js.new_object_box(pri);
             }
             func->stack.push_back(pri);
             return 0;
@@ -251,9 +311,7 @@ namespace clib {
                 pri = js.new_string(args.front().lock()->to_string());
             }
             if (attr & jsv_function::at_new_function) {
-                auto new_pri = js.new_object();
-                new_pri->special.insert({"PrimitiveValue", pri});
-                pri = new_pri;
+                pri = js.new_object_box(pri);
             }
             func->stack.push_back(pri);
             return 0;
@@ -270,9 +328,7 @@ namespace clib {
                 pri = js.new_boolean(args.front().lock()->to_bool());
             }
             if (attr & jsv_function::at_new_function) {
-                auto new_pri = js.new_object();
-                new_pri->special.insert({"PrimitiveValue", pri});
-                pri = new_pri;
+                pri = js.new_object_box(pri);
             }
             func->stack.push_back(pri);
             return 0;
@@ -281,118 +337,6 @@ namespace clib {
         // array
         permanents._proto_array = _new_object(js_value::at_const | js_value::at_readonly);
         permanents._proto_array->obj["__type__"] = new_string("array");
-        // slice
-        permanents.f_array_slice = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
-        permanents.f_array_slice->name = "slice";
-        permanents.f_array_slice->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
-            auto f = _this.lock();
-            if (f->get_type() != r_object) {
-                func->stack.push_back(js.new_array());
-                return 0;
-            }
-            auto obj = JS_OBJ(f);
-            auto l = obj.find("length");
-            if (l == obj.end()) {
-                func->stack.push_back(js.new_array());
-                return 0;
-            }
-            auto len = l->second.lock();
-            auto length = 0;
-            double d = 0.0;
-            if (js.to_number(len, d)) {
-                if (!(std::isinf(d) && std::isnan(d)))
-                    length = std::floor(d);
-            }
-            auto slice = 0;
-            if (!args.empty()) {
-                auto a = args.front().lock();
-                d = 0.0;
-                if (js.to_number(a, d)) {
-                    if (!(std::isinf(d) && std::isnan(d)))
-                        slice = std::floor(d);
-                }
-            }
-            if (slice >= length) {
-                func->stack.push_back(js.new_array());
-                return 0;
-            }
-            auto arr = js.new_array();
-            for (auto i = slice; i < length; i++) {
-                std::stringstream ss;
-                ss << i;
-                auto ff = obj.find(ss.str());
-                if (ff != obj.end()) {
-                    arr->obj[ss.str()] = ff->second;
-                }
-            }
-            arr->obj["length"] = js.new_number(length - slice);
-            func->stack.push_back(arr);
-            return 0;
-        };
-        permanents._proto_array->obj.insert({permanents.f_array_slice->name, permanents.f_array_slice});
-        // concat
-        permanents.f_array_concat = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
-        permanents.f_array_concat->name = "concat";
-        permanents.f_array_concat->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
-            auto f = _this.lock();
-            auto i = 0;
-            auto arr = js.new_array();
-            auto &_objs = arr->obj;
-            std::stringstream ss;
-            typename std::remove_reference< typeof args>::type _args(args.size() + 1);
-            _args[0] = f;
-            std::copy(args.begin(), args.end(), _args.begin() + 1);
-            auto first = true;
-            for (const auto &a : _args) {
-                if (a.lock()->get_type() != r_object) {
-                    if (first) {
-                        auto o = js.new_object();
-                        o->special.insert({"PrimitiveValue", f});
-                        ss.str("");
-                        ss << i++;
-                        _objs[ss.str()] = o;
-                    } else {
-                        ss.str("");
-                        ss << i++;
-                        _objs[ss.str()] = a.lock();
-                    }
-                } else if (a.lock()->__proto__.lock() == arr->__proto__.lock()) {
-                    auto ao = JS_OBJ(a.lock());
-                    auto of = ao.find("length");
-                    if (of != ao.end()) {
-                        auto len = of->second.lock();
-                        double d = 0.0;
-                        if (js.to_number(len, d)) {
-                            if (!(std::isinf(d) && std::isnan(d)) && d > 0) {
-                                auto l = std::floor(d);
-                                auto j = 0;
-                                for (const auto &s : ao) {
-                                    if (jsv_string::to_number(s.first, d) == 2 && d >= 0 && d < l) {
-                                        auto dd = std::floor(d);
-                                        if (d == dd) {
-                                            ss.str("");
-                                            ss << (i + j);
-                                            _objs[ss.str()] = s.second;
-                                        }
-                                    }
-                                }
-                                i += l;
-                            }
-                        }
-                    }
-                } else {
-                    ss.str("");
-                    ss << i++;
-                    _objs[ss.str()] = a.lock();
-                }
-                if (first)
-                    first = false;
-            }
-            arr->obj["length"] = js.new_number(i);
-            func->stack.push_back(arr);
-            return 0;
-        };
-        permanents._proto_array->obj.insert({permanents.f_array_concat->name, permanents.f_array_concat});
         permanents.f_array = _new_function(permanents._proto_array, js_value::at_const | js_value::at_readonly);
         permanents.f_array->name = "Array";
         permanents.f_array->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {

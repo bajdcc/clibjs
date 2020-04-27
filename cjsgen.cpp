@@ -662,11 +662,11 @@ namespace clib {
                 break;
             case c_block: {
                 auto block = std::make_shared<sym_block_t>();
-                copy_info(block, tmps.front());
+                copy_info(block, asts.front());
+                block->end = asts.back()->end;
                 for (const auto &s : tmps) {
                     assert(s->get_base_type() == s_statement);
                     block->stmts.push_back(std::dynamic_pointer_cast<sym_stmt_t>(s));
-                    block->end = s->end;
                 }
                 asts.clear();
                 tmps.clear();
@@ -785,7 +785,33 @@ namespace clib {
                 tmps.push_back(_while);
             }
                 break;
-            case c_forStatement:
+            case c_forStatement: {
+                auto _for = std::make_shared<sym_stmt_for_t>();
+                copy_info(_for, asts.front());
+                _for->end = tmps.back()->end;
+                auto semi1 = AST_IS_KEYWORD_K(asts[1], K_VAR) ? asts[2] : asts[1];
+                auto semi2 = AST_IS_KEYWORD_K(asts[1], K_VAR) ? asts[3] : asts[2];
+                for (const auto &t : tmps) {
+                    if (t->start < semi1->start) {
+                        if (AST_IS_KEYWORD_K(asts[1], K_VAR)) {
+                            assert(t->get_type() == s_statement_var);
+                            _for->vars = std::dynamic_pointer_cast<sym_stmt_var_t>(t);
+                            _for->vars->start = asts[1]->start;
+                        } else {
+                            _for->exp = to_exp(t);
+                        }
+                    } else if (t->start < semi2->start) {
+                        _for->cond = to_exp(t);
+                    } else if (t->get_base_type() == s_statement) {
+                        _for->body = std::dynamic_pointer_cast<sym_stmt_t>(t);
+                    } else {
+                        _for->iter = to_exp(t);
+                    }
+                }
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(_for);
+            }
                 break;
             case c_forInStatement: {
                 auto _for_in = std::make_shared<sym_stmt_for_in_t>();
@@ -1280,10 +1306,9 @@ namespace clib {
                 break;
             case c_coalesceExpression:
                 break;
-            case c_instanceofExpression:
-                break;
             case c_inExpression:
                 break;
+            case c_instanceofExpression:
             case c_powerExpression:
             case c_multiplicativeExpression:
             case c_additiveExpression:
@@ -1301,7 +1326,7 @@ namespace clib {
                 auto exp2 = to_exp(tmps[tmp_i++]);
                 for (size_t i = 0; i < asts.size(); ++i) {
                     auto &a = asts[i];
-                    if (AST_IS_OP(a)) {
+                    if (AST_IS_OP(a) || AST_IS_KEYWORD(a)) {
                         if (node->data._coll == c_ternaryExpression &&
                             AST_IS_OP_K(a, T_QUERY)) { // triop
                             auto exp3 = to_exp(tmps[tmp_i++]);
@@ -1832,6 +1857,25 @@ namespace clib {
                     auto n = std::dynamic_pointer_cast<sym_stmt_while_t>(node);
                     print(n->seq, level + 1, os);
                     print(n->stmt, level + 1, os);
+                }
+                break;
+            case s_statement_for:
+                os << "for"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_stmt_for_t>(node);
+                    if (n->exp)
+                        print(n->exp, level + 1, os);
+                    else if (n->vars)
+                        print(n->vars, level + 1, os);
+                    if (n->cond)
+                        print(n->cond, level + 1, os);
+                    if (n->iter)
+                        print(n->iter, level + 1, os);
+                    print(n->body, level + 1, os);
                 }
                 break;
             case s_statement_for_in:

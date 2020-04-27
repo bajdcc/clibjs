@@ -950,7 +950,7 @@ namespace clib {
         marked = n;
     }
 
-    void jsv_string::print(std::ostream &os) {
+    void jsv_string::print(std::ostream &os) const {
         os << str;
     }
 

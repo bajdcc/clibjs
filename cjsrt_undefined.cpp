@@ -318,7 +318,7 @@ namespace clib {
     void jsv_undefined::mark(int n) {
     }
 
-    void jsv_undefined::print(std::ostream &os) {
+    void jsv_undefined::print(std::ostream &os) const {
         os << _str;
     }
 

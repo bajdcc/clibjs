@@ -6,6 +6,9 @@
 #include <iostream>
 #include <cmath>
 #include <sstream>
+#include <cassert>
+#include <algorithm>
+#include <iterator>
 #include "cjsruntime.h"
 
 namespace clib {
@@ -335,7 +338,7 @@ namespace clib {
         }
     }
 
-    void jsv_object::print(std::ostream &os) {
+    void jsv_object::print(std::ostream &os) const {
         if (!special.empty()) {
             auto f = special.find("PrimitiveValue");
             if (f != special.end()) {
@@ -343,23 +346,42 @@ namespace clib {
                 return;
             }
         }
+        if (__proto__.lock()) {
+            const auto &p = JS_OBJ(__proto__.lock());
+            auto f = p.find("__type__");
+            if (f != p.end() && f->second.lock()) {
+                auto k = f->second.lock()->to_string();
+                if (k == "array") {
+                    auto arr = cjsruntime::to_array(
+                            std::const_pointer_cast<js_value>(shared_from_this()));
+                    std::stringstream ss;
+                    std::transform(arr.begin(), arr.end(),
+                                   std::ostream_iterator<std::string>(ss, ", "),
+                                   [](auto s) {
+                                       return s.lock()->to_string();
+                                   });
+                    auto q = ss.str();
+                    if (q.size() >= 2) {
+                        q.pop_back();
+                        q.pop_back();
+                    }
+                    os << "[" << q << "]";
+                    return;
+                }
+            }
+        }
         os << _str;
     }
 
     std::string jsv_object::to_string() const {
-        if (!special.empty()) {
-            auto f = special.find("PrimitiveValue");
-            if (f != special.end()) {
-                return f->second.lock()->to_string();
-            }
-        }
-        return _str;
+        std::stringstream ss;
+        print(ss);
+        return ss.str();
     }
 
     jsv_object::ref jsv_object::clear() {
         obj.clear();
         special.clear();
-        __proto__.reset();
         return std::dynamic_pointer_cast<jsv_object>(shared_from_this());
     }
 }

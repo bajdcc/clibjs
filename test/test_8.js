@@ -14,4 +14,4 @@ console.log([].slice.call(obj, 0).slice(1));
 
 console.log([1].concat(1, [2], 3));
 
-console.log([1, 2, 3].map(x => x + 1));
+console.log([1, 2, 3, 4].map(x => x + 1).filter(x => x % 2 === 0));

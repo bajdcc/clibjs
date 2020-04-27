@@ -324,7 +324,7 @@ namespace clib {
         }
     }
 
-    void jsv_function::print(std::ostream &os) {
+    void jsv_function::print(std::ostream &os) const {
         if (builtin)
             os << name;
         else

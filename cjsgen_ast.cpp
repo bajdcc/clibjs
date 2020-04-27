@@ -293,12 +293,14 @@ namespace clib {
                 gen.emit(this, DUP_TOP);
                 if (exp->gen_lvalue(gen) == no_lvalue)
                     gen.error(this, "unsupported unop");
+                gen.emit(this, POP_TOP);
                 break;
             case T_DEC:
                 gen.emit(this, BINARY_DEC);
                 gen.emit(this, DUP_TOP);
                 if (exp->gen_lvalue(gen) == no_lvalue)
                     gen.error(this, "unsupported unop");
+                gen.emit(this, POP_TOP);
                 break;
             default:
                 gen.error(this, "unsupported unop");
@@ -312,13 +314,11 @@ namespace clib {
         switch (op->data._op) {
             case T_INC:
                 gen.emit(this, BINARY_INC);
-                gen.emit(this, DUP_TOP);
                 if (exp->gen_lvalue(gen) == no_lvalue)
                     gen.error(this, "unsupported unop");
                 break;
             case T_DEC:
                 gen.emit(this, BINARY_DEC);
-                gen.emit(this, DUP_TOP);
                 if (exp->gen_lvalue(gen) == no_lvalue)
                     gen.error(this, "unsupported unop");
                 break;
@@ -378,12 +378,14 @@ namespace clib {
                 gen.emit(this, BINARY_INC);
                 if (exp->gen_lvalue(gen) == no_lvalue)
                     gen.error(this, "unsupported sinop");
+                gen.emit(this, POP_TOP);
                 break;
             case T_DEC:
                 gen.emit(this, DUP_TOP);
                 gen.emit(this, BINARY_DEC);
                 if (exp->gen_lvalue(gen) == no_lvalue)
                     gen.error(this, "unsupported sinop");
+                gen.emit(this, POP_TOP);
                 break;
             default:
                 gen.error(this, "unsupported sinop");
@@ -417,6 +419,17 @@ namespace clib {
     }
 
     int sym_binop_t::gen_rvalue(ijsgen &gen) {
+        if (op->flag == a_keyword) {
+            exp1->gen_rvalue(gen);
+            exp2->gen_rvalue(gen);
+            if (op->data._keyword == K_INSTANCEOF) {
+                gen.emit(this, INSTANCE_OF);
+            } else {
+                gen.error(this, "unsupported binop");
+            }
+            return 0;
+        }
+        assert(op->flag == a_operator);
         switch (op->data._op) {
             case T_ASSIGN: {
                 exp2->gen_rvalue(gen);
@@ -1071,6 +1084,66 @@ namespace clib {
     int sym_stmt_while_t::set_parent(sym_t::ref node) {
         seq->set_parent(shared_from_this());
         stmt->set_parent(shared_from_this());
+        return sym_stmt_t::set_parent(node);
+    }
+
+    // ----
+
+    symbol_t sym_stmt_for_t::get_type() const {
+        return s_statement_for;
+    }
+
+    std::string sym_stmt_for_t::to_string() const {
+        return sym_stmt_t::to_string();
+    }
+
+    int sym_stmt_for_t::gen_rvalue(ijsgen &gen) {
+        gen.enter(sp_for);
+        if (exp) {
+            exp->gen_rvalue(gen);
+            gen.emit(exp.get(), POP_TOP);
+        } else if (vars)
+            vars->gen_rvalue(gen);
+        auto L1 = 0;
+        auto L2 = gen.code_length(); // cond
+        if (cond) {
+            cond->gen_rvalue(gen);
+            L1 = gen.code_length();
+            gen.emit(cond.get(), POP_JUMP_IF_FALSE, 0); // exit
+        }
+        body->gen_rvalue(gen);
+        if (iter) {
+            iter->gen_rvalue(gen);
+            gen.emit(iter.get(), POP_TOP);
+        }
+        gen.emit(nullptr, JUMP_ABSOLUTE, L2);
+        if (cond)
+            gen.edit(L1, 1, gen.code_length());
+        auto j_break = gen.code_length();
+        auto j_continue = L2;
+        const auto &re = gen.get_rewrites();
+        for (const auto &s : re) {
+            if (s.second == K_BREAK)
+                gen.edit(s.first, 1, j_break);
+            else if (s.second == K_CONTINUE)
+                gen.edit(s.first, 1, j_continue);
+            else
+                assert(!"invalid rewrites");
+        }
+        gen.leave();
+        return sym_stmt_t::gen_rvalue(gen);
+    }
+
+    int sym_stmt_for_t::set_parent(sym_t::ref node) {
+        if (exp)
+            exp->set_parent(shared_from_this());
+        else if (vars)
+            vars->set_parent(shared_from_this());
+        if (cond)
+            cond->set_parent(shared_from_this());
+        if (iter)
+            iter->set_parent(shared_from_this());
+        body->set_parent(shared_from_this());
         return sym_stmt_t::set_parent(node);
     }
 

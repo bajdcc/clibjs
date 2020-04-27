@@ -38,12 +38,12 @@ Reference: quickjs
 ## Prototype
 
 - [ ] root\(`debug_dump`\)
-- [ ] object
+- [ ] object\(`hasOwnProperty`\)
 - [ ] number
 - [ ] boolean
 - [ ] string
 - [ ] function\(`call`\)
-- [ ] array\(`slice`, `concat`, `map`\)
+- [ ] array\(`slice`, `concat`, `map`, `filter`\)
 
 ## Control Flow
 
@@ -231,17 +231,17 @@ console.log([].slice.call(obj, 0).slice(1));
 
 console.log([1].concat(1, [2], 3));
 
-console.log([1, 2, 3].map(x => x + 1));
+console.log([1, 2, 3, 4].map(x => x + 1).filter(x => x % 2 === 0));
 ```
 
 Output:
 
 ```
-undefined
+library loaded
 123 12.3
-[object Object]
-[object Object]
-[object Object]
+[b]
+[1, 1, 2, 3]
+[2, 4]
 ```
 
 ## Grammar

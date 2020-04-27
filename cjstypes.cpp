@@ -272,6 +272,7 @@ namespace clib {
                     "DUP_TOP_TWO",
                     "ROT_FOUR",
                     "NOP",
+                    "INSTANCE_OF",
                     "UNARY_POSITIVE",
                     "UNARY_NEGATIVE",
                     "UNARY_NOT",
