@@ -2,6 +2,7 @@ function A(a, b) {
     this.a = a;
     this.b = b;
     this.c = function () {
+        console.log(console.trace());
         return this.a + ' ' + this.b;
     };
 }

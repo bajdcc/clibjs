@@ -8,26 +8,16 @@ int main() {
     //std::ifstream file("..\\test\\jquery.min.js");
     //std::ifstream file("..\\test\\vue.js");
     //std::ifstream file("..\\test\\vue.min.js");
-    //std::ifstream file("..\\test\\test_1.js");
-    //std::ifstream file("..\\test\\test_2.js");
-    //std::ifstream file("..\\test\\test_3.js");
-    //std::ifstream file("..\\test\\test_4.js");
-    //std::ifstream file("..\\test\\test_5.js");
-    //std::ifstream file("..\\test\\test_6.js");
-    //std::ifstream file("..\\test\\test_7.js");
-    std::ifstream file("..\\test\\test_8.js");
+    const auto filename = R"(..\\test\\test_8.js)";
+    char buf[256];
+    snprintf(buf, sizeof(buf), "sys.exec_file(\"%s\");", filename);
     clib::cjs js;
-    if (file) {
-        std::stringstream buffer;
-        buffer << file.rdbuf();
-        auto str = buffer.str();
-        try {
-            js.exec("output.txt", str);
-        } catch (const clib::cexception &e) {
-            std::cout << e.message() << std::endl;
-        } catch (const std::exception &e) {
-            std::cout << e.what() << std::endl;
-        }
+    try {
+        js.exec("<starter>", buf);
+    } catch (const clib::cexception &e) {
+        std::cout << e.message() << std::endl;
+    } catch (const std::exception &e) {
+        std::cout << e.what() << std::endl;
     }
     while (true) {
         std::string input;
@@ -35,7 +25,7 @@ int main() {
         if (input.empty() || input == "exit")
             break;
         try {
-            js.exec("console.txt", input);
+            js.exec("<stdin>", input);
         } catch (const clib::cexception &e) {
             std::cout << e.message() << std::endl;
         } catch (const std::exception &e) {

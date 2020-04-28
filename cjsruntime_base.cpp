@@ -218,6 +218,13 @@ namespace clib {
             return 0;
         };
         permanents.console->obj.insert({permanents.console_log->name, permanents.console_log});
+        permanents.console_trace = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
+        permanents.console_trace->name = "trace";
+        permanents.console_trace->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
+            func->stack.push_back(js.new_string(js.get_stacktrace()));
+            return 0;
+        };
+        permanents.console->obj.insert({permanents.console_trace->name, permanents.console_trace});
         global_env.insert({"console", permanents.console});
         // sys
         permanents.sys = _new_object(js_value::at_const | js_value::at_readonly);
@@ -228,13 +235,14 @@ namespace clib {
                 func->stack.push_back(js.new_undefined());
                 return 0;
             }
-            std::ifstream file(args.front().lock()->to_string());
+            auto filename = args.front().lock()->to_string();
+            std::ifstream file(filename);
             if (file) {
                 std::stringstream buffer;
                 buffer << file.rdbuf();
                 auto str = buffer.str();
                 func->pc++;
-                js.exec(str);
+                js.exec(filename, str);
                 return 3;
             } else {
                 func->stack.push_back(js.new_undefined());

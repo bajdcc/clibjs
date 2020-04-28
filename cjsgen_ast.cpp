@@ -6,6 +6,7 @@
 #include <utility>
 #include <cmath>
 #include <cassert>
+#include <sstream>
 
 #include "cjsgen.h"
 #include "cjsast.h"
@@ -73,9 +74,9 @@ namespace clib {
     }
 
     int sym_id_t::gen_rvalue(ijsgen &gen) {
-        if (init)
+        if (init) {
             init->gen_rvalue(gen);
-        else
+        } else
             gen.emit(this, LOAD_UNDEFINED);
         for (const auto &s : ids) {
             s->gen_lvalue(gen);
@@ -1260,9 +1261,51 @@ namespace clib {
     }
 
     int sym_code_t::gen_rvalue(ijsgen &gen) {
+        fullname = gen.get_fullname(name ? name->data._identifier : LAMBDA_ID);
+        auto p = parent.lock();
+        if (p) {
+            if (p->get_type() == s_id) {
+                auto _id = std::dynamic_pointer_cast<sym_id_t>(p);
+                if (!_id->ids.empty()) {
+                    std::stringstream ss2;
+                    auto idx = _id->ids.back().get();
+                    ss2 << "(" << gen.get_filename() << ":" << idx->line << ":" << idx->column
+                        << ") " << gen.get_code_text(idx);
+                    debugname = ss2.str();
+                }
+            } else if (p->get_type() == s_binop) {
+                do {
+                    auto _binop = std::dynamic_pointer_cast<sym_binop_t>(p);
+                    if (_binop->op->flag == a_operator && _binop->op->data._op == T_ASSIGN) {
+                        if (_binop->exp1->get_type() == s_member_dot) {
+                            auto _dot = std::dynamic_pointer_cast<sym_member_dot_t>(_binop->exp1);
+                            if (gen.get_code_text(_dot->exp.get()) == "this" && _dot->dots.size() == 1) {
+                                std::stringstream ss2;
+                                auto idx = _dot->exp.get();
+                                ss2 << "(" << gen.get_filename() << ":" << idx->line << ":" << idx->column
+                                    << ") " << gen.get_func_name() << ".prototype." << gen.get_code_text(_dot->dots.front());
+                                debugname = ss2.str();
+                                break;
+                            }
+                        }
+                        std::stringstream ss3;
+                        auto idx = _binop->exp1.get();
+                        ss3 << "(" << gen.get_filename() << ":" << idx->line << ":" << idx->column
+                            << ") " << fullname << " " << gen.get_code_text(idx);
+                        debugname = ss3.str();
+                    }
+                } while (false);
+            }
+        }
+        if (debugname.empty()) {
+            std::stringstream ss;
+            ss << "(" << gen.get_filename() << ":" << this->line << ":" << this->column
+               << ") " << fullname;
+            debugname = ss.str();
+        }
+        gen.add_var(fullname, shared_from_this());
         if (!args.empty())
             gen.enter(sp_param);
-        fullname = gen.get_fullname(name ? name->data._identifier : LAMBDA_ID);
         auto id = gen.push_function(std::dynamic_pointer_cast<sym_code_t>(shared_from_this()));
         if (body) {
             if (!arrow && name) {
@@ -1292,13 +1335,13 @@ namespace clib {
         }
         if (name) {
             gen.emit(name, LOAD_CONST, id);
-            gen.emit(name, LOAD_CONST, gen.load_string(fullname, cjs_consts::get_string_t::gs_string));
+            gen.emit(name, LOAD_CONST, gen.load_string(debugname, cjs_consts::get_string_t::gs_string));
             gen.emit(this, MAKE_FUNCTION, (int) flag);
             if (parent.lock()->get_type() == s_statement_exp)
                 gen.emit(name, STORE_NAME, gen.load_string(name->data._identifier, cjs_consts::get_string_t::gs_name));
         } else {
             gen.emit(nullptr, LOAD_CONST, id);
-            gen.emit(nullptr, LOAD_CONST, gen.load_string(fullname, cjs_consts::get_string_t::gs_string));
+            gen.emit(nullptr, LOAD_CONST, gen.load_string(debugname, cjs_consts::get_string_t::gs_string));
             gen.emit(this, MAKE_FUNCTION, (int) flag);
         }
         if (!args.empty())

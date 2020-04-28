@@ -76,8 +76,11 @@ namespace clib {
         virtual void add_var(const std::string &, std::shared_ptr<sym_t>) = 0;
         virtual void add_closure(std::shared_ptr<sym_var_id_t>) = 0;
         virtual int get_func_level() const = 0;
+        virtual std::string get_func_name() const = 0;
         virtual std::string get_fullname(const std::string &name) const = 0;
         virtual bool is_arrow_func() const = 0;
+        virtual std::string get_code_text(ast_node_index *) const = 0;
+        virtual std::string get_filename() const = 0;
         virtual void error(ast_node_index *, const std::string &) const = 0;
     };
 
@@ -147,7 +150,6 @@ namespace clib {
         int gen_lvalue(ijsgen &gen) override;
         int gen_rvalue(ijsgen &gen) override;
         int gen_rvalue_decl(ijsgen &gen);
-        int gen_rvalue_impl(ijsgen &gen);
         int set_parent(sym_t::ref node) override;
         void parse();
         std::vector<sym_var_t::ref> ids;
@@ -502,6 +504,7 @@ namespace clib {
         ast_node *name{nullptr};
         bool arrow{false};
         std::string fullname;
+        std::string debugname;
         std::string text;
         std::vector<sym_var_t::ref> args;
         std::vector<std::string> args_str;
@@ -527,7 +530,7 @@ namespace clib {
         cjsgen(const cjsgen &) = delete;
         cjsgen &operator=(const cjsgen &) = delete;
 
-        bool gen_code(ast_node *node, const std::string *str);
+        bool gen_code(ast_node *node, const std::string *str, const std::string &name);
         cjs_code_result::ref get_code() const;
 
         static void print(const sym_t::ref &node, int level, std::ostream &os);
@@ -551,7 +554,10 @@ namespace clib {
         void add_closure(std::shared_ptr<sym_var_id_t>) override;
         int get_func_level() const override;
         std::string get_fullname(const std::string &name) const override;
+        std::string get_func_name() const override;
         bool is_arrow_func() const override;
+        std::string get_code_text(ast_node_index *) const override;
+        std::string get_filename() const override;
         void error(ast_node_index *, const std::string &) const override;
 
     private:
@@ -573,6 +579,7 @@ namespace clib {
 
     private:
         const std::string *text{nullptr};
+        std::string filename;
         std::vector<std::string> err;
         std::vector<std::vector<ast_node *>> ast;
         std::vector<std::vector<sym_t::ref>> tmp;

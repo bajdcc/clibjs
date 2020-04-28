@@ -373,16 +373,18 @@ namespace clib {
     }
 
     void cjs_function::reset(const sym_code_t::ref &code, js_value_new &n) {
+        name = code->debugname;
         info = std::make_shared<cjs_function_info>(code, n);
     }
 
     void cjs_function::reset(cjs_function_info::ref code) {
+        name = code->fullname;
         info = std::move(code);
     }
 
     cjs_function_info::cjs_function_info(const sym_code_t::ref &code, js_value_new &n) {
         arrow = code->arrow;
-        fullname = std::move(code->fullname);
+        fullname = std::move(code->debugname);
         args = std::move(code->args_str);
         std::copy(code->closure_str.begin(), code->closure_str.end(), std::back_inserter(closure));
         codes = std::move(code->codes);

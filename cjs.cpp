@@ -12,6 +12,7 @@
 
 #define LOG_AST 0
 #define LOG_FILE 0
+#define LOG_FILENAME "output.txt"
 
 namespace clib {
 
@@ -36,20 +37,24 @@ namespace clib {
         cjsast::print(p->root(), 0, input, std::cout);
 #endif
         auto g = std::make_unique<cjsgen>();
-        g->gen_code(p->root(), &input);
+        g->gen_code(p->root(), &input, filename);
         p = nullptr;
 #if LOG_FILE
-        std::ofstream ofs(filename);
+        std::ofstream ofs(LOG_FILENAME);
         if (ofs)
             cjsast::print(p.root(), 0, input, ofs);
 #endif
         auto code = std::move(g->get_code());
         assert(code);
+        if (!filename.empty() && filename[0] != '<')
+            code->code->debugname = "(" + filename + ":1:1) <entry>";
+        else
+            code->code->debugname = "(" + filename + ") <entry>";
         g = nullptr;
         rt.eval(std::move(code), top);
     }
 
     void cjs::init_lib() {
-        exec("lib", R"(sys.exec_file("..\\lib\\clib.js");)");
+        exec("<library>", R"(sys.exec_file("..\\lib\\clib.js");)");
     }
 }

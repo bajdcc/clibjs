@@ -680,7 +680,6 @@ namespace clib {
                 }
                 stack.push_back(new_stack(func->code));
                 auto new_stack = stack.back();
-                new_stack->name = func->name;
                 auto env = new_stack->envs.lock();
                 if (!func->code->arrow && func->name.front() != '<')
                     env->obj[func->name] = f;
@@ -825,7 +824,6 @@ namespace clib {
                 auto new_stack = stack.back();
                 new_stack->_this = _this;
                 new_stack->ret_value = _this;
-                new_stack->name = cons_func->name;
                 auto env = new_stack->envs.lock();
                 if (!cons_func->code->arrow && cons_func->name.front() != '<')
                     env->obj[cons_func->name] = f;
@@ -1232,8 +1230,23 @@ namespace clib {
         return arr;
     }
 
-    void cjsruntime::exec(const std::string &s) {
-        ((cjs *) pjs)->exec("exec.txt", s, false);
+    void cjsruntime::exec(const std::string &n, const std::string &s) {
+        ((cjs *) pjs)->exec(n, s, false);
+    }
+
+    std::string cjsruntime::get_stacktrace() const {
+        std::stringstream ss;
+        auto j = stack.size();
+        for (auto i = stack.rbegin(); i != stack.rend(); i++) {
+            ss << j-- << ": " << (*i)->name;
+            if (!(*i)->info)
+                ss << " (builtin)";
+            ss << std::endl;
+        }
+        auto s = ss.str();
+        if (!s.empty())
+            s.pop_back();
+        return s;
     }
 
     bool cjsruntime::to_number(const js_value::ref &obj, double &d) {

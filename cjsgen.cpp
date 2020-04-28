@@ -12,9 +12,9 @@
 #include "cjsast.h"
 #include "cjsruntime.h"
 
+#define DEBUG_MODE 0
 #define PRINT_CODE 0
 #define DUMP_CODE 0
-#define DUMP_CODE2 0
 #define PRINT_AST 0
 
 #define AST_IS_KEYWORD(node) ((node)->flag == a_keyword)
@@ -187,7 +187,7 @@ namespace clib {
                     break;
                 case r_function: {
                     auto f = functions.at(i).lock();
-                    fprintf(stdout, "C [#%03d] [FUNC  ] %s | %s\n", i, f->fullname.c_str(),
+                    fprintf(stdout, "C [#%03d] [FUNC  ] %s | %s\n", i, f->debugname.c_str(),
                             text->substr(f->start, f->end - f->start).c_str());
                 }
                     break;
@@ -252,14 +252,15 @@ namespace clib {
         return derefs_data;
     }
 
-    bool cjsgen::gen_code(ast_node *node, const std::string *str) {
+    bool cjsgen::gen_code(ast_node *node, const std::string *str, const std::string &name) {
+        filename = name;
         text = str;
         gen_rec(node, 0);
         if (tmp.front().empty())
             return false;
         tmp.front().front()->set_parent(nullptr);
         tmp.front().front()->gen_rvalue(*this);
-#if PRINT_AST
+#if PRINT_AST && DEBUG_MODE
         print(tmp.front().front(), 0, std::cout);
 #endif
         decltype(codes) _codes(1 + funcs.size());
@@ -269,7 +270,7 @@ namespace clib {
             c->consts.save();
             c->text = text->substr(c->start, c->end - c->start);
         }
-#if DUMP_CODE2
+#if DUMP_CODE && DEBUG_MODE
         dump();
 #endif
         return true;
@@ -2141,8 +2142,26 @@ namespace clib {
         return ss.str();
     }
 
+    std::string cjsgen::get_func_name() const {
+        if (codes.empty())
+            return "<global>";
+        return codes.back()->fullname;
+    }
+
     bool cjsgen::is_arrow_func() const {
         return codes.back()->arrow;
+    }
+
+    std::string cjsgen::get_code_text(ast_node_index *idx) const {
+        assert(idx && text);
+        assert(idx->start >= 0 && idx->start < (int) text->length());
+        assert(idx->end >= 0 && idx->end < (int) text->length());
+        assert(idx->start <= idx->end);
+        return text->substr(idx->start, idx->end - idx->start);
+    }
+
+    std::string cjsgen::get_filename() const {
+        return filename;
     }
 
     void cjsgen::error(ast_node_index *idx, const std::string &str) const {
@@ -2154,14 +2173,14 @@ namespace clib {
     }
 
     void cjsgen::dump() const {
-#if PRINT_CODE
+#if PRINT_CODE && DEBUG_MODE
         fprintf(stdout, "--== Main Function ==--\n");
         dump(codes.front(), true);
 #else
         dump(codes.front(), false);
 #endif
         for (const auto &c : funcs) {
-#if PRINT_CODE
+#if PRINT_CODE && DEBUG_MODE
             fprintf(stdout, "--== Function: \"%s\" ==--\n", c->fullname.c_str());
             dump(c, true);
 #else

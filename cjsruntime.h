@@ -56,7 +56,8 @@ namespace clib {
         virtual std::shared_ptr<jsv_undefined> new_undefined() = 0;
         virtual std::shared_ptr<cjs_function> new_func(const std::shared_ptr<cjs_function_info> &code) = 0;
         virtual std::shared_ptr<jsv_object> new_array() = 0;
-        virtual void exec(const std::string &) = 0;
+        virtual void exec(const std::string &, const std::string &) = 0;
+        virtual std::string get_stacktrace() const = 0;
     };
 
     class js_value : public std::enable_shared_from_this<js_value> {
@@ -283,7 +284,8 @@ namespace clib {
         jsv_undefined::ref new_undefined() override;
         cjs_function::ref new_func(const cjs_function_info::ref &code) override;
         jsv_object::ref new_array() override;
-        void exec(const std::string &) override;
+        void exec(const std::string &, const std::string &) override;
+        std::string get_stacktrace() const override;
         static bool to_number(const js_value::ref &, double &);
         static std::vector<js_value::weak_ref> to_array(const js_value::ref &);
 
@@ -357,6 +359,7 @@ namespace clib {
             // console
             jsv_object::ref console;
             jsv_function::ref console_log;
+            jsv_function::ref console_trace;
             // sys
             jsv_object::ref sys;
             jsv_function::ref sys_exec_file;
