@@ -204,6 +204,7 @@ namespace clib {
         DEF_RULE(methodDefinition)
         DEF_RULE(formalParameterList)
         DEF_RULE(formalParameterArg)
+        DEF_RULE(lastFormalParameterArg)
         DEF_RULE(functionBody)
         DEF_RULE(sourceElements)
         DEF_RULE(arrayLiteral)
@@ -232,7 +233,7 @@ namespace clib {
         DEF_RULE(computedPropertyExpressionAssignment)
         DEF_RULE(propertyShorthand)
         DEF_RULE(functionDecl)
-        DEF_RULE(anoymousFunctionDecl)
+        DEF_RULE(anonymousFunctionDecl)
         DEF_RULE(arrowFunction)
         DEF_RULE_EXP(functionExpression)
         DEF_RULE_EXP(classExpression)
@@ -318,8 +319,10 @@ namespace clib {
                        | *_T_SHARP + propertyName + _T_ASSIGN + singleExpression;
         methodDefinition = *_T_SHARP + propertyName + ~_T_LPARAN + *formalParameterList + ~_T_RPARAN +
                            ~_T_LBRACE + *functionBody + ~_T_RBRACE;
-        formalParameterList = *(formalParameterList + ~_T_COMMA) + assignable;
-        formalParameterArg = assignable;
+        formalParameterList = formalParameterArg + *(~_T_COMMA + lastFormalParameterArg) |
+                              lastFormalParameterArg;
+        formalParameterArg = *(formalParameterArg + ~_T_COMMA) + assignable;
+        lastFormalParameterArg = _T_ELLIPSIS + assignable;
         functionBody = *functionBody + sourceElements;
         sourceElements = *sourceElements + statement;
         sourceElement = statement;
@@ -429,7 +432,7 @@ namespace clib {
         numericLiteral = _NUMBER;
         assignable = _ID | arrayLiteral | objectLiteral;
         arguments = ~_T_LPARAN + *argument + _T_RPARAN;
-        argument = *(argument + ~_T_COMMA) + *~_T_ELLIPSIS + singleExpression;
+        argument = *(argument + ~_T_COMMA) + *_T_ELLIPSIS + singleExpression;
         propertyAssignments = *(propertyAssignments + ~_T_COMMA) + propertyAssignment;
         propertyAssignment = propertyExpressionAssignment
                              | computedPropertyExpressionAssignment
@@ -444,12 +447,12 @@ namespace clib {
                        | ~_T_LSQUARE + singleExpression + ~_T_RSQUARE;
         functionStatement = anonymousFunction;
         anonymousFunction = functionDecl
-                            | anoymousFunctionDecl
+                            | anonymousFunctionDecl
                             | arrowFunction;
         functionDecl = functionDeclaration;
         functionDeclaration = _K_FUNCTION + _ID + ~_T_LPARAN + *formalParameterList + ~_T_RPARAN +
                               ~_T_LBRACE + *functionBody + _T_RBRACE;
-        anoymousFunctionDecl = _K_FUNCTION + ~_T_LPARAN + *formalParameterList + ~_T_RPARAN +
+        anonymousFunctionDecl = _K_FUNCTION + ~_T_LPARAN + *formalParameterList + ~_T_RPARAN +
                                ~_T_LBRACE + *functionBody + _T_RBRACE;
         arrowFunction = arrowFunctionParameters + ~_T_ARROW + arrowFunctionBody;
         arrowFunctionParameters = _ID | _T_LPARAN + *formalParameterList + _T_RPARAN;

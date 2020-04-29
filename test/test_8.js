@@ -18,3 +18,4 @@ console.log([1, 2, 3, 4].map(x => x + 1).filter(x => x % 2 === 0));
 console.log([1, 2, 3, 4].reduce((a, b) => a + b));
 console.log([1, 2, 3, 4].reduce((a, b) => a + b, 1));
 console.log([1, 2, 3, 4].fill(5));
+Function.prototype.bind(console.log, 1, 2, 3)();

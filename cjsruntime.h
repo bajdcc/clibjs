@@ -65,6 +65,7 @@ namespace clib {
         enum attr_t {
             at_const = 1U << 0U,
             at_readonly = 1U << 1U,
+            at_refs = 1U << 2U,
         };
 
         using ref = std::shared_ptr<js_value>;
@@ -223,6 +224,8 @@ namespace clib {
         bool arrow{false};
         std::string fullname;
         std::string text;
+        int args_num{0};
+        bool rest{false};
         std::vector<std::string> args;
         std::vector<std::string> names;
         std::vector<std::string> globals;
@@ -251,6 +254,7 @@ namespace clib {
         js_value::weak_ref _this;
         jsv_object::weak_ref envs;
         jsv_object::weak_ref closure;
+        std::vector<int> rests;
     };
 
     struct cjs_runtime_reuse {
@@ -329,9 +333,12 @@ namespace clib {
         std::vector<cjs_function::ref> stack;
         cjs_function::ref current_stack;
         std::vector<cjs_function::ref> reuse_stack;
-        std::unordered_map<std::string, js_value::weak_ref> global_env;
         std::list<js_value::ref> objs;
         struct _permanents_t {
+            // refs
+            std::vector<js_value::ref> refs;
+            // cached objects
+            jsv_object::ref global_env;
             jsv_null::ref _null;
             jsv_undefined::ref _undefined;
             jsv_boolean::ref _true;

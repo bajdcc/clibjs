@@ -275,6 +275,7 @@ namespace clib {
         int set_parent(sym_t::ref node) override;
         sym_exp_t::ref obj;
         std::vector<sym_exp_t::ref> args;
+        std::vector<int> rests;
     };
 
     class sym_object_t : public sym_exp_t {
@@ -297,6 +298,7 @@ namespace clib {
         sym_exp_t::ref obj;
         ast_node *method{nullptr};
         std::vector<sym_exp_t::ref> args;
+        std::vector<int> rests;
     };
 
     class sym_call_function_t : public sym_exp_t {
@@ -308,6 +310,7 @@ namespace clib {
         int set_parent(sym_t::ref node) override;
         sym_exp_t::ref obj;
         std::vector<sym_exp_t::ref> args;
+        std::vector<int> rests;
     };
 
     class sym_stmt_t : public sym_t {
@@ -503,6 +506,7 @@ namespace clib {
         int set_parent(sym_t::ref node) override;
         ast_node *name{nullptr};
         bool arrow{false};
+        bool rest{false};
         std::string fullname;
         std::string debugname;
         std::string text;

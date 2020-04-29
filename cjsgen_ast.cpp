@@ -820,10 +820,24 @@ namespace clib {
 
     int sym_new_t::gen_rvalue(ijsgen &gen) {
         obj->gen_rvalue(gen);
-        for (const auto &s : args) {
-            s->gen_rvalue(gen);
+        if (rests.empty()) {
+            for (const auto &s : args) {
+                s->gen_rvalue(gen);
+            }
+            gen.emit(this, CALL_FUNCTION_EX, args.size());
+        } else {
+            size_t i = 0, j = 0;
+            gen.emit(this, CALL_FUNCTION_KW);
+            for (const auto &s : args) {
+                s->gen_rvalue(gen);
+                if (i < rests.size() && rests[i] == j) {
+                    gen.emit(s.get(), UNPACK_SEQUENCE);
+                    i++;
+                }
+                j++;
+            }
+            gen.emit(this, CALL_FUNCTION_EX, -1);
         }
-        gen.emit(this, CALL_FUNCTION_EX, args.size());
         return sym_t::gen_rvalue(gen);
     }
 
@@ -873,10 +887,24 @@ namespace clib {
     int sym_call_method_t::gen_rvalue(ijsgen &gen) {
         obj->gen_rvalue(gen);
         gen.emit(method, LOAD_METHOD, gen.load_string(method->data._string, cjs_consts::get_string_t::gs_name));
-        for (const auto &s : args) {
-            s->gen_rvalue(gen);
+        if (rests.empty()) {
+            for (const auto &s : args) {
+                s->gen_rvalue(gen);
+            }
+            gen.emit(this, CALL_METHOD, args.size());
+        } else {
+            size_t i = 0, j = 0;
+            gen.emit(this, CALL_FUNCTION_KW);
+            for (const auto &s : args) {
+                s->gen_rvalue(gen);
+                if (i < rests.size() && rests[i] == j) {
+                    gen.emit(s.get(), UNPACK_SEQUENCE);
+                    i++;
+                }
+                j++;
+            }
+            gen.emit(this, CALL_METHOD, -1);
         }
-        gen.emit(this, CALL_METHOD, args.size());
         return sym_t::gen_rvalue(gen);
     }
 
@@ -900,10 +928,24 @@ namespace clib {
 
     int sym_call_function_t::gen_rvalue(ijsgen &gen) {
         obj->gen_rvalue(gen);
-        for (const auto &s : args) {
-            s->gen_rvalue(gen);
+        if (rests.empty()) {
+            for (const auto &s : args) {
+                s->gen_rvalue(gen);
+            }
+            gen.emit(this, CALL_FUNCTION, args.size());
+        } else {
+            size_t i = 0, j = 0;
+            gen.emit(this, CALL_FUNCTION_KW);
+            for (const auto &s : args) {
+                s->gen_rvalue(gen);
+                if (i < rests.size() && rests[i] == j) {
+                    gen.emit(s.get(), UNPACK_SEQUENCE);
+                    i++;
+                }
+                j++;
+            }
+            gen.emit(this, CALL_FUNCTION, -1);
         }
-        gen.emit(this, CALL_FUNCTION, args.size());
         return sym_t::gen_rvalue(gen);
     }
 

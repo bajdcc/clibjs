@@ -30,12 +30,30 @@ namespace clib {
         pjs = p;
         // proto
         permanents._proto_root = _new_object(js_value::at_const | js_value::at_readonly);
-        permanents._proto_root->obj["__type__"] = new_string("root");
-        permanents._proto_root->__proto__.reset();
+        permanents._proto_number = _new_object(js_value::at_const | js_value::at_readonly);
+        permanents._proto_string = _new_object(js_value::at_const | js_value::at_readonly);
+        permanents._proto_boolean = _new_object(js_value::at_const | js_value::at_readonly);
         permanents._proto_object = _new_object(js_value::at_const | js_value::at_readonly);
-        permanents._proto_object->obj["__type__"] = new_string("object");
-        permanents._proto_object->__proto__ = permanents._proto_root;
+        permanents._proto_function = _new_object(js_value::at_const | js_value::at_readonly);
+        // const value
+        permanents.global_env = _new_object(js_value::at_const);
+        permanents._null = _new_null(js_value::at_const | js_value::at_readonly);
+        permanents._undefined = _new_undefined(js_value::at_const | js_value::at_readonly);
+        permanents._true = _new_boolean(true, js_value::at_const | js_value::at_readonly);
+        permanents._false = _new_boolean(false, js_value::at_const | js_value::at_readonly);
+        permanents.__nan = _new_number(NAN, js_value::at_const | js_value::at_readonly);
+        permanents._inf = _new_number(INFINITY, js_value::at_const | js_value::at_readonly);
+        permanents._minus_inf = _new_number(-INFINITY, js_value::at_const);
+        permanents._zero = _new_number(0.0, js_value::at_const);
+        permanents._minus_zero = _new_number(-0.0, js_value::at_const);
+        permanents._one = _new_number(1.0, js_value::at_const);
+        permanents._minus_one = _new_number(-1.0, js_value::at_const);
+        permanents._empty = _new_string("");
+        // proto
+        permanents._proto_root->obj["__type__"] = _new_string("root", js_value::at_const | js_value::at_refs);
+        permanents._proto_object->obj["__type__"] = _new_string("object", js_value::at_const | js_value::at_refs);
         permanents._proto_object_hasOwnProperty = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
+        permanents._proto_object_hasOwnProperty->obj.insert({"length", _new_number(1, js_value::at_const | js_value::at_refs)});
         permanents._proto_object_hasOwnProperty->name = "hasOwnProperty";
         permanents._proto_object_hasOwnProperty->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
             if (args.empty()) {
@@ -52,11 +70,10 @@ namespace clib {
             return 0;
         };
         permanents._proto_object->obj.insert({permanents._proto_object_hasOwnProperty->name, permanents._proto_object_hasOwnProperty});
-        permanents._proto_boolean = _new_object(js_value::at_const | js_value::at_readonly);
-        permanents._proto_boolean->obj["__type__"] = new_string("boolean");
-        permanents._proto_function = _new_object(js_value::at_const | js_value::at_readonly);
-        permanents._proto_function->obj["__type__"] = new_string("function");
+        permanents._proto_boolean->obj["__type__"] = _new_string("boolean", js_value::at_const | js_value::at_refs);
+        permanents._proto_function->obj["__type__"] = _new_string("function", js_value::at_const | js_value::at_refs);
         permanents._proto_function_call = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
+        permanents._proto_function_call->obj.insert({"length", _new_number(1, js_value::at_const | js_value::at_refs)});
         permanents._proto_function_call->name = "call";
         permanents._proto_function_call->builtin = [](auto &func, auto &_this, auto &__args, auto &js, auto attr) {
             auto f = _this.lock();
@@ -96,6 +113,7 @@ namespace clib {
         };
         permanents._proto_function->obj.insert({permanents._proto_function_call->name, permanents._proto_function_call});
         permanents._proto_function_apply = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
+        permanents._proto_function_apply->obj.insert({"length", _new_number(1, js_value::at_const | js_value::at_refs)});
         permanents._proto_function_apply->name = "apply";
         permanents._proto_function_apply->builtin = [](auto &func, auto &_this, auto &__args, auto &js, auto attr) {
             auto f = _this.lock();
@@ -134,25 +152,11 @@ namespace clib {
             return 1;
         };
         permanents._proto_function->obj.insert({permanents._proto_function_apply->name, permanents._proto_function_apply});
-        permanents._proto_number = _new_object(js_value::at_const | js_value::at_readonly);
-        permanents._proto_number->obj["__type__"] = new_string("number");
-        permanents._proto_string = _new_object(js_value::at_const | js_value::at_readonly);
-        permanents._proto_string->obj["__type__"] = new_string("string");
-        // const value
-        permanents._null = _new_null(js_value::at_const | js_value::at_readonly);
-        permanents._undefined = _new_undefined(js_value::at_const | js_value::at_readonly);
-        permanents._true = _new_boolean(true, js_value::at_const | js_value::at_readonly);
-        permanents._false = _new_boolean(false, js_value::at_const | js_value::at_readonly);
-        permanents.__nan = _new_number(NAN, js_value::at_const | js_value::at_readonly);
-        permanents._inf = _new_number(INFINITY, js_value::at_const | js_value::at_readonly);
-        permanents._minus_inf = _new_number(-INFINITY, js_value::at_const);
-        permanents._zero = _new_number(0.0, js_value::at_const);
-        permanents._minus_zero = _new_number(-0.0, js_value::at_const);
-        permanents._one = _new_number(1.0, js_value::at_const);
-        permanents._minus_one = _new_number(-1.0, js_value::at_const);
-        permanents._empty = _new_string("");
+        permanents._proto_number->obj["__type__"] = _new_string("number", js_value::at_const | js_value::at_refs);
+        permanents._proto_string->obj["__type__"] = _new_string("string", js_value::at_const | js_value::at_refs);
 #if DUMP_PRINT_FILE_ENABLE
         permanents._debug_print = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
+        permanents._debug_print->obj.insert({"length", _new_number(1, js_value::at_const | js_value::at_refs)});
 #if DUMP_PRINT_FILE_AUTO_CLEAR
         permanents._debug_print->name = "debug_print";
         {
@@ -172,12 +176,13 @@ namespace clib {
             func->stack.push_back(js.new_undefined());
             return 0;
         };
-        global_env.insert({permanents._debug_print->name, permanents._debug_print});
+        permanents.global_env->obj.insert({permanents._debug_print->name, permanents._debug_print});
 #endif
-        global_env.insert({"NaN", permanents.__nan});
-        global_env.insert({"Infinity", permanents._inf});
+        permanents.global_env->obj.insert({"NaN", permanents.__nan});
+        permanents.global_env->obj.insert({"Infinity", permanents._inf});
         // debug
         permanents._debug_dump = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
+        permanents._debug_dump->obj.insert({"length", _new_number(1, js_value::at_const | js_value::at_refs)});
         permanents._debug_dump->name = "debug_dump";
         permanents._debug_dump->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
             char buf[128];
@@ -203,6 +208,7 @@ namespace clib {
         // console
         permanents.console = _new_object(js_value::at_const | js_value::at_readonly);
         permanents.console_log = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
+        permanents.console_log->obj.insert({"length", _new_number(1, js_value::at_const | js_value::at_refs)});
         permanents.console_log->name = "log";
         permanents.console_log->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
             std::stringstream ss;
@@ -219,16 +225,18 @@ namespace clib {
         };
         permanents.console->obj.insert({permanents.console_log->name, permanents.console_log});
         permanents.console_trace = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
+        permanents.console_trace->obj.insert({"length", _new_number(0, js_value::at_const | js_value::at_refs)});
         permanents.console_trace->name = "trace";
         permanents.console_trace->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
             func->stack.push_back(js.new_string(js.get_stacktrace()));
             return 0;
         };
         permanents.console->obj.insert({permanents.console_trace->name, permanents.console_trace});
-        global_env.insert({"console", permanents.console});
+        permanents.global_env->obj.insert({"console", permanents.console});
         // sys
         permanents.sys = _new_object(js_value::at_const | js_value::at_readonly);
         permanents.sys_exec_file = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
+        permanents.sys_exec_file->obj.insert({"length", _new_number(1, js_value::at_const | js_value::at_refs)});
         permanents.sys_exec_file->name = "exec_file";
         permanents.sys_exec_file->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
             if (args.empty() || args.front().lock()->get_type() != r_string) {
@@ -250,9 +258,10 @@ namespace clib {
             return 0;
         };
         permanents.sys->obj.insert({permanents.sys_exec_file->name, permanents.sys_exec_file});
-        global_env.insert({"sys", permanents.sys});
+        permanents.global_env->obj.insert({"sys", permanents.sys});
         // number
         permanents.f_number = _new_function(permanents._proto_number, js_value::at_const | js_value::at_readonly);
+        permanents.f_number->obj.insert({"length", _new_number(1, js_value::at_const | js_value::at_refs)});
         permanents.f_number->name = "Number";
         permanents.f_number->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
             js_value::ref pri;
@@ -273,9 +282,10 @@ namespace clib {
             func->stack.push_back(pri);
             return 0;
         };
-        global_env.insert({permanents.f_number->name, permanents.f_number});
+        permanents.global_env->obj.insert({permanents.f_number->name, permanents.f_number});
         // boolean
         permanents.f_boolean = _new_function(permanents._proto_boolean, js_value::at_const | js_value::at_readonly);
+        permanents.f_boolean->obj.insert({"length", _new_number(1, js_value::at_const | js_value::at_refs)});
         permanents.f_boolean->name = "Boolean";
         permanents.f_boolean->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
             js_value::ref pri;
@@ -290,9 +300,10 @@ namespace clib {
             func->stack.push_back(pri);
             return 0;
         };
-        global_env.insert({permanents.f_boolean->name, permanents.f_boolean});
+        permanents.global_env->obj.insert({permanents.f_boolean->name, permanents.f_boolean});
         // object
         permanents.f_object = _new_function(permanents._proto_object, js_value::at_const | js_value::at_readonly);
+        permanents.f_object->obj.insert({"length", _new_number(1, js_value::at_const | js_value::at_refs)});
         permanents.f_object->name = "Object";
         permanents.f_object->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
             js_value::ref pri;
@@ -307,9 +318,10 @@ namespace clib {
             func->stack.push_back(pri);
             return 0;
         };
-        global_env.insert({permanents.f_object->name, permanents.f_object});
+        permanents.global_env->obj.insert({permanents.f_object->name, permanents.f_object});
         // string
         permanents.f_string = _new_function(permanents._proto_string, js_value::at_const | js_value::at_readonly);
+        permanents.f_string->obj.insert({"length", _new_number(1, js_value::at_const | js_value::at_refs)});
         permanents.f_string->name = "String";
         permanents.f_string->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
             js_value::ref pri;
@@ -324,9 +336,10 @@ namespace clib {
             func->stack.push_back(pri);
             return 0;
         };
-        global_env.insert({permanents.f_string->name, permanents.f_string});
+        permanents.global_env->obj.insert({permanents.f_string->name, permanents.f_string});
         // function
         permanents.f_function = _new_function(permanents._proto_function, js_value::at_const | js_value::at_readonly);
+        permanents.f_function->obj.insert({"length", _new_number(1, js_value::at_const | js_value::at_refs)});
         permanents.f_function->name = "Function";
         permanents.f_function->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
             js_value::ref pri;
@@ -341,11 +354,12 @@ namespace clib {
             func->stack.push_back(pri);
             return 0;
         };
-        global_env.insert({permanents.f_function->name, permanents.f_function});
+        permanents.global_env->obj.insert({permanents.f_function->name, permanents.f_function});
         // array
         permanents._proto_array = _new_object(js_value::at_const | js_value::at_readonly);
-        permanents._proto_array->obj["__type__"] = new_string("array");
+        permanents._proto_array->obj["__type__"] = _new_string("array", js_value::at_const | js_value::at_refs);
         permanents.f_array = _new_function(permanents._proto_array, js_value::at_const | js_value::at_readonly);
+        permanents.f_array->obj.insert({"length", _new_number(1, js_value::at_const | js_value::at_refs)});
         permanents.f_array->name = "Array";
         permanents.f_array->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
             js_value::ref pri;
@@ -369,6 +383,6 @@ namespace clib {
             func->stack.push_back(pri);
             return 0;
         };
-        global_env.insert({permanents.f_array->name, permanents.f_array});
+        permanents.global_env->obj.insert({permanents.f_array->name, permanents.f_array});
     }
 }

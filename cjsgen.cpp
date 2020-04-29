@@ -13,8 +13,8 @@
 #include "cjsruntime.h"
 
 #define DEBUG_MODE 0
-#define PRINT_CODE 0
-#define DUMP_CODE 0
+#define PRINT_CODE 1
+#define DUMP_CODE 1
 #define PRINT_AST 0
 
 #define AST_IS_KEYWORD(node) ((node)->flag == a_keyword)
@@ -485,6 +485,8 @@ namespace clib {
                 break;
             case c_formalParameterArg:
                 break;
+            case c_lastFormalParameterArg:
+                break;
             case c_functionBody:
                 break;
             case c_sourceElements:
@@ -541,7 +543,7 @@ namespace clib {
                 break;
             case c_functionDecl:
                 break;
-            case c_anoymousFunctionDecl:
+            case c_anonymousFunctionDecl:
                 break;
             case c_arrowFunction:
                 break;
@@ -911,6 +913,10 @@ namespace clib {
                 code->name = asts[1];
                 code->end = asts.back()->end;
                 asts.pop_back();
+                if (asts.size() >= 2 && (AST_IS_OP_N(*(asts.rbegin() + 1), T_ELLIPSIS))) {
+                    asts.erase(asts.begin() + (asts.size() - 2));
+                    code->rest = true;
+                }
                 decltype(code->args) _asts;
                 std::transform(asts.begin() + 2, asts.end(),
                                std::back_inserter(_asts),
@@ -947,6 +953,8 @@ namespace clib {
             case c_formalParameterList:
                 break;
             case c_formalParameterArg:
+                break;
+            case c_lastFormalParameterArg:
                 break;
             case c_functionBody:
                 break;
@@ -1093,11 +1101,15 @@ namespace clib {
                 break;
             case c_functionDecl:
                 break;
-            case c_anoymousFunctionDecl: {
+            case c_anonymousFunctionDecl: {
                 auto code = std::make_shared<sym_code_t>();
                 copy_info(code, asts[0]);
                 code->end = asts.back()->end;
                 asts.pop_back();
+                if (asts.size() >= 2 && (AST_IS_OP_N(*(asts.rbegin() + 1), T_ELLIPSIS))) {
+                    asts.erase(asts.begin() + (asts.size() - 2));
+                    code->rest = true;
+                }
                 decltype(code->args) _asts;
                 std::transform(asts.begin() + 1, asts.end(),
                                std::back_inserter(_asts),
@@ -1127,6 +1139,10 @@ namespace clib {
                 copy_info(code, asts[0]);
                 code->end = tmps.back()->end;
                 asts.pop_back();
+                if (asts.size() >= 2 && (AST_IS_OP_N(*(asts.rbegin() + 1), T_ELLIPSIS))) {
+                    asts.erase(asts.begin() + (asts.size() - 2));
+                    code->rest = true;
+                }
                 decltype(code->args) _asts;
                 if (AST_IS_ID(asts.front())) { // single ID
                     _asts.push_back(primary_node(asts.front()));
@@ -1217,8 +1233,19 @@ namespace clib {
                         old->end = old->dots.back()->end;
                         t->obj = old;
                         t->end = asts.back()->end;
-                        for (const auto &s : tmps)
-                            t->args.push_back(to_exp(s));
+                        if (asts.empty())
+                            for (const auto &s : tmps)
+                                t->args.push_back(to_exp(s));
+                        else {
+                            size_t i = 0;
+                            for (const auto &s : tmps) {
+                                if (i < asts.size() && s->start > asts[i]->start) {
+                                    t->rests.push_back(t->args.size());
+                                    i++;
+                                }
+                                t->args.push_back(to_exp(s));
+                            }
+                        }
                         (tmp.rbegin() + 2)->back() = t;
                     } else { // a.b()
                         auto t = std::make_shared<sym_call_method_t>();
@@ -1235,8 +1262,19 @@ namespace clib {
                     copy_info(t, exp);
                     t->obj = exp;
                     t->end = asts.back()->end;
-                    for (const auto &s : tmps)
-                        t->args.push_back(to_exp(s));
+                    if (asts.empty())
+                        for (const auto &s : tmps)
+                            t->args.push_back(to_exp(s));
+                    else {
+                        size_t i = 0;
+                        for (const auto &s : tmps) {
+                            if (i < asts.size() && s->start > asts[i]->start) {
+                                t->rests.push_back(t->args.size());
+                                i++;
+                            }
+                            t->args.push_back(to_exp(s));
+                        }
+                    }
                     (tmp.rbegin() + 2)->back() = t;
                 }
                 asts.clear();
@@ -1267,17 +1305,31 @@ namespace clib {
                     exp->end = call->end;
                     exp->obj = call->obj;
                     exp->args = call->args;
+                    exp->rests = call->rests;
                 } else {
                     copy_info(exp, asts.front());
                     exp->end = tmps.back()->end;
                     assert(tmps.front()->get_base_type() == s_expression);
                     exp->obj = to_exp(tmps.front());
-                    std::transform(tmps.begin() + 1, tmps.end(),
-                                   std::back_inserter(exp->args),
-                                   [](auto s) {
-                                       assert(s->get_base_type() == s_expression);
-                                       return std::dynamic_pointer_cast<sym_exp_t>(s);
-                                   });
+                    if (asts.size() <= 1) {
+                        std::transform(tmps.begin() + 1, tmps.end(),
+                                       std::back_inserter(exp->args),
+                                       [](auto s) {
+                                           assert(s->get_base_type() == s_expression);
+                                           return std::dynamic_pointer_cast<sym_exp_t>(s);
+                                       });
+                    } else {
+                        size_t i = 1;
+                        for (auto s = tmps.begin() + 1; s != tmps.end(); s++) {
+                            if (i < asts.size() && (*s)->start > asts[i]->start) {
+                                exp->rests.push_back(exp->args.size());
+                                i++;
+                            }
+                            exp->args.push_back(to_exp(*s));
+                        }
+                    }
+
+
                 }
                 asts.clear();
                 tmps.clear();

@@ -15,6 +15,8 @@
 #include "cjs.h"
 
 #define DUMP_STEP 0
+#define DUMP_ENV 1
+#define DUMP_CLOSURE 0
 #define DUMP_GC 0
 #define SHOW_EXTRA 1
 #define GC_PERIOD 128
@@ -54,7 +56,8 @@ namespace clib {
             top_stack->_this = top_stack->envs;
             stack.push_back(top_stack);
             current_stack = stack.back();
-            std::swap(global_env, current_stack->envs.lock()->obj);
+            current_stack->envs = permanents.global_env;
+            current_stack->_this = permanents.global_env;
         } else {
             auto exec_stack = std::make_shared<cjs_function>(code->code, *this);
             exec_stack->envs = new_object();
@@ -111,8 +114,6 @@ namespace clib {
                 current_stack = stack.back();
                 push(ret);
             } else {
-                global_env.clear();
-                std::swap(global_env, current_stack->envs.lock()->obj);
                 delete_stack(current_stack);
                 stack.pop_back();
             }
@@ -407,7 +408,30 @@ namespace clib {
                 break;
             case DELETE_NAME:
                 break;
-            case UNPACK_SEQUENCE:
+            case UNPACK_SEQUENCE: {
+                auto obj = pop().lock();
+                assert(obj->get_type() == r_object);
+                const auto &o = JS_OBJ(obj);
+                auto f = o.find("length");
+                if (f != o.end()) {
+                    auto len = f->second.lock();
+                    if (len->get_type() == r_number) {
+                        auto l = JS_NUM(len);
+                        if (!std::isinf(l) && !std::isnan(l)) {
+                            for (auto i = 0; i < l; i++) {
+                                std::stringstream ss;
+                                ss << i;
+                                auto ff = o.find(ss.str());
+                                if (ff != o.end()) {
+                                    push(ff->second);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+                push(obj); // failed
+            }
                 break;
             case FOR_ITER: {
                 auto jmp = code.op1;
@@ -662,10 +686,17 @@ namespace clib {
                 break;
             case CALL_FUNCTION: {
                 auto n = code.op1;
+                if (n == -1) {
+                    assert(!current_stack->rests.empty());
+                    n = (int) current_stack->stack.size() - current_stack->rests.back();
+                    current_stack->rests.pop_back();
+                }
                 assert((int) current_stack->stack.size() > n);
-                std::vector<js_value::weak_ref> args(n);
-                while (n-- > 0) {
-                    args[n] = pop();
+                std::vector<js_value::weak_ref> args;
+                args.resize(n);
+                auto m = n;
+                while (m-- > 0) {
+                    args[m] = pop();
                 }
                 auto f = pop();
                 if (f.lock()->get_type() != r_function) {
@@ -686,17 +717,29 @@ namespace clib {
                 auto arg = new_object();
                 env->obj["arguments"] = arg;
                 size_t i = 0;
-                for (; i < code.op1; i++) {
+                auto args_num = func->code->args_num;
+                for (; i < n; i++) {
                     std::stringstream ss;
                     ss << i;
                     arg->obj[ss.str()] = args.at(i);
-                    if (i < func->code->args.size())
+                    if (i < args_num)
                         env->obj[func->code->args.at(i)] = args.at(i);
                 }
-                for (; i < func->code->args.size(); i++) {
+                for (; i < args_num; i++) {
                     env->obj[func->code->args.at(i)] = new_undefined();
                 }
-                arg->obj["length"] = new_number(code.op1);
+                if (func->code->rest) {
+                    auto rest = new_array();
+                    env->obj[func->code->args.at(args_num)] = rest;
+                    auto j = 0;
+                    for (i = args_num; i < n; i++) {
+                        std::stringstream ss;
+                        ss << j++;
+                        rest->obj[ss.str()] = args.at(i);
+                    }
+                    rest->obj["length"] = new_number(j);
+                }
+                arg->obj["length"] = new_number(n);
                 if (func->closure.lock())
                     new_stack->closure = func->closure;
                 current_stack->pc++;
@@ -723,6 +766,8 @@ namespace clib {
                         c->obj = JS_OBJ(closure.lock());
                         func->closure = c;
                     }
+                    auto len = new_number(func->code->args_num);
+                    func->obj.insert({"length", len});
                     push(func);
                 } else {
                     auto name = pop();
@@ -736,6 +781,8 @@ namespace clib {
                     auto func = new_function();
                     func->code = parent->code;
                     func->name = JS_STR(name.lock());
+                    auto len = new_number(func->code->args_num);
+                    func->obj.insert({"length", len});
                     push(func);
                 }
             }
@@ -760,13 +807,20 @@ namespace clib {
             case DELETE_DEREF:
                 break;
             case CALL_FUNCTION_KW:
+                current_stack->rests.push_back(current_stack->stack.size());
                 break;
             case CALL_FUNCTION_EX: {
                 auto n = code.op1;
+                if (n == -1) {
+                    assert(!current_stack->rests.empty());
+                    n = (int) current_stack->stack.size() - current_stack->rests.back();
+                    current_stack->rests.pop_back();
+                }
                 assert((int) current_stack->stack.size() > n);
                 std::vector<js_value::weak_ref> args(n);
-                while (n-- > 0) {
-                    args[n] = pop();
+                auto m = n;
+                while (m-- > 0) {
+                    args[m] = pop();
                 }
                 auto f = pop();
                 if (f.lock()->get_type() != r_function) {
@@ -830,7 +884,7 @@ namespace clib {
                 auto arg = new_object();
                 env->obj["arguments"] = arg;
                 size_t i = 0;
-                for (; i < code.op1; i++) {
+                for (; i < n; i++) {
                     std::stringstream ss;
                     ss << i;
                     arg->obj[ss.str()] = args.at(i);
@@ -840,7 +894,7 @@ namespace clib {
                 for (; i < cons_func->code->args.size(); i++) {
                     env->obj[cons_func->code->args.at(i)] = new_undefined();
                 }
-                arg->obj["length"] = new_number(code.op1);
+                arg->obj["length"] = new_number(n);
                 if (cons_func->closure.lock())
                     new_stack->closure = cons_func->closure;
                 current_stack->pc++;
@@ -871,7 +925,7 @@ namespace clib {
                 auto n = code.op1;
                 auto key = current_stack->info->names.at(n);
                 auto obj = top();
-                if (obj.lock()->get_type() == r_object) {
+                if (obj.lock()->get_type() == r_object || obj.lock()->get_type() == r_function) {
                     auto o = JS_OBJ(obj.lock());
                     auto f = o.find(key);
                     if (f != o.end()) {
@@ -911,10 +965,16 @@ namespace clib {
                 break;
             case CALL_METHOD: {
                 auto n = code.op1;
+                if (n == -1) {
+                    assert(!current_stack->rests.empty());
+                    n = (int) current_stack->stack.size() - current_stack->rests.back();
+                    current_stack->rests.pop_back();
+                }
                 assert((int) current_stack->stack.size() > n);
                 std::vector<js_value::weak_ref> args(n);
-                while (n-- > 0) {
-                    args[n] = pop();
+                auto m = n;
+                while (m-- > 0) {
+                    args[m] = pop();
                 }
                 auto f = pop();
                 auto _this = pop().lock();
@@ -940,7 +1000,8 @@ namespace clib {
                 auto arg = new_object();
                 env->obj["arguments"] = arg;
                 size_t i = 0;
-                for (; i < code.op1; i++) {
+                auto args_num = func->code->args_num;
+                for (; i < n; i++) {
                     std::stringstream ss;
                     ss << i;
                     arg->obj[ss.str()] = args.at(i);
@@ -950,7 +1011,18 @@ namespace clib {
                 for (; i < func->code->args.size(); i++) {
                     env->obj[func->code->args.at(i)] = new_undefined();
                 }
-                arg->obj["length"] = new_number(code.op1);
+                if (func->code->rest) {
+                    auto rest = new_array();
+                    env->obj[func->code->args.at(args_num)] = rest;
+                    auto j = 0;
+                    for (i = args_num; i < n; i++) {
+                        std::stringstream ss;
+                        ss << j++;
+                        rest->obj[ss.str()] = args.at(i);
+                    }
+                    rest->obj["length"] = new_number(j);
+                }
+                arg->obj["length"] = new_number(n);
                 if (func->closure.lock())
                     new_stack->closure = func->closure;
                 current_stack->pc++;
@@ -1076,8 +1148,12 @@ namespace clib {
             auto sti = (int) st.size();
             for (auto s2 = st.rbegin(); s2 != st.rend(); s2++) {
                 fprintf(stdout, "%4d | [%p] ", sti--, s2->lock().get());
-                print(s2->lock(), 0, std::cout);
+                if (s2->lock() == permanents.global_env)
+                    fprintf(stdout, "<global env>\n");
+                else
+                    print(s2->lock(), 0, std::cout);
             }
+#if DUMP_ENV
             const auto &env = (*s)->envs.lock()->obj;
             if (!env.empty()) {
                 std::cout << std::setfill('-') << std::setw(60) << "" << std::endl;
@@ -1085,9 +1161,14 @@ namespace clib {
                     fprintf(stdout, " Env | [%p] \"%.100s\" '%.100s' ",
                             e.second.lock().get(), e.first.c_str(),
                             e.second.lock()->to_string().c_str());
-                    print(e.second.lock(), 0, std::cout);
+                    if (e.second.lock() == permanents.global_env)
+                        fprintf(stdout, "<global env>\n");
+                    else
+                        print(e.second.lock(), 0, std::cout);
                 }
             }
+#endif
+#if DUMP_CLOSURE
             if ((*s)->closure.lock()) {
                 const auto &cl = (*s)->closure.lock()->obj;
                 std::cout << std::setfill('-') << std::setw(60) << "" << std::endl;
@@ -1099,6 +1180,7 @@ namespace clib {
                 }
             }
             std::cout << std::setfill('-') << std::setw(60) << "" << std::endl;
+#endif
         }
     }
 
@@ -1378,6 +1460,7 @@ namespace clib {
     }
 
     void cjsruntime::gc() {
+        permanents.global_env->mark(0);
         std::for_each(objs.begin(), objs.end(), [](auto &x) { x->mark(0); });
         for (const auto &s : stack) {
             const auto &st = s->stack;
@@ -1403,7 +1486,7 @@ namespace clib {
         for (auto i = objs.begin(); i != objs.end();) {
             if ((*i)->marked == 0) {
                 if (!((*i)->attr & js_value::at_const)) {
-#if DUMP_GC
+#if DUMP_STEP && DUMP_GC
                     fprintf(stdout, " GC  | [%p] Reuse, ", (*i).get());
                     print(*i, 0, std::cout);
 #endif
@@ -1420,12 +1503,21 @@ namespace clib {
 
     jsv_number::ref cjsruntime::_new_number(double n, uint32_t attr) {
         auto s = std::make_shared<jsv_number>(n);
+        if (attr & js_value::at_refs) {
+            attr &= (uint32_t) ~js_value::at_refs;
+            permanents.refs.push_back(s);
+        }
+        if (attr > 0U) s->attr = attr;
         s->__proto__ = permanents._proto_number;
         return s;
     }
 
     jsv_string::ref cjsruntime::_new_string(const std::string &str, uint32_t attr) {
         auto s = std::make_shared<jsv_string>(str);
+        if (attr & js_value::at_refs) {
+            attr &= (uint32_t) ~js_value::at_refs;
+            permanents.refs.push_back(s);
+        }
         if (attr > 0U) s->attr = attr;
         s->__proto__ = permanents._proto_string;
         return s;
@@ -1433,6 +1525,10 @@ namespace clib {
 
     jsv_boolean::ref cjsruntime::_new_boolean(bool b, uint32_t attr) {
         auto s = std::make_shared<jsv_boolean>(b);
+        if (attr & js_value::at_refs) {
+            attr &= (uint32_t) ~js_value::at_refs;
+            permanents.refs.push_back(s);
+        }
         if (attr > 0U) s->attr = attr;
         s->__proto__ = permanents._proto_boolean;
         return s;
@@ -1440,6 +1536,10 @@ namespace clib {
 
     jsv_object::ref cjsruntime::_new_object(uint32_t attr) {
         auto s = std::make_shared<jsv_object>();
+        if (attr & js_value::at_refs) {
+            attr &= (uint32_t) ~js_value::at_refs;
+            permanents.refs.push_back(s);
+        }
         if (attr > 0U) s->attr = attr;
         s->__proto__ = permanents._proto_object;
         return s;
@@ -1447,13 +1547,17 @@ namespace clib {
 
     jsv_function::ref cjsruntime::_new_function(jsv_object::ref proto, uint32_t attr) {
         auto s = std::make_shared<jsv_function>();
+        if (attr & js_value::at_refs) {
+            attr &= (uint32_t) ~js_value::at_refs;
+            permanents.refs.push_back(s);
+        }
         if (attr > 0U) s->attr = attr;
         s->__proto__ = permanents._proto_function;
         if (proto) {
             proto->obj["constructor"] = s;
             s->obj["prototype"] = proto;
         } else {
-            auto prototype = new_object();
+            auto prototype = _new_object(js_value::at_refs);
             prototype->obj["constructor"] = s;
             s->obj["prototype"] = prototype;
         }
@@ -1462,6 +1566,10 @@ namespace clib {
 
     jsv_null::ref cjsruntime::_new_null(uint32_t attr) {
         auto s = std::make_shared<jsv_null>();
+        if (attr & js_value::at_refs) {
+            attr &= (uint32_t) ~js_value::at_refs;
+            permanents.refs.push_back(s);
+        }
         if (attr > 0U) s->attr = attr;
         s->__proto__ = permanents._proto_root;
         return s;
@@ -1469,6 +1577,10 @@ namespace clib {
 
     jsv_undefined::ref cjsruntime::_new_undefined(uint32_t attr) {
         auto s = std::make_shared<jsv_undefined>();
+        if (attr & js_value::at_refs) {
+            attr &= (uint32_t) ~js_value::at_refs;
+            permanents.refs.push_back(s);
+        }
         if (attr > 0U) s->attr = attr;
         s->__proto__ = permanents._proto_root;
         return s;

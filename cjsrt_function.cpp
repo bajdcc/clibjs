@@ -318,7 +318,6 @@ namespace clib {
         jsv_object::mark(n);
         if (builtin)
             return;
-        marked = n;
         if (closure.lock()) {
             closure.lock()->mark(n);
         }
@@ -370,6 +369,7 @@ namespace clib {
         _this.reset();
         envs.reset();
         closure.reset();
+        rests.clear();
     }
 
     void cjs_function::reset(const sym_code_t::ref &code, js_value_new &n) {
@@ -389,6 +389,8 @@ namespace clib {
         std::copy(code->closure_str.begin(), code->closure_str.end(), std::back_inserter(closure));
         codes = std::move(code->codes);
         text = std::move(code->text);
+        rest = code->rest;
+        args_num = (int)args.size() - (rest ? 1 : 0);
         const auto &c = code->consts;
         std::copy(c.get_names_data().begin(),
                   c.get_names_data().end(),
