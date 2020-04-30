@@ -523,6 +523,11 @@ namespace clib {
                 break;
             case BUILD_LIST: {
                 auto n = code.op1;
+                if (n == -1) {
+                    assert(!current_stack->rests.empty());
+                    n = (int) current_stack->stack.size() - current_stack->rests.back();
+                    current_stack->rests.pop_back();
+                }
                 assert(current_stack->stack.size() >= n);
                 auto obj = new_array();
                 std::stringstream ss;
@@ -806,7 +811,7 @@ namespace clib {
                 break;
             case DELETE_DEREF:
                 break;
-            case CALL_FUNCTION_KW:
+            case REST_ARGUMENT:
                 current_stack->rests.push_back(current_stack->stack.size());
                 break;
             case CALL_FUNCTION_EX: {

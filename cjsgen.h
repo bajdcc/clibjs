@@ -253,6 +253,7 @@ namespace clib {
         int gen_rvalue(ijsgen &gen) override;
         int set_parent(sym_t::ref node) override;
         std::vector<sym_exp_t::ref> exps;
+        std::vector<int> rests;
     };
 
     class sym_object_pair_t : public sym_t {

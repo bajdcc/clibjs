@@ -764,13 +764,30 @@ namespace clib {
     }
 
     int sym_array_t::gen_rvalue(ijsgen &gen) {
-        for (const auto &s : exps) {
-            if (s)
-                s->gen_rvalue(gen);
-            else
-                gen.emit(nullptr, LOAD_EMPTY);
+        if (rests.empty()) {
+            for (const auto &s : exps) {
+                if (s)
+                    s->gen_rvalue(gen);
+                else
+                    gen.emit(nullptr, LOAD_EMPTY);
+            }
+            gen.emit(this, BUILD_LIST, exps.size());
+        } else {
+            size_t i = 0, j = 0;
+            gen.emit(this, REST_ARGUMENT);
+            for (const auto &s : exps) {
+                if (s)
+                    s->gen_rvalue(gen);
+                else
+                    gen.emit(nullptr, LOAD_EMPTY);
+                if (i < rests.size() && rests[i] == j) {
+                    gen.emit(s.get(), UNPACK_SEQUENCE);
+                    i++;
+                }
+                j++;
+            }
+            gen.emit(this, BUILD_LIST, -1);
         }
-        gen.emit(this, BUILD_LIST, exps.size());
         return sym_t::gen_rvalue(gen);
     }
 
@@ -827,7 +844,7 @@ namespace clib {
             gen.emit(this, CALL_FUNCTION_EX, args.size());
         } else {
             size_t i = 0, j = 0;
-            gen.emit(this, CALL_FUNCTION_KW);
+            gen.emit(this, REST_ARGUMENT);
             for (const auto &s : args) {
                 s->gen_rvalue(gen);
                 if (i < rests.size() && rests[i] == j) {
@@ -894,7 +911,7 @@ namespace clib {
             gen.emit(this, CALL_METHOD, args.size());
         } else {
             size_t i = 0, j = 0;
-            gen.emit(this, CALL_FUNCTION_KW);
+            gen.emit(this, REST_ARGUMENT);
             for (const auto &s : args) {
                 s->gen_rvalue(gen);
                 if (i < rests.size() && rests[i] == j) {
@@ -935,7 +952,7 @@ namespace clib {
             gen.emit(this, CALL_FUNCTION, args.size());
         } else {
             size_t i = 0, j = 0;
-            gen.emit(this, CALL_FUNCTION_KW);
+            gen.emit(this, REST_ARGUMENT);
             for (const auto &s : args) {
                 s->gen_rvalue(gen);
                 if (i < rests.size() && rests[i] == j) {

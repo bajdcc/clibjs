@@ -990,6 +990,8 @@ namespace clib {
                                 array->exps.push_back(nullptr);
                             }
                         } else {
+                            if (AST_IS_OP_N(s->child, T_ELLIPSIS))
+                                array->rests.push_back(i);
                             assert(tmps[i]->get_base_type() == s_expression);
                             array->exps.push_back(to_exp(tmps[i++]));
                         }

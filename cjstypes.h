@@ -406,7 +406,7 @@ namespace clib {
             LOAD_DEREF,
             STORE_DEREF,
             DELETE_DEREF,
-            CALL_FUNCTION_KW,
+            REST_ARGUMENT,
             CALL_FUNCTION_EX,
             SETUP_WITH,
             EXTENDED_ARG,
