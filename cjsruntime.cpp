@@ -74,8 +74,10 @@ namespace clib {
             const auto &codes = current_stack->info->codes;
             const auto &pc = current_stack->pc;
             while (true) {
-                if (pc >= (int) codes.size())
+                if (pc >= (int) codes.size()) {
+                    r = 4;
                     break;
+                }
                 const auto &c = codes.at(pc);
                 if (pc + 1 == (int) codes.size() && c.code == POP_TOP) {
                     r = 2;
@@ -106,6 +108,9 @@ namespace clib {
             }
             if (r == 3) {
                 continue;
+            }
+            if (r == 4) {
+                current_stack->ret_value = new_undefined();
             }
             ret = stack.back()->ret_value;
             if (stack.size() > 1) {
@@ -353,8 +358,47 @@ namespace clib {
                 break;
             case GET_ITER: {
                 auto obj = top().lock();
-                const auto &o = JS_OBJ(obj);
-                if (obj->get_type() == r_object && obj->__proto__.lock() == permanents._proto_array) {
+                if (obj->get_type() == r_object) {
+                    auto &o = JS_OBJ(obj);
+                    pop();
+                    auto arr = new_array();
+                    if (obj->__proto__.lock() != permanents._proto_array) {
+                        std::vector<std::string> ar(o.size());
+                        std::transform(o.begin(), o.end(), ar.begin(), [](auto &x) { return x.first; });
+                        for (size_t i = 0; i < ar.size(); i++) {
+                            std::stringstream ss;
+                            ss << i;
+                            arr->obj[ss.str()] = new_string(ar[i]);
+                        }
+                        arr->obj["length"] = new_number(ar.size());
+                        push(arr);
+                    } else {
+                        auto f = o.find("length");
+                        if (f != o.end()) {
+                            auto len = f->second.lock();
+                            auto i = 0, j = 0;
+                            if (len->get_type() == r_number) {
+                                auto l = JS_NUM(len);
+                                if (!std::isinf(l) && !std::isnan(l)) {
+                                    auto L = (int) l;
+                                    std::stringstream ss;
+                                    while (i < L) {
+                                        ss.str("");
+                                        ss << j++;
+                                        auto ff = o.find(ss.str());
+                                        if (ff != o.end()) {
+                                            arr->obj[ss.str()] = new_string(ff->first);
+                                        }
+                                        i++;
+                                    }
+                                }
+                            }
+                            arr->obj["length"] = new_number(j);
+                        } else {
+                            arr->obj["length"] = new_number(0.0);
+                        }
+                        push(arr);
+                    }
                     push(new_number(0.0));
                 } else {
                     assert(!"invalid iter");
@@ -454,9 +498,10 @@ namespace clib {
                                 while (i < l) {
                                     ss.str("");
                                     ss << i;
-                                    if (o.find(ss.str()) != o.end()) {
+                                    auto ff = o.find(ss.str());
+                                    if (ff != o.end()) {
                                         push(new_number(i + 1));
-                                        push(new_number(i));
+                                        push(ff->second);
                                         failed = false;
                                         break;
                                     }

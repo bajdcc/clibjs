@@ -247,6 +247,8 @@ console.log([1, 2, 3, 4].reduce((a, b) => a + b, 1));
 console.log([...[1, 2], ...[3, 4]].fill(5));
 console.log.bind(null, 1, 2, 3)();
 Array.prototype.concat.bind(Array.prototype.concat, 1, 2, 3)();
+for (var i in {a: 1, b: 2}) console.log(i);
+for (var i in [1,2]) console.log(i);
 ```
 
 Output:
@@ -265,6 +267,10 @@ library loaded
 [5, 5, 5, 5]
 1 2 3
 [1, 2, 3]
+a
+b
+0
+1
 ```
 
 ## Grammar
