@@ -1255,8 +1255,19 @@ namespace clib {
                         t->method = old->dots.back();
                         t->obj = old->exp;
                         t->end = asts.back()->end;
-                        for (const auto &s : tmps)
-                            t->args.push_back(to_exp(s));
+                        if (asts.empty())
+                            for (const auto &s : tmps)
+                                t->args.push_back(to_exp(s));
+                        else {
+                            size_t i = 0;
+                            for (const auto &s : tmps) {
+                                if (i < asts.size() && s->start > asts[i]->start) {
+                                    t->rests.push_back(t->args.size());
+                                    i++;
+                                }
+                                t->args.push_back(to_exp(s));
+                            }
+                        }
                         (tmp.rbegin() + 2)->back() = t;
                     }
                 } else { // a(...)
