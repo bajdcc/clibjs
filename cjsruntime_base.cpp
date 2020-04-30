@@ -77,7 +77,10 @@ namespace clib {
         permanents._proto_function_call->name = "call";
         permanents._proto_function_call->builtin = [](auto &func, auto &_this, auto &__args, auto &js, auto attr) {
             auto f = _this.lock();
-            assert(f->get_type() == r_function);
+            if (f->get_type() != r_function) {
+                func->stack.push_back(js.new_undefined());
+                return 0;
+            }
             auto fun = JS_FUN(f);
             auto __this = __args.empty() ? _this : __args.front();
             auto args = __args.size() > 1 ?
@@ -95,6 +98,7 @@ namespace clib {
             auto arg = js.new_object();
             env->obj["arguments"] = arg;
             size_t i = 0;
+            auto args_num = fun->code->args_num;
             for (; i < args.size(); i++) {
                 std::stringstream ss;
                 ss << i;
@@ -104,6 +108,17 @@ namespace clib {
             }
             for (; i < fun->code->args.size(); i++) {
                 env->obj[fun->code->args.at(i)] = js.new_undefined();
+            }
+            if (fun->code->rest) {
+                auto rest = js.new_array();
+                env->obj[fun->code->args.at(args_num)] = rest;
+                auto j = 0;
+                for (i = args_num; i < args.size(); i++) {
+                    std::stringstream ss;
+                    ss << j++;
+                    rest->obj[ss.str()] = args.at(i);
+                }
+                rest->obj["length"] = js.new_number(j);
             }
             arg->obj["length"] = js.new_number(args.size());
             if (fun->closure.lock())
@@ -117,7 +132,10 @@ namespace clib {
         permanents._proto_function_apply->name = "apply";
         permanents._proto_function_apply->builtin = [](auto &func, auto &_this, auto &__args, auto &js, auto attr) {
             auto f = _this.lock();
-            assert(f->get_type() == r_function);
+            if (f->get_type() != r_function) {
+                func->stack.push_back(js.new_undefined());
+                return 0;
+            }
             auto fun = JS_FUN(f);
             auto __this = __args.empty() ? _this : __args.front();
             auto args = __args.size() > 1 ?
@@ -135,6 +153,7 @@ namespace clib {
             auto arg = js.new_object();
             env->obj["arguments"] = arg;
             size_t i = 0;
+            auto args_num = fun->code->args_num;
             for (; i < args.size(); i++) {
                 std::stringstream ss;
                 ss << i;
@@ -144,6 +163,17 @@ namespace clib {
             }
             for (; i < fun->code->args.size(); i++) {
                 env->obj[fun->code->args.at(i)] = js.new_undefined();
+            }
+            if (fun->code->rest) {
+                auto rest = js.new_array();
+                env->obj[fun->code->args.at(args_num)] = rest;
+                auto j = 0;
+                for (i = args_num; i < args.size(); i++) {
+                    std::stringstream ss;
+                    ss << j++;
+                    rest->obj[ss.str()] = args.at(i);
+                }
+                rest->obj["length"] = js.new_number(j);
             }
             arg->obj["length"] = js.new_number(args.size());
             if (fun->closure.lock())
