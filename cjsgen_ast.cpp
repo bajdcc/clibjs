@@ -877,15 +877,32 @@ namespace clib {
     }
 
     int sym_object_t::gen_rvalue(ijsgen &gen) {
-        for (const auto &s : pairs) {
-            s->gen_rvalue(gen);
+        if (rests.empty()) {
+            for (const auto &s : pairs) {
+                s->gen_rvalue(gen);
+            }
+            gen.emit(this, BUILD_MAP, pairs.size());
+        } else {
+            gen.emit(this, REST_ARGUMENT);
+            auto i = 0, j = 0;
+            for (const auto &s : is_pair) {
+                if (s)
+                    pairs[i++]->gen_rvalue(gen);
+                else {
+                    rests[j++]->gen_rvalue(gen);
+                    gen.emit(this, UNPACK_EX);
+                }
+            }
+            gen.emit(this, BUILD_MAP, -1);
         }
-        gen.emit(this, BUILD_MAP, pairs.size());
         return sym_t::gen_rvalue(gen);
     }
 
     int sym_object_t::set_parent(sym_t::ref node) {
         for (const auto &s : pairs) {
+            s->set_parent(shared_from_this());
+        }
+        for (const auto &s : rests) {
             s->set_parent(shared_from_this());
         }
         return sym_t::set_parent(node);

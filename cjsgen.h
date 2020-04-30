@@ -286,7 +286,9 @@ namespace clib {
         std::string to_string() const override;
         int gen_rvalue(ijsgen &gen) override;
         int set_parent(sym_t::ref node) override;
+        std::vector<bool> is_pair;
         std::vector<sym_object_pair_t::ref> pairs;
+        std::vector<sym_exp_t::ref> rests;
     };
 
     class sym_call_method_t : public sym_exp_t {

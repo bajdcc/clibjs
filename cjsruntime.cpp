@@ -454,23 +454,26 @@ namespace clib {
                 break;
             case UNPACK_SEQUENCE: {
                 auto obj = pop().lock();
-                assert(obj->get_type() == r_object);
-                const auto &o = JS_OBJ(obj);
-                auto f = o.find("length");
-                if (f != o.end()) {
-                    auto len = f->second.lock();
-                    if (len->get_type() == r_number) {
-                        auto l = JS_NUM(len);
-                        if (!std::isinf(l) && !std::isnan(l)) {
-                            for (auto i = 0; i < l; i++) {
-                                std::stringstream ss;
-                                ss << i;
-                                auto ff = o.find(ss.str());
-                                if (ff != o.end()) {
-                                    push(ff->second);
+                if (obj->get_type() == r_object) {
+                    const auto &o = JS_OBJ(obj);
+                    if (obj->__proto__.lock() == permanents._proto_array) {
+                        auto f = o.find("length");
+                        if (f != o.end()) {
+                            auto len = f->second.lock();
+                            if (len->get_type() == r_number) {
+                                auto l = JS_NUM(len);
+                                if (!std::isinf(l) && !std::isnan(l)) {
+                                    for (auto i = 0; i < l; i++) {
+                                        std::stringstream ss;
+                                        ss << i;
+                                        auto ff = o.find(ss.str());
+                                        if (ff != o.end()) {
+                                            push(ff->second);
+                                        }
+                                    }
+                                    break;
                                 }
                             }
-                            break;
                         }
                     }
                 }
@@ -523,7 +526,18 @@ namespace clib {
                 assert(!"invalid iter");
             }
                 break;
-            case UNPACK_EX:
+            case UNPACK_EX: {
+                auto obj = pop().lock();
+                if (obj->get_type() == r_object) {
+                    const auto &o = JS_OBJ(obj);
+                    if (obj->__proto__.lock() == permanents._proto_object) {
+                        for (const auto &s : o) {
+                            push(new_string(s.first));
+                            push(s.second);
+                        }
+                    }
+                }
+            }
                 break;
             case STORE_ATTR: {
                 auto n = code.op1;
@@ -592,6 +606,11 @@ namespace clib {
                 break;
             case BUILD_MAP: {
                 auto n = code.op1;
+                if (n == -1) {
+                    assert(!current_stack->rests.empty());
+                    n = ((int) current_stack->stack.size() - current_stack->rests.back()) / 2;
+                    current_stack->rests.pop_back();
+                }
                 assert(current_stack->stack.size() >= n * 2);
                 auto obj = new_object();
                 for (auto i = 0; i < n; i++) {

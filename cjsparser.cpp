@@ -440,7 +440,7 @@ namespace clib {
         propertyExpressionAssignment = propertyName + ~_T_COLON + singleExpression;
         computedPropertyExpressionAssignment = ~_T_LPARAN + singleExpression + ~_T_RPARAN +
                                                ~_T_COLON + singleExpression;
-        propertyShorthand = *_T_ELLIPSIS + singleExpression;
+        propertyShorthand = _T_ELLIPSIS + singleExpression;
         propertyName = identifierName
                        | _STRING
                        | numericLiteral

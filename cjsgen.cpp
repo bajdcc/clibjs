@@ -1014,8 +1014,11 @@ namespace clib {
                 copy_info(obj, asts.front());
                 obj->end = asts.back()->end;
                 for (const auto &s : tmps) {
-                    assert(s->get_type() == s_object_pair);
-                    obj->pairs.push_back(std::dynamic_pointer_cast<sym_object_pair_t>(s));
+                    obj->is_pair.push_back(s->get_type() == s_object_pair);
+                    if (s->get_type() == s_object_pair)
+                        obj->pairs.push_back(std::dynamic_pointer_cast<sym_object_pair_t>(s));
+                    else
+                        obj->rests.push_back(to_exp(s));
                 }
                 asts.clear();
                 tmps.clear();
@@ -1099,7 +1102,12 @@ namespace clib {
                 break;
             case c_computedPropertyExpressionAssignment:
                 break;
-            case c_propertyShorthand:
+            case c_propertyShorthand: {
+                if (!tmps.empty() && !asts.empty()) {
+                    tmps[0]->start = asts[0]->start;
+                }
+                asts.clear();
+            }
                 break;
             case c_functionDecl:
                 break;
