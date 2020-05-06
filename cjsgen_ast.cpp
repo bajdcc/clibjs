@@ -1148,13 +1148,20 @@ namespace clib {
     }
 
     int sym_stmt_while_t::gen_rvalue(ijsgen &gen) {
-        auto idx = gen.code_length();
-        seq->gen_rvalue(gen);
-        auto idx2 = gen.code_length();
-        gen.emit(this, POP_JUMP_IF_FALSE, 0);
-        stmt->gen_rvalue(gen);
-        gen.emit(nullptr, JUMP_ABSOLUTE, idx);
-        gen.edit(idx2, 1, gen.code_length());
+        if (do_while) {
+            auto idx = gen.code_length();
+            stmt->gen_rvalue(gen);
+            seq->gen_rvalue(gen);
+            gen.emit(this, POP_JUMP_IF_TRUE, idx);
+        } else {
+            auto idx = gen.code_length();
+            seq->gen_rvalue(gen);
+            auto idx2 = gen.code_length();
+            gen.emit(this, POP_JUMP_IF_FALSE, 0);
+            stmt->gen_rvalue(gen);
+            gen.emit(nullptr, JUMP_ABSOLUTE, idx);
+            gen.edit(idx2, 1, gen.code_length());
+        }
         return sym_stmt_t::gen_rvalue(gen);
     }
 

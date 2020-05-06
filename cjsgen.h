@@ -387,6 +387,7 @@ namespace clib {
         int set_parent(sym_t::ref node) override;
         sym_exp_seq_t::ref seq;
         sym_stmt_t::ref stmt;
+        bool do_while{false};
     };
 
     class sym_stmt_for_t : public sym_stmt_t {

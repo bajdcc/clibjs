@@ -767,7 +767,25 @@ namespace clib {
                 break;
             case c_iterationStatement:
                 break;
-            case c_doStatement:
+            case c_doStatement: {
+                auto _while = std::make_shared<sym_stmt_while_t>();
+                _while->do_while = true;
+                copy_info(_while, asts.front());
+                _while->end = tmps.back()->end;
+                assert(tmps.back()->get_base_type() == s_expression);
+                if (tmps.back()->get_type() == s_expression_seq) {
+                    _while->seq = std::dynamic_pointer_cast<sym_exp_seq_t>(tmps.back());
+                } else {
+                    _while->seq = std::make_shared<sym_exp_seq_t>();
+                    copy_info(_while->seq, tmps.back());
+                    _while->seq->exps.push_back(to_exp(tmps.back()));
+                }
+                assert(tmps.front()->get_base_type() == s_statement);
+                _while->stmt = std::dynamic_pointer_cast<sym_stmt_t>(tmps.front());
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(_while);
+            }
                 break;
             case c_whileStatement: {
                 auto _while = std::make_shared<sym_stmt_while_t>();

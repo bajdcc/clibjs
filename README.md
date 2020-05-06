@@ -56,10 +56,9 @@ Reference: quickjs
 
 ## Control Flow
 
-- [x] if
-- [x] while
-- [x] for
-- [x] for-in
+- [x] if, else
+- [x] while, do-while
+- [x] for, for-in
 
 ## TEST
 
