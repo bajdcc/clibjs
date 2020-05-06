@@ -335,8 +335,25 @@ namespace clib {
             case T_SUB:
                 gen.emit(this, UNARY_NEGATIVE);
                 break;
-            case K_DELETE:
-                gen.emit(this, UNARY_DELETE);
+            case K_DELETE: {
+                auto ins = gen.get_ins(gen.code_length() - 1);
+                gen.edit(gen.code_length() - 1, 0, UNARY_DELETE);
+                if (ins == LOAD_ATTR) {
+                    auto op1 = gen.get_ins(gen.code_length() - 1, 1);
+                    gen.edit(gen.code_length() - 1, 1, op1);
+                    gen.edit(gen.code_length() - 1, 3, 1);
+                } else if (ins == BINARY_SUBSCR) {
+                    gen.edit(gen.code_length() - 1, 1, -1);
+                    gen.edit(gen.code_length() - 1, 3, 1);
+                } else if (ins == LOAD_GLOBAL) {
+                    auto op1 = gen.get_ins(gen.code_length() - 1, 1);
+                    gen.edit(gen.code_length() - 1, 1, -2);
+                    gen.edit(gen.code_length() - 1, 2, op1);
+                    gen.edit(gen.code_length() - 1, 3, 2);
+                } else {
+                    gen.edit(gen.code_length() - 1, 1, -8);
+                }
+            }
                 break;
             case K_TYPEOF:
                 gen.emit(this, UNARY_TYPEOF);

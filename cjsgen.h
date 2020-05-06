@@ -61,7 +61,7 @@ namespace clib {
         virtual void emit(ast_node_index *, ins_t) = 0;
         virtual void emit(ast_node_index *, ins_t, int) = 0;
         virtual void emit(ast_node_index *, ins_t, int, int) = 0;
-        virtual int get_ins(int) const = 0;
+        virtual int get_ins(int, int = 0) const = 0;
         virtual int code_length() const = 0;
         virtual void edit(int, int, int) = 0;
         virtual int load_number(double d) = 0;
@@ -546,7 +546,7 @@ namespace clib {
         void emit(ast_node_index *, ins_t) override;
         void emit(ast_node_index *, ins_t, int) override;
         void emit(ast_node_index *, ins_t, int, int) override;
-        int get_ins(int) const override;
+        int get_ins(int, int = 0) const override;
         int code_length() const override;
         void edit(int, int, int) override;
         int load_number(double d) override;

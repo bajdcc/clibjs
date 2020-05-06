@@ -299,6 +299,7 @@ namespace clib {
         js_value::ref load_fast(int op);
         js_value::ref load_name(int op);
         js_value::ref load_global(int op);
+        bool remove_global(int op);
         js_value::ref load_closure(const std::string &name);
         js_value::ref load_deref(const std::string &name);
         void push(js_value::weak_ref value);

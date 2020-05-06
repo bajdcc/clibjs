@@ -17,7 +17,7 @@ Reference: quickjs
 - [x] Binop\(tested in `test_4.js`\), BinComp, Unary
 - [x] Y-combinator recursion.\(tested in `test_6.js`\)
 - [x] Prototype, Attribute, Method
-- [x] New.Target
+- [x] New.Target, Delete
 - [x] Rest parameters\(`...`\), Rest array elements\(`[...[]]`\), Rest object elements\(`{...{}}`\)
 - [ ] Base functions\(Such as `Number`, etc\)
 

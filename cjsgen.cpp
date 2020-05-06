@@ -2049,8 +2049,14 @@ namespace clib {
             codes.back()->codes.push_back({0, 0, 0, 0, i, 2, a, b});
     }
 
-    int cjsgen::get_ins(int n) const {
-        return codes.back()->codes.at(n).code;
+    int cjsgen::get_ins(int n, int op) const {
+        if (op == 0)
+            return codes.back()->codes.at(n).code;
+        if (op == 1)
+            return codes.back()->codes.at(n).op1;
+        if (op == 2)
+            return codes.back()->codes.at(n).op2;
+        return 0;
     }
 
     int cjsgen::code_length() const {
@@ -2067,6 +2073,9 @@ namespace clib {
                 break;
             case 2:
                 codes.back()->codes.at(code).op2 = value;
+                break;
+            case 3:
+                codes.back()->codes.at(code).opnum = value;
                 break;
             default:
                 break;

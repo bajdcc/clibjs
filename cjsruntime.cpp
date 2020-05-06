@@ -223,12 +223,49 @@ namespace clib {
             case UNARY_NOT:
             case UNARY_INVERT:
             case UNARY_NEW:
-            case UNARY_DELETE:
             case UNARY_TYPEOF: {
                 auto op1 = pop().lock();
                 auto result = op1->unary_op(*this, code.code);
                 assert(result);
                 push(result);
+            }
+                break;
+            case UNARY_DELETE: {
+                auto n = code.op1;
+                if (n >= -1) {
+                    auto key = n >= 0 ? current_stack->info->names.at(code.op1) : pop().lock()->to_string();
+                    auto obj = pop().lock();
+                    if (obj->get_type() == r_object || obj->get_type() == r_function) {
+                        auto &o = JS_OBJ(obj);
+                        auto f = o.find(key);
+                        if (f != o.end()) {
+                            auto k = f->second.lock();
+                            if (k->attr & js_value::at_readonly) {
+                                push(new_boolean(false));
+                                break;
+                            }
+                            o.erase(f);
+                        }
+                    }
+                    push(new_boolean(true));
+                } else if (n == -2) {
+                    auto op = code.op2;
+                    auto var = load_global(op);
+                    if (var->get_type() != r_undefined) {
+                        if (var->attr & js_value::at_readonly) {
+                            push(new_boolean(false));
+                            break;
+                        } else {
+                            remove_global(op);
+                        }
+                    }
+                    push(new_boolean(true));
+                } else if (n == -8) {
+                    pop();
+                    push(new_boolean(true));
+                } else {
+                    assert(!"invalid delete");
+                }
             }
                 break;
             case BINARY_MATRIX_MULTIPLY:
@@ -263,9 +300,9 @@ namespace clib {
                 push(result);
             }
                 break;
+            case LOAD_ATTR:
             case BINARY_SUBSCR: {
-                auto n = code.op1;
-                auto key = pop().lock()->to_string();
+                auto key = code.code == LOAD_ATTR ? current_stack->info->names.at(code.op1) : pop().lock()->to_string();
                 auto obj = pop().lock();
                 if (obj->get_type() == r_object || obj->get_type() == r_function) {
                     const auto &o = JS_OBJ(obj);
@@ -627,45 +664,6 @@ namespace clib {
                     }
                 }
                 push(obj);
-            }
-                break;
-            case LOAD_ATTR: {
-                auto n = code.op1;
-                auto key = current_stack->info->names.at(n);
-                auto obj = pop().lock();
-                if (obj->get_type() == r_object || obj->get_type() == r_function) {
-                    const auto &o = JS_OBJ(obj);
-                    auto f = o.find(key);
-                    if (f != o.end()) {
-                        push(f->second);
-                        break;
-                    }
-                }
-                if (key == "__proto__") {
-                    auto p = obj->__proto__.lock();
-                    push(p ? p : permanents._null);
-                    break;
-                }
-                auto proto = obj->__proto__.lock();
-                if (!proto) {
-                    push(new_undefined()); // type error
-                    break;
-                }
-                auto p = proto;
-                auto failed = true;
-                while (p) {
-                    assert(p->get_type() == r_object);
-                    const auto &o = JS_OBJ(p);
-                    auto f = o.find(key);
-                    if (f != o.end()) {
-                        push(f->second);
-                        failed = false;
-                        break;
-                    }
-                    p = p->__proto__.lock();
-                }
-                if (failed)
-                    push(new_undefined());
             }
                 break;
             case IMPORT_NAME:
@@ -1110,6 +1108,7 @@ namespace clib {
                 assert(!"invalid opcode");
                 return 1;
         }
+
         current_stack->pc++;
         return 0;
     }
@@ -1145,11 +1144,23 @@ namespace clib {
 
     js_value::ref cjsruntime::load_global(int op) {
         auto g = current_stack->info->globals.at(op);
-        auto G = stack.front()->envs.lock()->obj.find(g);
-        if (G != stack.front()->envs.lock()->obj.end()) {
+        auto &obj = stack.front()->envs.lock()->obj;
+        auto G = obj.find(g);
+        if (G != obj.end()) {
             return G->second.lock();
         }
         return permanents._undefined;
+    }
+
+    bool cjsruntime::remove_global(int op) {
+        auto g = current_stack->info->globals.at(op);
+        auto &obj = stack.front()->envs.lock()->obj;
+        auto G = obj.find(g);
+        if (G != obj.end()) {
+            obj.erase(G);
+            return true;
+        }
+        return false;
     }
 
     js_value::ref cjsruntime::load_closure(const std::string &name) {
