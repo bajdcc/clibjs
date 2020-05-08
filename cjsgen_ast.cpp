@@ -1229,7 +1229,7 @@ namespace clib {
             else if (s.second == K_CONTINUE)
                 gen.edit(s.first, 1, j_continue);
             else
-                assert(!"invalid rewrites");
+                gen.error(this, "invalid rewrites");
         }
         gen.leave();
         return sym_stmt_t::gen_rvalue(gen);
@@ -1281,7 +1281,7 @@ namespace clib {
             else if (s.second == K_CONTINUE)
                 gen.edit(s.first, 1, j_continue);
             else
-                assert(!"invalid rewrites");
+                gen.error(this, "invalid rewrites");
         }
         gen.leave();
         return sym_stmt_t::gen_rvalue(gen);
@@ -1294,6 +1294,82 @@ namespace clib {
             vars->set_parent(shared_from_this());
         iter->set_parent(shared_from_this());
         body->set_parent(shared_from_this());
+        return sym_stmt_t::set_parent(node);
+    }
+
+    // ----
+
+    symbol_t sym_case_t::get_type() const {
+        return s_case;
+    }
+
+    std::string sym_case_t::to_string() const {
+        return sym_t::to_string();
+    }
+
+    int sym_case_t::gen_rvalue(ijsgen &gen) {
+        if (exp) {
+            exp->gen_rvalue(gen);
+            gen.emit(this, COMPARE_FEQUAL);
+            auto idx = gen.code_length();
+            gen.emit(this, POP_JUMP_IF_FALSE, 0);
+            for (const auto &s : stmts) {
+                s->gen_rvalue(gen);
+            }
+            gen.edit(idx, 1, gen.code_length());
+        } else {
+            for (const auto &s : stmts) {
+                s->gen_rvalue(gen);
+            }
+        }
+        return sym_t::gen_rvalue(gen);
+    }
+
+    int sym_case_t::set_parent(sym_t::ref node) {
+        if (exp)
+            exp->set_parent(shared_from_this());
+        for (const auto &s : stmts) {
+            s->set_parent(shared_from_this());
+        }
+        return sym_t::set_parent(node);
+    }
+
+    // ----
+
+    symbol_t sym_stmt_switch_t::get_type() const {
+        return s_statement_switch;
+    }
+
+    std::string sym_stmt_switch_t::to_string() const {
+        return sym_stmt_t::to_string();
+    }
+
+    int sym_stmt_switch_t::gen_rvalue(ijsgen &gen) {
+        gen.enter(sp_switch);
+        exp->gen_rvalue(gen);
+        for (const auto &s : cases) {
+            gen.emit(nullptr, DUP_TOP);
+            s->gen_rvalue(gen);
+        }
+        gen.emit(nullptr, POP_TOP);
+        auto j_break = gen.code_length();
+        const auto &re = gen.get_rewrites();
+        for (const auto &s : re) {
+            if (s.second == K_BREAK)
+                gen.edit(s.first, 1, j_break);
+            else if (s.second == K_CONTINUE)
+                gen.error(this, "invalid continue in switch");
+            else
+                gen.error(this, "invalid rewrites");
+        }
+        gen.leave();
+        return sym_stmt_t::gen_rvalue(gen);
+    }
+
+    int sym_stmt_switch_t::set_parent(sym_t::ref node) {
+        for (const auto &s : cases) {
+            s->set_parent(shared_from_this());
+        }
         return sym_stmt_t::set_parent(node);
     }
 

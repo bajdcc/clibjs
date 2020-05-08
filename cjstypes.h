@@ -227,6 +227,7 @@ namespace clib {
             c_newExpression,
             c_primaryExpression,
             c_prefixExpression,
+            c_prefixExpressionList,
             c_postIncrementExpression,
             c_postDecreaseExpression,
             c_postfixExpression,

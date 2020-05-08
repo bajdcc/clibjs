@@ -13,6 +13,7 @@
 #define LOG_AST 0
 #define LOG_FILE 0
 #define LOG_FILENAME "output.txt"
+#define LIBRARY_FILE R"(..\\lib\\clib.js)"
 
 namespace clib {
 
@@ -55,6 +56,14 @@ namespace clib {
     }
 
     void cjs::init_lib() {
-        exec("<library>", R"(sys.exec_file("..\\lib\\clib.js");)");
+        char buf[256];
+        snprintf(buf, sizeof(buf), "sys.exec_file(\"%s\");\n", LIBRARY_FILE);
+        try {
+            exec("<library>", buf);
+        } catch (const clib::cexception &e) {
+            std::cout << e.message() << std::endl;
+        } catch (const std::exception &e) {
+            std::cout << e.what() << std::endl;
+        }
     }
 }

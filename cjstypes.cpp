@@ -202,6 +202,7 @@ namespace clib {
                     "NewExpression",
                     "PrimaryExpression",
                     "PrefixExpression",
+                    "PrefixExpressionList",
                     "PostIncrementExpression",
                     "PostDecreaseExpression",
                     "PostfixExpression",

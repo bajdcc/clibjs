@@ -37,6 +37,7 @@ namespace clib {
         s_call_method,
         s_call_function,
         s_ctrl,
+        s_case,
         s_statement,
         s_statement_var,
         s_statement_exp,
@@ -46,6 +47,7 @@ namespace clib {
         s_statement_while,
         s_statement_for,
         s_statement_for_in,
+        s_statement_switch,
         s_block,
         s_code,
     };
@@ -417,6 +419,28 @@ namespace clib {
         sym_stmt_t::ref body;
     };
 
+    class sym_case_t : public sym_t {
+    public:
+        using ref = std::shared_ptr<sym_case_t>;
+        symbol_t get_type() const override;
+        std::string to_string() const override;
+        int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
+        sym_exp_t::ref exp;
+        std::vector<sym_stmt_t::ref> stmts;
+    };
+
+    class sym_stmt_switch_t : public sym_stmt_t {
+    public:
+        using ref = std::shared_ptr<sym_stmt_switch_t>;
+        symbol_t get_type() const override;
+        std::string to_string() const override;
+        int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
+        sym_exp_t::ref exp;
+        std::vector<sym_case_t::ref> cases;
+    };
+
     class sym_block_t : public sym_stmt_t {
     public:
         using ref = std::shared_ptr<sym_block_t>;
@@ -575,9 +599,10 @@ namespace clib {
         void gen_after(const std::vector<ast_node *> &nodes, int level, ast_node *node);
 
         void error(ast_node *, const std::string &, bool info = false) const;
-        void error(sym_t::ref s, const std::string &) const;
+        void error(const sym_t::ref& s, const std::string &) const;
 
-        sym_exp_t::ref to_exp(sym_t::ref s);
+        sym_exp_t::ref to_exp(const sym_t::ref& s);
+        sym_stmt_t::ref to_stmt(const sym_t::ref& s);
 
         sym_t::ref find_symbol(ast_node *node);
         sym_var_t::ref primary_node(ast_node *node);

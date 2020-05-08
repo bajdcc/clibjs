@@ -243,6 +243,7 @@ namespace clib {
         DEF_RULE(newExpression)
         DEF_RULE_EXP(primaryExpression)
         DEF_RULE(prefixExpression)
+        DEF_RULE(prefixExpressionList)
         DEF_RULE(postIncrementExpression)
         DEF_RULE(postDecreaseExpression)
         DEF_RULE(postfixExpression)
@@ -301,7 +302,7 @@ namespace clib {
         returnStatement = _K_RETURN + *(_RULE_NO_LINE + expressionSequence) + eos;
         withStatement = _K_WITH + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + statement;
         switchStatement = _K_SWITCH + ~_T_LPARAN + expressionSequence + ~_T_RPARAN + caseBlock;
-        caseBlock = ~_T_LBRACE + *caseClauses + *(defaultClause + *caseClauses) + ~_T_RBRACE;
+        caseBlock = ~_T_LBRACE + *caseClauses + *(defaultClause + *caseClauses) + _T_RBRACE;
         caseClauses = caseClause + *caseClauses;
         caseClause = _K_CASE + expressionSequence + _T_COLON + *statementList;
         defaultClause = _K_DEFAULT + _T_COLON + *statementList;
@@ -386,7 +387,8 @@ namespace clib {
         unaryMinusExpression = _T_SUB;
         bitNotExpression = _T_BIT_NOT;
         notExpression = _T_LOG_NOT;
-        prefixExpression = *prefixExpression +
+        primaryExpression = functionExpression + *postfixExpression;
+        prefixExpressionList = *prefixExpressionList +
                            (deleteExpression
                             | voidExpression
                             | typeofExpression
@@ -396,8 +398,8 @@ namespace clib {
                             | unaryMinusExpression
                             | bitNotExpression
                             | notExpression);
-        primaryExpression = *prefixExpression + functionExpression + *postfixExpression;
-        powerExpression = *(powerExpression + _T_POWER) + primaryExpression;
+        prefixExpression = *prefixExpressionList + primaryExpression;
+        powerExpression = *(powerExpression + _T_POWER) + prefixExpression;
         multiplicativeExpression = *(multiplicativeExpression + (_T_MUL | _T_DIV | _T_MOD)) + powerExpression;
         additiveExpression = *(additiveExpression + (_T_ADD | _T_SUB)) + multiplicativeExpression;
         coalesceExpression = *(coalesceExpression + (_T_COALESCE)) + additiveExpression;
@@ -453,7 +455,7 @@ namespace clib {
         functionDeclaration = _K_FUNCTION + _ID + ~_T_LPARAN + *formalParameterList + ~_T_RPARAN +
                               ~_T_LBRACE + *functionBody + _T_RBRACE;
         anonymousFunctionDecl = _K_FUNCTION + ~_T_LPARAN + *formalParameterList + ~_T_RPARAN +
-                               ~_T_LBRACE + *functionBody + _T_RBRACE;
+                                ~_T_LBRACE + *functionBody + _T_RBRACE;
         arrowFunction = arrowFunctionParameters + ~_T_ARROW + arrowFunctionBody;
         arrowFunctionParameters = _ID | _T_LPARAN + *formalParameterList + _T_RPARAN;
         arrowFunctionBody = singleExpression | ~_T_LBRACE + *functionBody + _T_RBRACE;

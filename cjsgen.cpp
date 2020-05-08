@@ -559,21 +559,20 @@ namespace clib {
                 break;
             case c_newExpression:
                 break;
-            case c_primaryExpression: {
-                if (AST_IS_COLL_K(nodes.front(), c_prefixExpression)) {
+            case c_primaryExpression:
+                break;
+            case c_prefixExpression: {
+                if (AST_IS_COLL_K(nodes.front(), c_prefixExpressionList)) {
                     gen_rec(nodes[1], level); // gen exp first
                     nodes[0]->attr |= (uint16_t) a_reverse;
                     gen_rec(nodes[0], level); // then prefix
-                    nodes[0]->attr &= ~(uint16_t) a_reverse;
-                    if (nodes.size() > 2) {
-                        gen_rec(nodes[2], level); // last postfix
-                    }
+                    nodes[0]->attr &= (uint16_t) ~((uint16_t) a_reverse);
                     gen_after(nodes, level, node);
                     return false;
                 }
             }
                 break;
-            case c_prefixExpression:
+            case c_prefixExpressionList:
                 break;
             case c_postIncrementExpression:
                 break;
@@ -668,8 +667,7 @@ namespace clib {
                 copy_info(block, asts.front());
                 block->end = asts.back()->end;
                 for (const auto &s : tmps) {
-                    assert(s->get_base_type() == s_statement);
-                    block->stmts.push_back(std::dynamic_pointer_cast<sym_stmt_t>(s));
+                    block->stmts.push_back(to_stmt(s));
                 }
                 asts.clear();
                 tmps.clear();
@@ -700,8 +698,7 @@ namespace clib {
                 id->ids.push_back(r);
                 copy_info(id, r);
                 if (!tmps.empty()) {
-                    assert(tmps.front()->get_base_type() == s_expression);
-                    id->init = std::dynamic_pointer_cast<sym_exp_t>(tmps.front());
+                    id->init = to_exp(tmps.front());
                     copy_info(id->init, tmps.front());
                     id->end = id->init->end;
                     id->parse();
@@ -729,7 +726,7 @@ namespace clib {
                 } else if (tmps.front()->get_base_type() == s_expression) {
                     auto seq = std::make_shared<sym_exp_seq_t>();
                     copy_info(seq, tmps.front());
-                    seq->exps.push_back(std::dynamic_pointer_cast<sym_exp_t>(tmps.front()));
+                    seq->exps.push_back(to_exp(tmps.front()));
                     auto stmt = std::make_shared<sym_stmt_exp_t>();
                     copy_info(stmt, tmps.front());
                     stmt->seq = seq;
@@ -752,13 +749,10 @@ namespace clib {
                     _if->seq->exps.push_back(to_exp(tmps.front()));
                 }
                 if (tmps.size() < 3) {
-                    assert(tmps.back()->get_base_type() == s_statement);
-                    _if->true_stmt = std::dynamic_pointer_cast<sym_stmt_t>(tmps.back());
+                    _if->true_stmt = to_stmt(tmps.back());
                 } else {
-                    assert(tmps[1]->get_base_type() == s_statement);
-                    _if->true_stmt = std::dynamic_pointer_cast<sym_stmt_t>(tmps[1]);
-                    assert(tmps[2]->get_base_type() == s_statement);
-                    _if->false_stmt = std::dynamic_pointer_cast<sym_stmt_t>(tmps[2]);
+                    _if->true_stmt = to_stmt(tmps[1]);
+                    _if->false_stmt = to_stmt(tmps[2]);
                 }
                 asts.clear();
                 tmps.clear();
@@ -780,8 +774,7 @@ namespace clib {
                     copy_info(_while->seq, tmps.back());
                     _while->seq->exps.push_back(to_exp(tmps.back()));
                 }
-                assert(tmps.front()->get_base_type() == s_statement);
-                _while->stmt = std::dynamic_pointer_cast<sym_stmt_t>(tmps.front());
+                _while->stmt = to_stmt(tmps.front());
                 asts.clear();
                 tmps.clear();
                 tmps.push_back(_while);
@@ -799,8 +792,7 @@ namespace clib {
                     copy_info(_while->seq, tmps.front());
                     _while->seq->exps.push_back(to_exp(tmps.front()));
                 }
-                assert(tmps.back()->get_base_type() == s_statement);
-                _while->stmt = std::dynamic_pointer_cast<sym_stmt_t>(tmps.back());
+                _while->stmt = to_stmt(tmps.back());
                 asts.clear();
                 tmps.clear();
                 tmps.push_back(_while);
@@ -824,7 +816,7 @@ namespace clib {
                     } else if (t->start < semi2->start) {
                         _for->cond = to_exp(t);
                     } else if (t->get_base_type() == s_statement) {
-                        _for->body = std::dynamic_pointer_cast<sym_stmt_t>(t);
+                        _for->body = to_stmt(t);
                     } else {
                         _for->iter = to_exp(t);
                     }
@@ -850,8 +842,7 @@ namespace clib {
                 }
                 assert(tmps[1]->get_base_type() == s_expression);
                 _for_in->iter = to_exp(tmps[1]);
-                assert(tmps[2]->get_base_type() == s_statement);
-                _for_in->body = std::dynamic_pointer_cast<sym_stmt_t>(tmps[2]);
+                _for_in->body = to_stmt(tmps[2]);
                 asts.clear();
                 tmps.clear();
                 tmps.push_back(_for_in);
@@ -892,15 +883,65 @@ namespace clib {
                 break;
             case c_withStatement:
                 break;
-            case c_switchStatement:
+            case c_switchStatement: {
+                auto stmt = std::make_shared<sym_stmt_switch_t>();
+                copy_info(stmt, asts.front());
+                stmt->end = asts.back()->end;
+                stmt->exp = to_exp(tmps.front());
+                std::transform(tmps.begin() + 1, tmps.end(),
+                               std::back_inserter(stmt->cases),
+                               [](const auto &s) {
+                                   assert(s->get_type() == s_case);
+                                   return std::dynamic_pointer_cast<sym_case_t>(s);
+                               });
+                std::unordered_map<std::string, ast_node_index *> cond;
+                for (const auto &s : stmt->cases) {
+                    auto str = s->exp ? get_code_text(s->exp.get()) : "default";
+                    auto f = cond.find(str);
+                    if (f != cond.end()) {
+                        error(f->second, "conflict case: " + str);
+                    }
+                    cond.insert({str, s.get()});
+                }
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(stmt);
+            }
                 break;
             case c_caseBlock:
                 break;
             case c_caseClauses:
                 break;
-            case c_caseClause:
+            case c_caseClause: {
+                auto exp = std::make_shared<sym_case_t>();
+                copy_info(exp, asts.front());
+                exp->end = tmps.size() > 1 ? tmps.back()->end : asts.back()->end;
+                exp->exp = to_exp(tmps.front());
+                std::transform(tmps.begin() + 1, tmps.end(),
+                               std::back_inserter(exp->stmts),
+                               [](const auto &s) {
+                                   assert(s->get_base_type() == s_statement);
+                                   return std::dynamic_pointer_cast<sym_stmt_t>(s);
+                               });
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(exp);
+            }
                 break;
-            case c_defaultClause:
+            case c_defaultClause: {
+                auto exp = std::make_shared<sym_case_t>();
+                copy_info(exp, asts.front());
+                exp->end = !tmps.empty() ? tmps.back()->end : asts.back()->end;
+                std::transform(tmps.begin(), tmps.end(),
+                               std::back_inserter(exp->stmts),
+                               [](const auto &s) {
+                                   assert(s->get_base_type() == s_statement);
+                                   return std::dynamic_pointer_cast<sym_stmt_t>(s);
+                               });
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(exp);
+            }
                 break;
             case c_labelledStatement:
                 break;
@@ -982,8 +1023,7 @@ namespace clib {
                     copy_info(block, tmps.front());
                 }
                 for (const auto &s : tmps) {
-                    assert(s->get_base_type() == s_statement);
-                    block->stmts.push_back(std::dynamic_pointer_cast<sym_stmt_t>(s));
+                    block->stmts.push_back(to_stmt(s));
                     block->end = s->end;
                 }
                 asts.clear();
@@ -1353,7 +1393,7 @@ namespace clib {
                     if (asts.size() <= 1) {
                         std::transform(tmps.begin() + 1, tmps.end(),
                                        std::back_inserter(exp->args),
-                                       [](auto s) {
+                                       [](const auto &s) {
                                            assert(s->get_base_type() == s_expression);
                                            return std::dynamic_pointer_cast<sym_exp_t>(s);
                                        });
@@ -1395,6 +1435,8 @@ namespace clib {
                 (tmp.rbegin() + 2)->front() = unop;
                 asts.clear();
             }
+                break;
+            case c_prefixExpressionList:
                 break;
             case c_coalesceExpression:
                 break;
@@ -1510,17 +1552,23 @@ namespace clib {
         throw cexception(ss.str());
     }
 
-    void cjsgen::error(sym_t::ref s, const std::string &str) const {
+    void cjsgen::error(const sym_t::ref &s, const std::string &str) const {
         std::stringstream ss;
         ss << "[" << s->line << ":" << s->column << ":" << s->start << ":" << s->end << "] ";
         ss << str;
         throw cexception(ss.str());
     }
 
-    sym_exp_t::ref cjsgen::to_exp(sym_t::ref s) {
+    sym_exp_t::ref cjsgen::to_exp(const sym_t::ref &s) {
         if (s->get_base_type() != s_expression)
             error(s, "need expression: " + s->to_string());
         return std::dynamic_pointer_cast<sym_exp_t>(s);
+    }
+
+    sym_stmt_t::ref cjsgen::to_stmt(const sym_t::ref &s) {
+        if (s->get_base_type() != s_statement)
+            error(s, "need statement: " + s->to_string());
+        return std::dynamic_pointer_cast<sym_stmt_t>(s);
     }
 
     sym_t::ref cjsgen::find_symbol(ast_node *node) {
@@ -1984,6 +2032,35 @@ namespace clib {
                         print(n->vars, level + 1, os);
                     print(n->iter, level + 1, os);
                     print(n->body, level + 1, os);
+                }
+                break;
+            case s_case:
+                os << "case"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_case_t>(node);
+                    if (n->exp)
+                        print(n->exp, level + 1, os);
+                    for (const auto &s : n->stmts) {
+                        print(s, level + 1, os);
+                    }
+                }
+                break;
+            case s_statement_switch:
+                os << "switch"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_stmt_switch_t>(node);
+                    print(n->exp, level + 1, os);
+                    for (const auto &s : n->cases) {
+                        print(s, level + 1, os);
+                    }
                 }
                 break;
             case s_block:
