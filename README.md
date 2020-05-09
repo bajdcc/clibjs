@@ -44,7 +44,7 @@ Reference: quickjs
 - [ ] boolean
 - [ ] string
 - [ ] function\(`call`(builtin), `apply`(builtin), `bind`\)
-- [ ] array\(`slice`, `concat`, `push`, `map`, `filter`, `reduce`, `fill`\)
+- [ ] array\(`slice`, `concat`, `push`, `map`, `filter`, `reduce`, `fill`, `toString`\)
 
 ## Modules and API
 
@@ -53,7 +53,7 @@ Reference: quickjs
 
 ## Global Function
 
-- [ ] setTimeout
+- [x] setTimeout
 
 ## Control Flow
 
@@ -291,6 +291,7 @@ Output:
 
 ```
 0
+undefined
 1
 2
 3

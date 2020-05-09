@@ -324,9 +324,9 @@ namespace clib {
                                n.new_number(1.0) :
                                n.new_number(0.0);
                     case r_object:
-                        return n.new_string(_str + op->to_string());
+                        return n.new_string(_str + op->to_string(&n, 0));
                     case r_function:
-                        return n.new_string(_str + op->to_string());
+                        return n.new_string(_str + op->to_string(&n, 0));
                     case r_null:
                         return n.new_number(0.0);
                     case r_undefined:
@@ -506,11 +506,11 @@ namespace clib {
     void jsv_null::mark(int n) {
     }
 
-    void jsv_null::print(std::ostream &os) const {
-        os << _str;
+    std::string jsv_null::to_string(js_value_new *n, int hint) const {
+        return _str;
     }
 
-    std::string jsv_null::to_string() const {
-        return _str;
+    double jsv_null::to_number(js_value_new *n) const {
+        return 0;
     }
 }

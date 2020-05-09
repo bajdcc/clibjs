@@ -10,6 +10,7 @@
 #include <cmath>
 #include <iterator>
 #include <fstream>
+#include <utility>
 #include "cjsruntime.h"
 #include "cjsast.h"
 #include "cjs.h"
@@ -20,6 +21,16 @@
 #define DUMP_GC 0
 #define SHOW_EXTRA 1
 #define GC_PERIOD 128
+
+#if defined(WIN32) || defined(WIN64)
+
+#include <windows.h>
+
+#define cjs_sleep(n) Sleep(n)
+#else
+#include <unistd.h>
+#define cjs_sleep(n) sleep(n / 1000)
+#endif
 
 namespace clib {
 
@@ -43,6 +54,7 @@ namespace clib {
     }
 
     void cjsruntime::eval(cjs_code_result::ref code, bool top) {
+        auto code2 = code->code;
         if (code->code->codes.empty()) {
             std::cout << "Compile failed." << std::endl;
             if (!top)
@@ -52,8 +64,6 @@ namespace clib {
         if (top) {
             stack.clear();
             auto top_stack = std::make_shared<cjs_function>(code->code, *this);
-            top_stack->envs = new_object();
-            top_stack->_this = top_stack->envs;
             stack.push_back(top_stack);
             current_stack = stack.back();
             current_stack->envs = permanents.global_env;
@@ -118,24 +128,55 @@ namespace clib {
                 current_stack = stack.back();
                 push(ret);
             } else {
-                delete_stack(current_stack);
-                stack.pop_back();
+                break;
             }
         }
         assert(ret.lock());
-        ret.lock()->print(std::cout);
-        std::cout << std::endl;
+        std::cout << ret.lock()->to_string(this, 1) << std::endl;
+        eval_timeout(code2);
+        delete_stack(current_stack);
+        stack.pop_back();
+    }
+
+    int cjsruntime::call_api(int type, js_value::weak_ref &_this,
+                             std::vector<js_value::weak_ref> &args, uint32_t attr) {
+        switch ((js_value_new::api) type) {
+            case API_none:
+                break;
+            case API_setTimeout: {
+                if (args.empty()) {
+                    push(new_undefined());
+                    return 0;
+                }
+                auto arg = args.front().lock();
+                if (arg->get_type() != r_function) {
+                    push(new_undefined());
+                    return 0;
+                }
+                std::vector<js_value::weak_ref> _args(args.begin() + 1, args.end());
+                auto time = 0;
+                if (args.size() > 1) {
+                    time = args[1].lock()->to_number(this);
+                }
+                push(new_number(api_setTimeout(time, JS_FUN(arg), _args, attr)));
+            }
+                break;
+            default:
+                break;
+        }
+        return 0;
     }
 
     int cjsruntime::call_api(const jsv_function::ref &func, js_value::weak_ref &_this,
                              std::vector<js_value::weak_ref> &args, uint32_t attr) {
         auto stack_size = stack.size();
-        current_stack->pc++;
         if (func->builtin) {
             func->builtin(current_stack, _this, args, *this, 0);
         } else {
             stack.push_back(current_stack = new_stack(func->code));
             auto env = current_stack->envs.lock();
+            current_stack->_this = _this;
+            current_stack->name = func->name;
             if (!func->code->arrow && func->code->simpleName.front() != '<')
                 env->obj[func->code->simpleName] = func;
             auto arg = new_object();
@@ -225,6 +266,47 @@ namespace clib {
             }
         }
         return 0;
+    }
+
+    js_value::ref cjsruntime::fast_api(const jsv_function::ref &func, js_value::weak_ref &_this,
+                                       std::vector<js_value::weak_ref> &args, uint32_t attr) {
+        call_api(func, _this, args, attr);
+        return pop().lock();
+    }
+
+    double cjsruntime::api_setTimeout(int time, const jsv_function::ref &func, std::vector<js_value::weak_ref> args, uint32_t attr) {
+        auto t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()) - timeout.startup_time;
+        if (timeout.queues.find(t) == timeout.queues.end()) {
+            timeout.queues[t] = std::list<std::shared_ptr<timeout_t>>();
+        }
+        auto s = std::make_shared<timeout_t>();
+        s->once = true;
+        s->id = timeout.global_id++;
+        s->func = func;
+        s->args = std::move(args);
+        s->attr = attr;
+        timeout.queues[t].push_back(s);
+        timeout.ids.insert({s->id, s});
+        return 0;
+    }
+
+    void cjsruntime::eval_timeout(const sym_code_t::ref &code) {
+        while (!timeout.ids.empty()) {
+            auto code2 = code;
+            auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()) - timeout.startup_time;
+            if ((*timeout.queues.begin()).first < now) {
+                auto &v = (*timeout.queues.begin()).second;
+                auto callback = v.front();
+                js_value::weak_ref env = stack.front()->envs;
+                call_api(callback->func, env, callback->args, callback->attr);
+                v.pop_front();
+                if (v.empty()) {
+                    timeout.queues.erase(timeout.queues.begin());
+                }
+                timeout.ids.erase(callback->id);
+            }
+            cjs_sleep(10);
+        }
     }
 
     void cjsruntime::set_readonly(bool flag) {
@@ -332,7 +414,7 @@ namespace clib {
             case UNARY_DELETE: {
                 auto n = code.op1;
                 if (n >= -1) {
-                    auto key = n >= 0 ? current_stack->info->names.at(code.op1) : pop().lock()->to_string();
+                    auto key = n >= 0 ? current_stack->info->names.at(code.op1) : pop().lock()->to_string(this, 0);
                     auto obj = pop().lock();
                     if (obj->get_type() == r_object || obj->get_type() == r_function) {
                         auto &o = JS_OBJ(obj);
@@ -401,7 +483,7 @@ namespace clib {
                 break;
             case LOAD_ATTR:
             case BINARY_SUBSCR: {
-                auto key = code.code == LOAD_ATTR ? current_stack->info->names.at(code.op1) : pop().lock()->to_string();
+                auto key = code.code == LOAD_ATTR ? current_stack->info->names.at(code.op1) : pop().lock()->to_string(this, 0);
                 auto obj = pop().lock();
                 if (obj->get_type() == r_object || obj->get_type() == r_function) {
                     const auto &o = JS_OBJ(obj);
@@ -474,7 +556,7 @@ namespace clib {
             case INPLACE_MODULO:
                 break;
             case STORE_SUBSCR: {
-                auto key = pop().lock()->to_string();
+                auto key = pop().lock()->to_string(this, 0);
                 auto obj = pop().lock();
                 auto value = top();
                 auto &o = JS_OBJ(obj);
@@ -1351,7 +1433,7 @@ namespace clib {
                 for (const auto &e : env) {
                     fprintf(stdout, " Env | [%p] \"%.100s\" '%.100s' ",
                             e.second.lock().get(), e.first.c_str(),
-                            e.second.lock()->to_string().c_str());
+                            e.second.lock()->to_string(nullptr, 0).c_str());
                     if (e.second.lock() == permanents.global_env)
                         fprintf(stdout, "<global env>\n");
                     else
@@ -1681,6 +1763,12 @@ namespace clib {
             if (ret)
                 th->mark(4);
         }
+        for (const auto &s : timeout.ids) {
+            s.second->func->mark(5);
+            for (const auto &s2 : s.second->args) {
+                s2.lock()->mark(6);
+            }
+        }
 #if DUMP_STEP && DUMP_GC
         dump_step3();
 #endif
@@ -1817,7 +1905,7 @@ namespace clib {
             case r_object: {
                 auto n = std::dynamic_pointer_cast<jsv_object>(value);
                 if (!n->special.empty()) {
-                    os << "object: [[primitive]] " << n->to_string() << std::endl;
+                    os << "object: [[primitive]] " << n->to_string(nullptr, 0) << std::endl;
                 } else {
                     os << "object: " << std::endl;
                     for (const auto &s : n->obj) {

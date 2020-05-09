@@ -6,7 +6,9 @@
 #ifndef CLIBJS_CJSRUNTIME_H
 #define CLIBJS_CJSRUNTIME_H
 
+#include <chrono>
 #include <list>
+#include <map>
 #include "cjsgen.h"
 
 #define JS_BOOL(op) (std::dynamic_pointer_cast<jsv_boolean>(op)->b)
@@ -56,11 +58,19 @@ namespace clib {
         virtual std::shared_ptr<jsv_undefined> new_undefined() = 0;
         virtual std::shared_ptr<cjs_function> new_func(const std::shared_ptr<cjs_function_info> &code) = 0;
         virtual std::shared_ptr<jsv_object> new_array() = 0;
-        virtual std::shared_ptr<jsv_object> new_error(int = 0) = 0;
+        virtual std::shared_ptr<jsv_object> new_error(int) = 0;
         virtual void exec(const std::string &, const std::string &) = 0;
         virtual std::string get_stacktrace() const = 0;
-        virtual int call_api(const std::shared_ptr<jsv_function> &, std::weak_ptr<js_value> &_this,
-                             std::vector<std::weak_ptr<js_value>> &, uint32_t attr) = 0;
+        enum api {
+            API_none,
+            API_setTimeout,
+        };
+        virtual int call_api(int, std::weak_ptr<js_value> &,
+                             std::vector<std::weak_ptr<js_value>> &, uint32_t) = 0;
+        virtual int call_api(const std::shared_ptr<jsv_function> &, std::weak_ptr<js_value> &,
+                             std::vector<std::weak_ptr<js_value>> &, uint32_t) = 0;
+        virtual std::shared_ptr<js_value> fast_api(const std::shared_ptr<jsv_function> &, std::weak_ptr<js_value> &,
+                                                   std::vector<std::weak_ptr<js_value>> &, uint32_t) = 0;
     };
 
     class js_value : public std::enable_shared_from_this<js_value> {
@@ -78,8 +88,8 @@ namespace clib {
         virtual js_value::ref unary_op(js_value_new &n, int code) = 0;
         virtual bool to_bool() const = 0;
         virtual void mark(int n) = 0;
-        virtual void print(std::ostream &os) const = 0;
-        virtual std::string to_string() const = 0;
+        virtual std::string to_string(js_value_new *n, int hint) const = 0;
+        virtual double to_number(js_value_new *n) const = 0;
         uint8_t marked{0};
         uint8_t attr{0};
         uint8_t reserved1{0};
@@ -97,8 +107,8 @@ namespace clib {
         js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
-        void print(std::ostream &os) const override;
-        std::string to_string() const override;
+        std::string to_string(js_value_new *n, int hint) const override;
+        double to_number(js_value_new *n) const override;
         static std::string number_to_string(double d);
         double number;
     };
@@ -113,9 +123,9 @@ namespace clib {
         js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
-        void print(std::ostream &os) const override;
-        std::string to_string() const override;
-        int to_number(double &d) const;
+        std::string to_string(js_value_new *n, int hint) const override;
+        double to_number(js_value_new *n) const override;
+        int to_number(double &d);
         static int to_number(const std::string &s, double &d);
         ref clear();
         std::string str;
@@ -138,8 +148,8 @@ namespace clib {
         js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
-        void print(std::ostream &os) const override;
-        std::string to_string() const override;
+        std::string to_string(js_value_new *n, int hint) const override;
+        double to_number(js_value_new *n) const override;
         bool b{false};
     private:
         js_value::ref binary_true(js_value_new &n, int code, const js_value::ref &op);
@@ -156,8 +166,8 @@ namespace clib {
         js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
-        void print(std::ostream &os) const override;
-        std::string to_string() const override;
+        std::string to_string(js_value_new *n, int hint) const override;
+        double to_number(js_value_new *n) const override;
         ref clear();
         std::unordered_map<std::string, js_value::weak_ref> obj;
         std::unordered_map<std::string, js_value::weak_ref> special;
@@ -173,8 +183,8 @@ namespace clib {
         js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
-        void print(std::ostream &os) const override;
-        std::string to_string() const override;
+        std::string to_string(js_value_new *n, int hint) const override;
+        double to_number(js_value_new *n) const override;
     };
 
     class jsv_undefined : public js_value {
@@ -187,8 +197,8 @@ namespace clib {
         js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
-        void print(std::ostream &os) const override;
-        std::string to_string() const override;
+        std::string to_string(js_value_new *n, int hint) const override;
+        double to_number(js_value_new *n) const override;
     };
 
     class cjs_function_info;
@@ -209,8 +219,8 @@ namespace clib {
         js_value::ref unary_op(js_value_new &n, int code) override;
         bool to_bool() const override;
         void mark(int n) override;
-        void print(std::ostream &os) const override;
-        std::string to_string() const override;
+        std::string to_string(js_value_new *n, int hint) const override;
+        double to_number(js_value_new *n) const override;
         ref clear2();
         std::shared_ptr<cjs_function_info> code;
         std::function<int(std::shared_ptr<cjs_function> &, js_value::weak_ref &_this, std::vector<js_value::weak_ref> &, js_value_new &, uint32_t attr)> builtin;
@@ -297,7 +307,12 @@ namespace clib {
         jsv_object::ref new_error(int) override;
         void exec(const std::string &, const std::string &) override;
         std::string get_stacktrace() const override;
+        int call_api(int type, js_value::weak_ref &_this,
+                     std::vector<js_value::weak_ref> &args, uint32_t attr) override;
         int call_api(const jsv_function::ref &, js_value::weak_ref &_this, std::vector<js_value::weak_ref> &, uint32_t attr) override;
+        js_value::ref fast_api(const jsv_function::ref &, js_value::weak_ref &_this,
+                               std::vector<js_value::weak_ref> &args, uint32_t attr) override;
+
         static bool to_number(const js_value::ref &, double &);
         static std::vector<js_value::weak_ref> to_array(const js_value::ref &);
 
@@ -335,6 +350,8 @@ namespace clib {
         jsv_undefined::ref _new_undefined(uint32_t attr = 0U);
 
         static void print(const js_value::ref &value, int level, std::ostream &os);
+
+        void eval_timeout(const sym_code_t::ref& code);
 
     private:
         void *pjs{nullptr};
@@ -397,6 +414,20 @@ namespace clib {
             jsv_function::ref f_error_toString;
         } permanents;
         cjs_runtime_reuse reuse;
+        struct timeout_t {
+            bool once{true};
+            uint32_t id{0};
+            jsv_function::ref func;
+            std::vector<js_value::weak_ref> args;
+            uint32_t attr;
+        };
+        struct timeout_struct {
+            std::time_t startup_time{std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())};
+            uint32_t global_id{0};
+            std::map<std::time_t, std::list<std::shared_ptr<timeout_t>>> queues;
+            std::unordered_map<uint32_t, std::shared_ptr<timeout_t>> ids;
+        } timeout;
+        double api_setTimeout(int time, const jsv_function::ref &func, std::vector<js_value::weak_ref> args, uint32_t attr);
     };
 }
 

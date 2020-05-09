@@ -20,7 +20,7 @@ namespace clib {
 
     js_value::ref jsv_string::binary_op(js_value_new &n, int code, const js_value::ref &op) {
         if (code == BINARY_ADD) {
-            return n.new_string(to_string() + op->to_string());
+            return n.new_string(to_string(&n, 0) + op->to_string(&n, 0));
         }
         if (op->get_type() == r_string) {
             switch (code) {
@@ -56,7 +56,7 @@ namespace clib {
                             return n.new_boolean(number < (JS_BOOL(op) ? 1.0 : 0.0));
                         case r_object:
                         case r_function:
-                            return n.new_boolean(str < op->to_string());
+                            return n.new_boolean(str < op->to_string(&n, 0));
                         case r_null:
                             return n.new_boolean(number < 0.0);
                         case r_undefined:
@@ -73,7 +73,7 @@ namespace clib {
                             return n.new_boolean(number <= (JS_BOOL(op) ? 1.0 : 0.0));
                         case r_object:
                         case r_function:
-                            return n.new_boolean(str <= op->to_string());
+                            return n.new_boolean(str <= op->to_string(&n, 0));
                         case r_null:
                             return n.new_boolean(number <= 0.0);
                         case r_undefined:
@@ -92,7 +92,7 @@ namespace clib {
                             return n.new_boolean(false);
                         case r_object:
                         case r_function:
-                            return n.new_boolean(str == op->to_string());
+                            return n.new_boolean(str == op->to_string(&n, 0));
                         case r_undefined:
                             return n.new_boolean(false);
                         default:
@@ -109,7 +109,7 @@ namespace clib {
                             return n.new_boolean(number > (JS_BOOL(op) ? 1.0 : 0.0));
                         case r_object:
                         case r_function:
-                            return n.new_boolean(str > op->to_string());
+                            return n.new_boolean(str > op->to_string(&n, 0));
                         case r_null:
                             return n.new_boolean(number > 0.0);
                         case r_undefined:
@@ -126,7 +126,7 @@ namespace clib {
                             return n.new_boolean(number >= (JS_BOOL(op) ? 1.0 : 0.0));
                         case r_object:
                         case r_function:
-                            return n.new_boolean(str >= op->to_string());
+                            return n.new_boolean(str >= op->to_string(&n, 0));
                         case r_null:
                             return n.new_boolean(number >= 0.0);
                         case r_undefined:
@@ -710,7 +710,7 @@ namespace clib {
                     switch (op->get_type()) {
                         case r_object:
                         case r_function:
-                            return n.new_boolean(str < op->to_string());
+                            return n.new_boolean(str < op->to_string(&n, 0));
                         case r_number:
                         case r_boolean:
                         case r_null:
@@ -724,7 +724,7 @@ namespace clib {
                     switch (op->get_type()) {
                         case r_object:
                         case r_function:
-                            return n.new_boolean(str <= op->to_string());
+                            return n.new_boolean(str <= op->to_string(&n, 0));
                         case r_number:
                         case r_boolean:
                         case r_null:
@@ -738,7 +738,7 @@ namespace clib {
                     switch (op->get_type()) {
                         case r_object:
                         case r_function:
-                            return n.new_boolean(str == op->to_string());
+                            return n.new_boolean(str == op->to_string(&n, 0));
                         case r_number:
                         case r_boolean:
                         case r_null:
@@ -754,7 +754,7 @@ namespace clib {
                     switch (op->get_type()) {
                         case r_object:
                         case r_function:
-                            return n.new_boolean(str > op->to_string());
+                            return n.new_boolean(str > op->to_string(&n, 0));
                         case r_number:
                         case r_boolean:
                         case r_null:
@@ -768,7 +768,7 @@ namespace clib {
                     switch (op->get_type()) {
                         case r_object:
                         case r_function:
-                            return n.new_boolean(str > op->to_string());
+                            return n.new_boolean(str > op->to_string(&n, 0));
                         case r_number:
                         case r_boolean:
                         case r_null:
@@ -950,12 +950,27 @@ namespace clib {
         marked = n;
     }
 
-    void jsv_string::print(std::ostream &os) const {
-        os << str;
+    std::string jsv_string::to_string(js_value_new *n, int hint) const {
+        return str;
     }
 
-    std::string jsv_string::to_string() const {
-        return str;
+    double jsv_string::to_number(js_value_new *n) const {
+        if (!n)
+            return 0;
+        auto s = to_string(n, 0);
+        auto d = 0.0;
+        switch (to_number(s, d)) {
+            case 0:
+            case 1:
+                return 0;
+            case 2:
+                return d;
+            case 3:
+                return NAN;
+            default:
+                break;
+        }
+        return 0;
     }
 
     jsv_string::ref jsv_string::clear() {
@@ -967,7 +982,12 @@ namespace clib {
         return std::dynamic_pointer_cast<jsv_string>(shared_from_this());
     }
 
-    int jsv_string::to_number(double &d) const {
+    int jsv_string::to_number(double &d) {
+        if (!calc_number)
+            calc();
+        if (number_state == 2)
+            d = number;
+        return number_state;
     }
 
     int jsv_string::to_number(const std::string &s, double &d) {

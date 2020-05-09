@@ -26,7 +26,7 @@ namespace clib {
                     case r_string:
                     case r_function:
                     case r_object:
-                        return n.new_boolean(code->text < op->to_string());
+                        return n.new_boolean(code->text < op->to_string(&n, 0));
                     case r_number:
                     case r_boolean:
                     case r_null:
@@ -41,7 +41,7 @@ namespace clib {
                     case r_string:
                     case r_function:
                     case r_object:
-                        return n.new_boolean(code->text <= op->to_string());
+                        return n.new_boolean(code->text <= op->to_string(&n, 0));
                     case r_number:
                     case r_boolean:
                     case r_null:
@@ -55,7 +55,7 @@ namespace clib {
                 switch (op->get_type()) {
                     case r_string:
                     case r_object:
-                        return n.new_boolean(code->text == op->to_string());
+                        return n.new_boolean(code->text == op->to_string(&n, 0));
                     case r_function:
                         return n.new_boolean(shared_from_this() == op);
                     case r_number:
@@ -74,7 +74,7 @@ namespace clib {
                     case r_string:
                     case r_function:
                     case r_object:
-                        return n.new_boolean(code->text > op->to_string());
+                        return n.new_boolean(code->text > op->to_string(&n, 0));
                     case r_number:
                     case r_boolean:
                     case r_null:
@@ -89,7 +89,7 @@ namespace clib {
                     case r_string:
                     case r_function:
                     case r_object:
-                        return n.new_boolean(code->text >= op->to_string());
+                        return n.new_boolean(code->text >= op->to_string(&n, 0));
                     case r_number:
                     case r_boolean:
                     case r_null:
@@ -193,7 +193,7 @@ namespace clib {
                     case r_function:
                     case r_null:
                     case r_undefined:
-                        return n.new_string(to_string() + op->to_string());
+                        return n.new_string(to_string(&n, 0) + op->to_string(&n, 0));
                     default:
                         break;
                 }
@@ -323,17 +323,14 @@ namespace clib {
         }
     }
 
-    void jsv_function::print(std::ostream &os) const {
-        if (builtin)
-            os << name;
-        else
-            os << (code ? code->text : "builtin");
-    }
-
-    std::string jsv_function::to_string() const {
+    std::string jsv_function::to_string(js_value_new *n, int hint) const {
         if (builtin)
             return name;
         return code ? code->text : "builtin";
+    }
+
+    double jsv_function::to_number(js_value_new *n) const {
+        return NAN;
     }
 
     jsv_function::ref jsv_function::clear2() {

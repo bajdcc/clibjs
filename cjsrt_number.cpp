@@ -362,15 +362,15 @@ namespace clib {
                         return n.new_number(number + s);
                     }
                     case r_string:
-                        return n.new_string(to_string() + op->to_string());
+                        return n.new_string(to_string(&n, 0) + op->to_string(&n, 0));
                     case r_boolean:
                         return JS_BOOL(op) ?
                                n.new_number(number + 1.0) :
                                (number == 0.0 ? n.new_number(0.0) : shared_from_this());
                     case r_object:
-                        return n.new_string(to_string() + op->to_string());
+                        return n.new_string(to_string(&n, 0) + op->to_string(&n, 0));
                     case r_function:
-                        return n.new_string(to_string() + op->to_string());
+                        return n.new_string(to_string(&n, 0) + op->to_string(&n, 0));
                     case r_null:
                         return number == 0.0 ?
                                n.new_number(0.0) : n.new_number(number);
@@ -960,15 +960,14 @@ namespace clib {
         js_fcvt1(buf, buf_size, d, n_digits, rounding_mode);
     }
 
-    // Refer: quickjs
-    void jsv_number::print(std::ostream &os) const {
-        os << number_to_string(number);
-    }
-
-    std::string jsv_number::to_string() const {
+    std::string jsv_number::to_string(js_value_new *n, int hint) const {
         if (number == 0.0)
             return "0";
         return number_to_string(number);
+    }
+
+    double jsv_number::to_number(js_value_new *n) const {
+        return number;
     }
 
     std::string jsv_number::number_to_string(double number) {

@@ -1159,11 +1159,11 @@ namespace clib {
     void jsv_boolean::mark(int n) {
     }
 
-    void jsv_boolean::print(std::ostream &os) const {
-        os << std::boolalpha << b;
+    std::string jsv_boolean::to_string(js_value_new *n, int hint) const {
+        return b ? _str_t : _str_f;
     }
 
-    std::string jsv_boolean::to_string() const {
-        return b ? _str_t : _str_f;
+    double jsv_boolean::to_number(js_value_new *n) const {
+        return b ? 1.0 : 0.0;
     }
 }

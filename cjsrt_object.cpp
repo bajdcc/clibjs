@@ -26,12 +26,12 @@ namespace clib {
                     case r_number:
                         return n.new_boolean(false);
                     case r_string:
-                        return n.new_boolean(to_string() < op->to_string());
+                        return n.new_boolean(to_string(&n, 0) < op->to_string(&n, 0));
                     case r_boolean:
                         return n.new_boolean(false);
                     case r_object:
                     case r_function:
-                        return n.new_boolean(to_string() < op->to_string());
+                        return n.new_boolean(to_string(&n, 0) < op->to_string(&n, 0));
                     case r_null:
                     case r_undefined:
                         return n.new_boolean(false);
@@ -44,12 +44,12 @@ namespace clib {
                     case r_number:
                         return n.new_boolean(false);
                     case r_string:
-                        return n.new_boolean(to_string() <= op->to_string());
+                        return n.new_boolean(to_string(&n, 0) <= op->to_string(&n, 0));
                     case r_boolean:
                         return n.new_boolean(false);
                     case r_object:
                     case r_function:
-                        return n.new_boolean(to_string() <= op->to_string());
+                        return n.new_boolean(to_string(&n, 0) <= op->to_string(&n, 0));
                     case r_null:
                     case r_undefined:
                         return n.new_boolean(false);
@@ -68,7 +68,7 @@ namespace clib {
                     case r_object:
                         return n.new_boolean(shared_from_this() == op);
                     case r_function:
-                        return n.new_boolean(to_string() == op->to_string());
+                        return n.new_boolean(to_string(&n, 0) == op->to_string(&n, 0));
                     default:
                         break;
                 }
@@ -80,12 +80,12 @@ namespace clib {
                     case r_number:
                         return n.new_boolean(false);
                     case r_string:
-                        return n.new_boolean(to_string() > op->to_string());
+                        return n.new_boolean(to_string(&n, 0) > op->to_string(&n, 0));
                     case r_boolean:
                         return n.new_boolean(false);
                     case r_object:
                     case r_function:
-                        return n.new_boolean(to_string() > op->to_string());
+                        return n.new_boolean(to_string(&n, 0) > op->to_string(&n, 0));
                     case r_null:
                     case r_undefined:
                         return n.new_boolean(false);
@@ -98,12 +98,12 @@ namespace clib {
                     case r_number:
                         return n.new_boolean(false);
                     case r_string:
-                        return n.new_boolean(to_string() >= op->to_string());
+                        return n.new_boolean(to_string(&n, 0) >= op->to_string(&n, 0));
                     case r_boolean:
                         return n.new_boolean(false);
                     case r_object:
                     case r_function:
-                        return n.new_boolean(to_string() >= op->to_string());
+                        return n.new_boolean(to_string(&n, 0) >= op->to_string(&n, 0));
                     case r_null:
                     case r_undefined:
                         return n.new_boolean(false);
@@ -205,7 +205,7 @@ namespace clib {
                     case r_function:
                     case r_null:
                     case r_undefined:
-                        return n.new_string(to_string() + op->to_string());
+                        return n.new_string(to_string(&n, 0) + op->to_string(&n, 0));
                     default:
                         break;
                 }
@@ -303,9 +303,9 @@ namespace clib {
     js_value::ref jsv_object::unary_op(js_value_new &n, int code) {
         switch (code) {
             case UNARY_POSITIVE:
-                return n.new_number(NAN);
+                return n.new_number(to_number(&n));
             case UNARY_NEGATIVE:
-                return n.new_number(NAN);
+                return n.new_number(-to_number(&n));
             case UNARY_NOT:
                 return n.new_boolean(false);
             case UNARY_INVERT:
@@ -338,45 +338,64 @@ namespace clib {
         }
     }
 
-    void jsv_object::print(std::ostream &os) const {
+    std::string jsv_object::to_string(js_value_new *n, int hint) const {
+        if (!n) {
+            return _str;
+        }
         if (!special.empty()) {
             auto f = special.find("PrimitiveValue");
             if (f != special.end()) {
-                os << f->second.lock()->to_string();
-                return;
+                return f->second.lock()->to_string(n, 0);
             }
         }
         if (__proto__.lock()) {
-            const auto &p = JS_OBJ(__proto__.lock());
-            auto f = p.find("__type__");
-            if (f != p.end() && f->second.lock()) {
-                auto k = f->second.lock()->to_string();
-                if (k == "array") {
-                    auto arr = cjsruntime::to_array(
-                            std::const_pointer_cast<js_value>(shared_from_this()));
-                    std::stringstream ss;
-                    std::transform(arr.begin(), arr.end(),
-                                   std::ostream_iterator<std::string>(ss, ", "),
-                                   [](auto s) {
-                                       return s.lock()->to_string();
-                                   });
-                    auto q = ss.str();
-                    if (q.size() >= 2) {
-                        q.pop_back();
-                        q.pop_back();
-                    }
-                    os << "[" << q << "]";
-                    return;
+            auto proto = __proto__.lock();
+            if (!proto) {
+                return _str;
+            }
+            auto p = proto;
+            while (p) {
+                if (p->get_type() != r_object) {
+                    break;
                 }
+                const auto &o = JS_OBJ(p);
+                auto f = o.find("toString");
+                if (f != o.end()) {
+                    auto fun = f->second.lock();
+                    if (fun->get_type() == r_function) {
+                        std::vector<js_value::weak_ref> args;
+                        args.push_back(n->new_number(hint));
+                        js_value::weak_ref _this = std::const_pointer_cast<js_value>(shared_from_this());
+                        return n->fast_api(JS_FUN(fun), _this, args, 0)->to_string(n, 0);
+                    }
+                }
+                p = p->__proto__.lock();
+            }
+            const auto &p2 = JS_OBJ(proto);
+            auto f = p2.find("__type__");
+            if (f != p2.end() && f->second.lock()) {
+                std::stringstream ss;
+                ss << "[object " << f->second.lock()->to_string(n, 0) << "]";
+                return ss.str();
             }
         }
-        os << _str;
+        return _str;
     }
 
-    std::string jsv_object::to_string() const {
-        std::stringstream ss;
-        print(ss);
-        return ss.str();
+    double jsv_object::to_number(js_value_new *n) const {
+        auto s = to_string(n, 0);
+        auto d = 0.0;
+        switch (jsv_string::to_number(s, d)) {
+            case 0:
+            case 1:
+                return 0;
+            case 2:
+                return d;
+            case 3:
+                return NAN;
+            default:
+                break;
+        }
     }
 
     jsv_object::ref jsv_object::clear() {

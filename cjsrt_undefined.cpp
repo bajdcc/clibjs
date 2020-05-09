@@ -183,13 +183,13 @@ namespace clib {
                     case r_number:
                         return n.new_number(NAN);
                     case r_string:
-                        return n.new_string(to_string() + op->to_string());
+                        return n.new_string(to_string(&n, 0) + op->to_string(&n, 0));
                     case r_boolean:
                         return n.new_number(NAN);
                     case r_object:
-                        return n.new_string(to_string() + op->to_string());
+                        return n.new_string(to_string(&n, 0) + op->to_string(&n, 0));
                     case r_function:
-                        return n.new_string(to_string() + op->to_string());
+                        return n.new_string(to_string(&n, 0) + op->to_string(&n, 0));
                     case r_null:
                         return n.new_number(NAN);
                     case r_undefined:
@@ -318,11 +318,11 @@ namespace clib {
     void jsv_undefined::mark(int n) {
     }
 
-    void jsv_undefined::print(std::ostream &os) const {
-        os << _str;
+    std::string jsv_undefined::to_string(js_value_new *n, int hint) const {
+        return _str;
     }
 
-    std::string jsv_undefined::to_string() const {
-        return _str;
+    double jsv_undefined::to_number(js_value_new *n) const {
+        return 0;
     }
 }
