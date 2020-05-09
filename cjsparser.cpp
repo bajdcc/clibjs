@@ -241,6 +241,7 @@ namespace clib {
         DEF_RULE(memberDotExpression)
         DEF_RULE(argumentsExpression)
         DEF_RULE(newExpression)
+        DEF_RULE_EXP(newExpressionArgument)
         DEF_RULE_EXP(primaryExpression)
         DEF_RULE(prefixExpression)
         DEF_RULE(prefixExpressionList)
@@ -355,7 +356,8 @@ namespace clib {
         arrayLiteralExpression = arrayLiteral;
         objectLiteralExpression = objectLiteral;
         parenthesizedExpression = _T_LPARAN + expressionSequence + _T_RPARAN;
-        newExpression = _K_NEW + singleExpression + *arguments;
+        newExpression = newExpressionArgument | _K_NEW + singleExpression;
+        newExpressionArgument = _K_NEW + singleExpression + arguments;
         functionExpression = anonymousFunction
                              | classExpression
                              | thisExpression
@@ -492,6 +494,7 @@ namespace clib {
         unit.adjust(&functionExpression, &anonymousFunction, e_shift, -1);
         unit.adjust(&iterationStatement, &forInStatement, e_shift, -1);
         unit.adjust(&iterationStatement, &forStatement, e_shift, 0, (void *) &pred_for);
+        unit.adjust(&newExpression, &newExpressionArgument, e_shift, 1);
         unit.adjust(&inExpression, &inExpression, e_left_recursion, 0, (void *) &pred_in);
         unit.gen(&program);
 #if DUMP_PDA

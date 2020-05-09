@@ -1,9 +1,6 @@
 # CLIBJS
 
 JS-like script engine implemented by C++.
-# CLIBJS
-
-JS-like script engine implemented by C++.
 
 Reference: quickjs
 
@@ -34,7 +31,7 @@ Reference: quickjs
 - [x] AST\(On progress\)
 - [x] IL Design\(**Use [Python Bytecode](https://github.com/python/cpython/blob/master/Include/opcode.h)** temporarily\)
 - [x] Gen\(On progress\)
-- [x] GC\(On progress\)
+- [x] GC
 - [x] Runtime\(On progress\)
 - [x] Prototype\(On progress\)
 - [ ] Interface
@@ -53,6 +50,10 @@ Reference: quickjs
 
 - [ ] console\(`log`(builtin), `trace`(builtin)\)
 - [ ] sys\(`exec_file`(builtin)\)
+
+## Global Function
+
+- [ ] setTimeout
 
 ## Control Flow
 
@@ -222,7 +223,7 @@ Str: [object Object], Type: object, Ptr: 015077f4
 undefined
 ```
 
-Input: (**test/test_8.js**) -- New target
+Input: (**test/test_8.js**) -- New
 
 ```javascript
 function A(a, b) {
@@ -271,6 +272,29 @@ a
 b
 0
 1
+```
+
+Input: (**test/test_9.js**) -- setTimeout
+
+```javascript(function () {
+    var i = 0;
+    console.log(i);
+    setTimeout(function a() {
+        if (++i > 4) return;
+        console.log(i);
+        setTimeout(a);
+    });
+})();
+```
+
+Output:
+
+```
+0
+1
+2
+3
+4
 ```
 
 ## Grammar

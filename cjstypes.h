@@ -225,6 +225,7 @@ namespace clib {
             c_memberDotExpression,
             c_argumentsExpression,
             c_newExpression,
+            c_newExpressionArgument,
             c_primaryExpression,
             c_prefixExpression,
             c_prefixExpressionList,

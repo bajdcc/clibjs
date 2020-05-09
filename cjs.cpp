@@ -48,9 +48,9 @@ namespace clib {
         auto code = std::move(g->get_code());
         assert(code);
         if (!filename.empty() && filename[0] != '<')
-            code->code->debugname = "(" + filename + ":1:1) <entry>";
+            code->code->debugName = "(" + filename + ":1:1) <entry>";
         else
-            code->code->debugname = "(" + filename + ") <entry>";
+            code->code->debugName = "(" + filename + ") <entry>";
         g = nullptr;
         rt.eval(std::move(code), top);
     }

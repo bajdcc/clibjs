@@ -200,6 +200,7 @@ namespace clib {
                     "MemberDotExpression",
                     "ArgumentsExpression",
                     "NewExpression",
+                    "NewExpressionArgument",
                     "PrimaryExpression",
                     "PrefixExpression",
                     "PrefixExpressionList",

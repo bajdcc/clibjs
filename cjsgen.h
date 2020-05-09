@@ -535,8 +535,9 @@ namespace clib {
         ast_node *name{nullptr};
         bool arrow{false};
         bool rest{false};
-        std::string fullname;
-        std::string debugname;
+        std::string fullName;
+        std::string simpleName;
+        std::string debugName;
         std::string text;
         std::vector<sym_var_t::ref> args;
         std::vector<std::string> args_str;

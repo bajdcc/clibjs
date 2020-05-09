@@ -360,6 +360,21 @@ namespace clib {
         envs.lock()->obj[n] = std::move(obj);
     }
 
+    void cjs_function::store_deref(const std::string &n, js_value::weak_ref obj) {
+        auto c = closure.lock();
+        if (!c)
+            return;
+        const auto &cc = JS_OBJ(c);
+        auto f = cc.find(n);
+        if (f == cc.end())
+            return;
+        auto var = f->second.lock();
+        if (var->get_type() != r_object)
+            return;
+        auto &cc2 = JS_OBJ(var);
+        cc2[n] = std::move(obj);
+    }
+
     void cjs_function::clear() {
         info = nullptr;
         name = "UNKNOWN";
@@ -373,24 +388,26 @@ namespace clib {
     }
 
     void cjs_function::reset(const sym_code_t::ref &code, js_value_new &n) {
-        name = code->debugname;
+        name = code->debugName;
         info = std::make_shared<cjs_function_info>(code, n);
     }
 
     void cjs_function::reset(cjs_function_info::ref code) {
-        name = code->fullname;
+        name = code->debugName;
         info = std::move(code);
     }
 
     cjs_function_info::cjs_function_info(const sym_code_t::ref &code, js_value_new &n) {
         arrow = code->arrow;
-        fullname = std::move(code->debugname);
+        debugName = std::move(code->debugName);
+        simpleName = std::move(code->simpleName);
+        fullName = std::move(code->fullName);
         args = std::move(code->args_str);
         std::copy(code->closure_str.begin(), code->closure_str.end(), std::back_inserter(closure));
         codes = std::move(code->codes);
         text = std::move(code->text);
         rest = code->rest;
-        args_num = (int)args.size() - (rest ? 1 : 0);
+        args_num = (int) args.size() - (rest ? 1 : 0);
         const auto &c = code->consts;
         std::copy(c.get_names_data().begin(),
                   c.get_names_data().end(),

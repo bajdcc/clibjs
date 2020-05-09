@@ -56,8 +56,11 @@ namespace clib {
         virtual std::shared_ptr<jsv_undefined> new_undefined() = 0;
         virtual std::shared_ptr<cjs_function> new_func(const std::shared_ptr<cjs_function_info> &code) = 0;
         virtual std::shared_ptr<jsv_object> new_array() = 0;
+        virtual std::shared_ptr<jsv_object> new_error(int = 0) = 0;
         virtual void exec(const std::string &, const std::string &) = 0;
         virtual std::string get_stacktrace() const = 0;
+        virtual int call_api(const std::shared_ptr<jsv_function> &, std::weak_ptr<js_value> &_this,
+                             std::vector<std::weak_ptr<js_value>> &, uint32_t attr) = 0;
     };
 
     class js_value : public std::enable_shared_from_this<js_value> {
@@ -222,7 +225,9 @@ namespace clib {
         explicit cjs_function_info(const sym_code_t::ref &code, js_value_new &n);
         static js_value::ref load_const(const cjs_consts &c, int op, js_value_new &n);
         bool arrow{false};
-        std::string fullname;
+        std::string debugName;
+        std::string simpleName;
+        std::string fullName;
         std::string text;
         int args_num{0};
         bool rest{false};
@@ -246,6 +251,7 @@ namespace clib {
         void clear();
         void store_name(const std::string &name, js_value::weak_ref obj);
         void store_fast(const std::string &name, js_value::weak_ref obj);
+        void store_deref(const std::string &name, js_value::weak_ref obj);
         cjs_function_info::ref info;
         std::string name{"UNKNOWN"};
         int pc{0};
@@ -288,13 +294,15 @@ namespace clib {
         jsv_undefined::ref new_undefined() override;
         cjs_function::ref new_func(const cjs_function_info::ref &code) override;
         jsv_object::ref new_array() override;
+        jsv_object::ref new_error(int) override;
         void exec(const std::string &, const std::string &) override;
         std::string get_stacktrace() const override;
+        int call_api(const jsv_function::ref &, js_value::weak_ref &_this, std::vector<js_value::weak_ref> &, uint32_t attr) override;
         static bool to_number(const js_value::ref &, double &);
         static std::vector<js_value::weak_ref> to_array(const js_value::ref &);
 
     private:
-        int run(const sym_code_t::ref &fun, const cjs_code &code);
+        int run(const cjs_code &code);
         js_value::ref load_const(int op);
         js_value::ref load_fast(int op);
         js_value::ref load_name(int op);
@@ -352,8 +360,11 @@ namespace clib {
             jsv_number::ref _one;
             jsv_number::ref _minus_one;
             jsv_string::ref _empty;
+            // debug function
             jsv_function::ref _debug_print;
             jsv_function::ref _debug_dump;
+            // global function
+            jsv_function::ref global_setTimeout;
             // proto
             jsv_object::ref _proto_boolean;
             jsv_object::ref _proto_function;
@@ -380,6 +391,10 @@ namespace clib {
             // array
             jsv_object::ref _proto_array;
             jsv_function::ref f_array;
+            // error
+            jsv_object::ref _proto_error;
+            jsv_function::ref f_error;
+            jsv_function::ref f_error_toString;
         } permanents;
         cjs_runtime_reuse reuse;
     };

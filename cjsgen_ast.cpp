@@ -1437,7 +1437,8 @@ namespace clib {
     }
 
     int sym_code_t::gen_rvalue(ijsgen &gen) {
-        fullname = gen.get_fullname(name ? name->data._identifier : LAMBDA_ID);
+        fullName = gen.get_fullname(name ? name->data._identifier : LAMBDA_ID);
+        simpleName = name ? name->data._identifier : LAMBDA_ID;
         auto p = parent.lock();
         if (p) {
             if (p->get_type() == s_id) {
@@ -1447,7 +1448,7 @@ namespace clib {
                     auto idx = _id->ids.back().get();
                     ss2 << "(" << gen.get_filename() << ":" << idx->line << ":" << idx->column
                         << ") " << gen.get_code_text(idx);
-                    debugname = ss2.str();
+                    debugName = ss2.str();
                 }
             } else if (p->get_type() == s_binop) {
                 do {
@@ -1460,33 +1461,34 @@ namespace clib {
                                 auto idx = _dot->exp.get();
                                 ss2 << "(" << gen.get_filename() << ":" << idx->line << ":" << idx->column
                                     << ") " << gen.get_func_name() << ".prototype." << gen.get_code_text(_dot->dots.front());
-                                debugname = ss2.str();
+                                debugName = ss2.str();
                                 break;
                             }
                         }
                         std::stringstream ss3;
                         auto idx = _binop->exp1.get();
                         ss3 << "(" << gen.get_filename() << ":" << idx->line << ":" << idx->column
-                            << ") " << fullname << " " << gen.get_code_text(idx);
-                        debugname = ss3.str();
+                            << ") " << fullName << " " << gen.get_code_text(idx);
+                        debugName = ss3.str();
                     }
                 } while (false);
             }
         }
-        if (debugname.empty()) {
+        if (debugName.empty()) {
             std::stringstream ss;
             ss << "(" << gen.get_filename() << ":" << this->line << ":" << this->column
-               << ") " << fullname;
-            debugname = ss.str();
+               << ") " << fullName;
+            debugName = ss.str();
         }
-        gen.add_var(fullname, shared_from_this());
+        if (name)
+            gen.add_var(simpleName, shared_from_this());
         if (!args.empty())
             gen.enter(sp_param);
         auto id = gen.push_function(std::dynamic_pointer_cast<sym_code_t>(shared_from_this()));
         if (body) {
             if (!arrow && name) {
                 gen.enter(sp_block);
-                gen.add_var(fullname, shared_from_this());
+                gen.add_var(simpleName, shared_from_this());
             }
             body->gen_rvalue(gen);
             if (body->get_base_type() == s_expression)
@@ -1511,13 +1513,13 @@ namespace clib {
         }
         if (name) {
             gen.emit(name, LOAD_CONST, id);
-            gen.emit(name, LOAD_CONST, gen.load_string(debugname, cjs_consts::get_string_t::gs_string));
+            gen.emit(name, LOAD_CONST, gen.load_string(debugName, cjs_consts::get_string_t::gs_string));
             gen.emit(this, MAKE_FUNCTION, (int) flag);
             if (parent.lock()->get_type() == s_statement_exp)
                 gen.emit(name, STORE_NAME, gen.load_string(name->data._identifier, cjs_consts::get_string_t::gs_name));
         } else {
             gen.emit(nullptr, LOAD_CONST, id);
-            gen.emit(nullptr, LOAD_CONST, gen.load_string(debugname, cjs_consts::get_string_t::gs_string));
+            gen.emit(nullptr, LOAD_CONST, gen.load_string(debugName, cjs_consts::get_string_t::gs_string));
             gen.emit(this, MAKE_FUNCTION, (int) flag);
         }
         if (!args.empty())

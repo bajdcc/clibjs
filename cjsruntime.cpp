@@ -66,7 +66,6 @@ namespace clib {
             current_stack = stack.back();
             return;
         }
-        code = nullptr;
         auto r = 0;
         auto gc_period = 0;
         decltype(stack.back()->ret_value) ret;
@@ -86,7 +85,7 @@ namespace clib {
 #if DUMP_STEP
                 dump_step(c);
 #endif
-                r = run(code->code, c);
+                r = run(c);
 #if DUMP_STEP && SHOW_EXTRA
                 dump_step2(c);
 #endif
@@ -128,11 +127,111 @@ namespace clib {
         std::cout << std::endl;
     }
 
+    int cjsruntime::call_api(const jsv_function::ref &func, js_value::weak_ref &_this,
+                             std::vector<js_value::weak_ref> &args, uint32_t attr) {
+        auto stack_size = stack.size();
+        current_stack->pc++;
+        if (func->builtin) {
+            func->builtin(current_stack, _this, args, *this, 0);
+        } else {
+            stack.push_back(current_stack = new_stack(func->code));
+            auto env = current_stack->envs.lock();
+            if (!func->code->arrow && func->code->simpleName.front() != '<')
+                env->obj[func->code->simpleName] = func;
+            auto arg = new_object();
+            env->obj["arguments"] = arg;
+            size_t i = 0;
+            auto args_num = func->code->args_num;
+            auto n = args.size();
+            for (; i < n; i++) {
+                std::stringstream ss;
+                ss << i;
+                arg->obj[ss.str()] = args.at(i);
+                if (i < args_num)
+                    env->obj[func->code->args.at(i)] = args.at(i);
+            }
+            for (; i < args_num; i++) {
+                env->obj[func->code->args.at(i)] = new_undefined();
+            }
+            if (func->code->rest) {
+                auto rest = new_array();
+                env->obj[func->code->args.at(args_num)] = rest;
+                auto j = 0;
+                for (i = args_num; i < n; i++) {
+                    std::stringstream ss;
+                    ss << j++;
+                    rest->obj[ss.str()] = args.at(i);
+                }
+                rest->obj["length"] = new_number(j);
+            }
+            arg->obj["length"] = new_number(n);
+            if (func->closure.lock())
+                current_stack->closure = func->closure;
+        }
+        auto r = 0;
+        auto gc_period = 0;
+        while (stack.size() > stack_size) {
+            const auto &codes = current_stack->info->codes;
+            const auto &pc = current_stack->pc;
+            auto code = current_stack->info;
+            while (true) {
+                if (pc >= (int) codes.size()) {
+                    r = 4;
+                    break;
+                }
+                const auto &c = codes.at(pc);
+                if (pc + 1 == (int) codes.size() && c.code == POP_TOP) {
+                    r = 2;
+                    break;
+                }
+#if DUMP_STEP
+                dump_step(c);
+#endif
+                r = run(c);
+#if DUMP_STEP && SHOW_EXTRA
+                dump_step2(c);
+#endif
+                if (gc_period++ >= GC_PERIOD) {
+                    gc_period = 0;
+                    gc();
+                }
+                if (r != 0)
+                    break;
+            }
+            if (r == 1) {
+                current_stack = stack.back();
+                continue;
+            }
+            if (r == 2) {
+                if (!current_stack->ret_value.lock())
+                    current_stack->ret_value =
+                            current_stack->stack.empty() ? new_undefined() : pop();
+            }
+            if (r == 3) {
+                continue;
+            }
+            if (r == 4) {
+                current_stack->ret_value = new_undefined();
+            }
+            if (stack.size() > 1) {
+                auto ret = stack.back()->ret_value;
+                delete_stack(current_stack);
+                stack.pop_back();
+                current_stack = stack.back();
+                push(ret);
+            } else {
+                delete_stack(current_stack);
+                stack.pop_back();
+            }
+        }
+        return 0;
+    }
+
     void cjsruntime::set_readonly(bool flag) {
         readonly = flag;
     }
 
-    int cjsruntime::run(const sym_code_t::ref &fun, const cjs_code &code) {
+    int cjsruntime::run(const cjs_code &code) {
         switch (code.code) {
             case LOAD_EMPTY: {
                 js_value::ref v;
@@ -194,7 +293,7 @@ namespace clib {
                     push(new_boolean(false));
                     break;
                 }
-                auto f = JS_OBJ(op2);
+                const auto &f = JS_OBJ(op2);
                 auto ff = f.find("prototype");
                 if (ff == f.end()) {
                     push(new_boolean(false));
@@ -779,8 +878,8 @@ namespace clib {
                 stack.push_back(new_stack(func->code));
                 auto new_stack = stack.back();
                 auto env = new_stack->envs.lock();
-                if (!func->code->arrow && func->name.front() != '<')
-                    env->obj[func->name] = f;
+                if (!func->code->arrow && func->code->simpleName.front() != '<')
+                    env->obj[func->code->simpleName] = f;
                 auto arg = new_object();
                 env->obj["arguments"] = arg;
                 size_t i = 0;
@@ -869,7 +968,12 @@ namespace clib {
                 push(load_deref(var));
             }
                 break;
-            case STORE_DEREF:
+            case STORE_DEREF: {
+                auto obj = top();
+                auto id = code.op1;
+                auto name = current_stack->info->derefs.at(id);
+                current_stack->store_deref(name, obj);
+            }
                 break;
             case DELETE_DEREF:
                 break;
@@ -915,7 +1019,7 @@ namespace clib {
                         push(new_undefined()); // type error
                         break;
                     }
-                    auto ob = JS_OBJ(p);
+                    const auto &ob = JS_OBJ(p);
                     auto cons = ob.find("constructor");
                     if (cons != ob.end()) {
                         if (cons->second.lock()->get_type() == r_function) {
@@ -946,8 +1050,8 @@ namespace clib {
                 new_stack->_this = _this;
                 new_stack->ret_value = _this;
                 auto env = new_stack->envs.lock();
-                if (!cons_func->code->arrow && cons_func->name.front() != '<')
-                    env->obj[cons_func->name] = f;
+                if (!cons_func->code->arrow && cons_func->code->simpleName.front() != '<')
+                    env->obj[cons_func->code->simpleName] = f;
                 auto arg = new_object();
                 env->obj["arguments"] = arg;
                 size_t i = 0;
@@ -993,7 +1097,7 @@ namespace clib {
                 auto key = current_stack->info->names.at(n);
                 auto obj = top();
                 if (obj.lock()->get_type() == r_object || obj.lock()->get_type() == r_function) {
-                    auto o = JS_OBJ(obj.lock());
+                    const auto &o = JS_OBJ(obj.lock());
                     auto f = o.find(key);
                     if (f != o.end()) {
                         if (f->second.lock()->get_type() == r_function)
@@ -1015,7 +1119,7 @@ namespace clib {
                         push(new_undefined()); // type error
                         break;
                     }
-                    auto ob = JS_OBJ(p);
+                    const auto &ob = JS_OBJ(p);
                     auto f = ob.find(key);
                     if (f != ob.end()) {
                         if (f->second.lock()->get_type() == r_function) {
@@ -1062,8 +1166,8 @@ namespace clib {
                 new_stack->_this = _this;
                 new_stack->name = func->name;
                 auto env = new_stack->envs.lock();
-                if (!func->code->arrow && func->name.front() != '<')
-                    env->obj[func->name] = f;
+                if (!func->code->arrow && func->code->simpleName.front() != '<')
+                    env->obj[func->code->simpleName] = f;
                 auto arg = new_object();
                 env->obj["arguments"] = arg;
                 size_t i = 0;
@@ -1168,12 +1272,12 @@ namespace clib {
             if ((*i)->closure.lock()) {
                 auto L = (*i)->closure.lock()->obj.find(name);
                 if (L != (*i)->closure.lock()->obj.end()) {
-                    return L->second.lock();
+                    return (*i)->closure.lock();
                 }
             }
             auto L2 = (*i)->envs.lock()->obj.find(name);
             if (L2 != (*i)->envs.lock()->obj.end()) {
-                return L2->second.lock();
+                return (*i)->envs.lock();
             }
         }
         assert(!"cannot load closure value by name");
@@ -1184,7 +1288,14 @@ namespace clib {
         if (current_stack->closure.lock()) {
             auto f = current_stack->closure.lock()->obj.find(name);
             if (f != current_stack->closure.lock()->obj.end()) {
-                return f->second.lock();
+                auto ctx = f->second.lock();
+                if (ctx->get_type() == r_object) {
+                    const auto &obj = JS_OBJ(ctx);
+                    auto f2 = obj.find(name);
+                    if (f2 != obj.end()) {
+                        return f2->second.lock();
+                    }
+                }
             }
         }
         assert(!"cannot load deref by name");
@@ -1390,6 +1501,16 @@ namespace clib {
         arr->__proto__ = permanents._proto_array;
         arr->obj["length"] = new_number(0.0);
         return arr;
+    }
+
+    jsv_object::ref cjsruntime::new_error(int type) {
+        auto err = new_object();
+        switch (type) {
+            default:
+                err->__proto__ = permanents._proto_error;
+                break;
+        }
+        return err;
     }
 
     void cjsruntime::exec(const std::string &n, const std::string &s) {
@@ -1712,7 +1833,7 @@ namespace clib {
                 if (n->builtin)
                     os << "function: builtin " << n->name << std::endl;
                 else if (n->code) {
-                    os << "function: " << n->code->fullname << " ";
+                    os << "function: " << n->code->debugName << " ";
                     os << n->code->text << std::endl;;
                     if (n->closure.lock()) {
                         print(n->closure.lock(), level + 1, os);

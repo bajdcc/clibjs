@@ -187,7 +187,7 @@ namespace clib {
                     break;
                 case r_function: {
                     auto f = functions.at(i).lock();
-                    fprintf(stdout, "C [#%03d] [FUNC  ] %s | %s\n", i, f->debugname.c_str(),
+                    fprintf(stdout, "C [#%03d] [FUNC  ] %s | %s\n", i, f->debugName.c_str(),
                             text->substr(f->start, f->end - f->start).c_str());
                 }
                     break;
@@ -1407,8 +1407,6 @@ namespace clib {
                             exp->args.push_back(to_exp(*s));
                         }
                     }
-
-
                 }
                 asts.clear();
                 tmps.clear();
@@ -2322,7 +2320,7 @@ namespace clib {
     std::string cjsgen::get_func_name() const {
         if (codes.empty())
             return "<global>";
-        return codes.back()->fullname;
+        return codes.back()->fullName;
     }
 
     bool cjsgen::is_arrow_func() const {
@@ -2358,7 +2356,7 @@ namespace clib {
 #endif
         for (const auto &c : funcs) {
 #if PRINT_CODE && DEBUG_MODE
-            fprintf(stdout, "--== Function: \"%s\" ==--\n", c->fullname.c_str());
+            fprintf(stdout, "--== Function: \"%s\" ==--\n", c->fullName.c_str());
             dump(c, true);
 #else
             dump(c, false);
