@@ -416,7 +416,7 @@ namespace clib {
                 if (n >= -1) {
                     auto key = n >= 0 ? current_stack->info->names.at(code.op1) : pop().lock()->to_string(this, 0);
                     auto obj = pop().lock();
-                    if (obj->get_type() == r_object || obj->get_type() == r_function) {
+                    if (!obj->is_primitive()) {
                         auto &o = JS_OBJ(obj);
                         auto f = o.find(key);
                         if (f != o.end()) {
@@ -476,56 +476,31 @@ namespace clib {
             case BINARY_OR: {
                 auto op2 = pop().lock();
                 auto op1 = pop().lock();
-                auto result = op1->binary_op(*this, code.code, op2);
-                assert(result);
-                push(result);
+                push(binop(code.code, op1, op2));
             }
                 break;
             case LOAD_ATTR:
             case BINARY_SUBSCR: {
-                auto key = code.code == LOAD_ATTR ? current_stack->info->names.at(code.op1) : pop().lock()->to_string(this, 0);
+                auto key = code.code == LOAD_ATTR ?
+                           current_stack->info->names.at(code.op1) :
+                           pop().lock()->to_string(this, 0);
                 auto obj = pop().lock();
-                if (obj->get_type() == r_object || obj->get_type() == r_function) {
-                    const auto &o = JS_OBJ(obj);
-                    auto f = o.find(key);
-                    if (f != o.end()) {
-                        push(f->second);
+                if (!obj->is_primitive()) {
+                    auto value = JS_O(obj)->get(key);
+                    if (value) {
+                        push(value);
                         break;
                     }
                 }
-                if (key == "__proto__") {
-                    auto p = obj->__proto__.lock();
-                    push(p ? p : permanents._null);
-                    break;
-                }
-                auto proto = obj->__proto__.lock();
-                if (!proto) {
-                    push(new_undefined()); // type error
-                    break;
-                }
-                auto p = proto;
-                auto failed = true;
-                while (p) {
-                    assert(p->get_type() == r_object);
-                    const auto &o = JS_OBJ(p);
-                    auto f = o.find(key);
-                    if (f != o.end()) {
-                        push(f->second);
-                        failed = false;
-                        break;
-                    }
-                    p = p->__proto__.lock();
-                }
-                if (failed)
-                    push(new_undefined());
+                push(permanents._undefined);
             }
                 break;
             case BINARY_INC:
             case BINARY_DEC: {
                 auto op1 = pop().lock();
-                auto result = op1->binary_op(
-                        *this,
+                auto result = binop(
                         code.code == BINARY_INC ? BINARY_ADD : BINARY_SUBTRACT,
+                        op1,
                         permanents._one);
                 assert(result);
                 push(result);
@@ -560,7 +535,7 @@ namespace clib {
                 auto obj = pop().lock();
                 auto value = top();
                 auto &o = JS_OBJ(obj);
-                if (obj->get_type() == r_object || obj->get_type() == r_function) {
+                if (!obj->is_primitive()) {
                     auto f = o.find(key);
                     if (f != o.end() && (readonly && (f->second.lock()->attr & js_value::at_readonly))) {
                         break;
@@ -763,7 +738,7 @@ namespace clib {
                 auto obj = pop().lock();
                 auto value = top();
                 auto &o = JS_OBJ(obj);
-                if (obj->get_type() == r_object || obj->get_type() == r_function) {
+                if (!obj->is_primitive()) {
                     auto f = o.find(key);
                     if (f != o.end() && (readonly && (f->second.lock()->attr & js_value::at_readonly))) {
                         break;
@@ -1873,6 +1848,259 @@ namespace clib {
         if (attr > 0U) s->attr = attr;
         s->__proto__ = permanents._proto_root;
         return s;
+    }
+
+    js_value::ref cjsruntime::binop(int code, js_value::ref _op1, js_value::ref _op2) {
+        auto conv = js_value::conv_number;
+        switch (code) {
+            case COMPARE_EQUAL:
+            case COMPARE_FEQUAL:
+            case COMPARE_NOT_EQUAL:
+            case COMPARE_FNOT_EQUAL: {
+                if (!_op1->is_primitive() && !_op2->is_primitive()) {
+                    switch (code) {
+                        case COMPARE_EQUAL:
+                            return new_boolean(_op1 == _op2);
+                        case COMPARE_NOT_EQUAL:
+                            return new_boolean(_op1 != _op2);
+                        case COMPARE_FEQUAL:
+                            return new_boolean(_op1 == _op2);
+                        case COMPARE_FNOT_EQUAL:
+                            return new_boolean(_op1 != _op2);
+                        default:
+                            break;
+                    }
+                }
+            }
+                break;
+            default:
+                break;
+        }
+        auto op1 = _op1->to_primitive(*this, js_value::conv_default);
+        assert(op1);
+        auto op2 = _op2->to_primitive(*this, js_value::conv_default);
+        assert(op2);
+        if (code == BINARY_ADD) {
+            if (op1->get_type() == r_string || op2->get_type() == r_string)
+                conv = js_value::conv_string;
+        } else {
+            switch (code) {
+                case COMPARE_LESS:
+                case COMPARE_LESS_EQUAL:
+                case COMPARE_GREATER:
+                case COMPARE_GREATER_EQUAL:
+                    if (op1->get_type() == r_string && op2->get_type() == r_string)
+                        conv = js_value::conv_string;
+                    break;
+                default:
+                    break;
+            }
+        }
+        if (conv == js_value::conv_string) {
+            auto s1 = op1->to_string(this, op1->get_type() == r_number ? 1 : 0);
+            auto s2 = op2->to_string(this, op2->get_type() == r_number ? 1 : 0);
+            switch (code) {
+                case COMPARE_LESS:
+                    return new_boolean(s1 < s2);
+                case COMPARE_LESS_EQUAL:
+                    return new_boolean(s1 <= s2);
+                case COMPARE_GREATER:
+                    return new_boolean(s1 > s2);
+                case COMPARE_GREATER_EQUAL:
+                    return new_boolean(s1 >= s2);
+                case BINARY_ADD:
+                    return new_string(s1 + s2);
+                default:
+                    assert(!"invalid binop type");
+                    break;
+            }
+        } else {
+            double s1, s2;
+            switch (code) {
+                case COMPARE_LESS:
+                    s1 = op1->to_number(this);
+                    s2 = op2->to_number(this);
+                    return new_boolean(s1 < s2);
+                case COMPARE_LESS_EQUAL:
+                    s1 = op1->to_number(this);
+                    s2 = op2->to_number(this);
+                    return new_boolean(s1 <= s2);
+                case COMPARE_GREATER:
+                    s1 = op1->to_number(this);
+                    s2 = op2->to_number(this);
+                    return new_boolean(s1 > s2);
+                case COMPARE_GREATER_EQUAL:
+                    s1 = op1->to_number(this);
+                    s2 = op2->to_number(this);
+                    return new_boolean(s1 >= s2);
+                case COMPARE_EQUAL: {
+                    if (op1->get_type() != op2->get_type()) {
+                        if (op1->get_type() == r_null) {
+                            if (op2->get_type() == r_undefined)
+                                return new_boolean(true);
+                            return new_boolean(false);
+                        }
+                        if (op2->get_type() == r_null) {
+                            if (op1->get_type() == r_undefined)
+                                return new_boolean(true);
+                            return new_boolean(false);
+                        }
+                        return new_boolean(op1->to_number(this) == op2->to_number(this));
+                    }
+                    switch (op1->get_type()) {
+                        case r_string:
+                            return new_boolean(JS_STR(op1) == JS_STR(op2));
+                        case r_number:
+                            return new_boolean(JS_NUM(op1) == JS_NUM(op2));
+                        default:
+                            return new_boolean(op1 == op2);
+                    }
+                }
+                case COMPARE_NOT_EQUAL: {
+                    if (op1->get_type() != op2->get_type()) {
+                        if (op1->get_type() == r_null) {
+                            if (op2->get_type() == r_undefined)
+                                return new_boolean(false);
+                            return new_boolean(true);
+                        }
+                        if (op2->get_type() == r_null) {
+                            if (op1->get_type() == r_undefined)
+                                return new_boolean(false);
+                            return new_boolean(true);
+                        }
+                        return new_boolean(op1->to_number(this) != op2->to_number(this));
+                    }
+                    switch (op1->get_type()) {
+                        case r_string:
+                            return new_boolean(JS_STR(op1) != JS_STR(op2));
+                        case r_number:
+                            return new_boolean(JS_NUM(op1) != JS_NUM(op2));
+                        default:
+                            return new_boolean(op1 != op2);
+                    }
+                }
+                case COMPARE_FEQUAL: {
+                    if (_op1->get_type() != _op2->get_type()) {
+                        return new_boolean(false);
+                    }
+                    switch (op1->get_type()) {
+                        case r_string:
+                            return new_boolean(JS_STR(op1) == JS_STR(op2));
+                        case r_number:
+                            return new_boolean(JS_NUM(op1) == JS_NUM(op2));
+                        default:
+                            return new_boolean(op1 == op2);
+                    }
+                }
+                case COMPARE_FNOT_EQUAL: {
+                    if (_op1->get_type() != _op2->get_type()) {
+                        return new_boolean(true);
+                    }
+                    switch (op1->get_type()) {
+                        case r_string:
+                            return new_boolean(JS_STR(op1) != JS_STR(op2));
+                        case r_number:
+                            return new_boolean(JS_NUM(op1) != JS_NUM(op2));
+                        default:
+                            return new_boolean(op1 != op2);
+                    }
+                }
+                case BINARY_POWER:
+                    s1 = op1->to_number(this);
+                    s2 = op2->to_number(this);
+                    if (s2 == 0)
+                        return new_number(1.0);
+                    if (s2 == 0)
+                        return new_number(s1);
+                    if ((s1 == 1.0 || s1 == -1.0) && std::isinf(s2))
+                        return new_number(NAN);
+                    return new_number(pow(s1, s2));
+                case BINARY_MULTIPLY:
+                    s1 = op1->to_number(this);
+                    s2 = op2->to_number(this);
+                    return new_number(s1 * s2);
+                case BINARY_MODULO:
+                    s1 = op1->to_number(this);
+                    s2 = op2->to_number(this);
+                    if (std::isinf(s1) || s2 == 0)
+                        return new_number(NAN);
+                    if (std::isinf(s2))
+                        return new_number(s1);
+                    if (s1 == 0)
+                        return new_number(std::isnan(s2) ? NAN : s1);
+                    return new_number(fmod(s1, s2));
+                case BINARY_ADD:
+                    s1 = op1->to_number(this);
+                    s2 = op2->to_number(this);
+                    return new_number(s1 + s2);
+                case BINARY_SUBTRACT:
+                    s1 = op1->to_number(this);
+                    s2 = op2->to_number(this);
+                    return new_number(s1 - s2);
+                case BINARY_FLOOR_DIVIDE:
+                    s1 = op1->to_number(this);
+                    s2 = op2->to_number(this);
+                    return new_number(s1 / s2);
+                case BINARY_TRUE_DIVIDE:
+                    s1 = op1->to_number(this);
+                    s2 = op2->to_number(this);
+                    return new_number(s1 / s2);
+                case BINARY_LSHIFT: {
+                    s1 = op1->to_number(this);
+                    s2 = op2->to_number(this);
+                    if (s2 == 0.0)
+                        return new_number(fix(s1) == 0.0 ? 0.0 : fix(s1));
+                    auto a = int(fix(s1));
+                    auto b = fix(s2);
+                    auto c = b > 0 ? (uint32_t(b) % 32) : uint32_t(int(fmod(b, 32)) + 32);
+                    return new_number(double(int(a << c)));
+                }
+                case BINARY_RSHIFT: {
+                    s1 = op1->to_number(this);
+                    s2 = op2->to_number(this);
+                    if (s2 == 0.0)
+                        return new_number(fix(s1) == 0.0 ? 0.0 : fix(s1));
+                    auto a = int(fix(s1));
+                    auto b = fix(s2);
+                    auto c = b > 0 ? (uint32_t(b) % 32) : uint32_t(int(fmod(b, 32)) + 32);
+                    return new_number(double(int(a >> c)));
+                }
+                case BINARY_URSHIFT: {
+                    s1 = op1->to_number(this);
+                    s2 = op2->to_number(this);
+                    if (s2 == 0.0)
+                        return new_number(fix(s1) == 0.0 ? 0.0 : uint32_t(fix(s1)));
+                    auto a = uint32_t(fix(s1));
+                    auto b = fix(s2);
+                    auto c = b > 0 ? (uint32_t(b) % 32) : uint32_t(int(fmod(b, 32)) + 32);
+                    return new_number(double(uint32_t(a >> c)));
+                }
+                case BINARY_AND: {
+                    s1 = op1->to_number(this);
+                    s2 = op2->to_number(this);
+                    auto a = uint32_t(fix(s1));
+                    auto b = uint32_t(fix(s2));
+                    return new_number(double(int(a & b)));
+                }
+                case BINARY_XOR: {
+                    s1 = op1->to_number(this);
+                    s2 = op2->to_number(this);
+                    auto a = uint32_t(fix(s1));
+                    auto b = uint32_t(fix(s2));
+                    return new_number(double(int(a ^ b)));
+                }
+                case BINARY_OR: {
+                    s1 = op1->to_number(this);
+                    s2 = op2->to_number(this);
+                    auto a = uint32_t(fix(s1));
+                    auto b = uint32_t(fix(s2));
+                    return new_number(double(int(a | b)));
+                }
+                default:
+                    assert(!"invalid binop type");
+                    break;
+            }
+        }
     }
 
     void cjsruntime::print(const js_value::ref &value, int level, std::ostream &os) {

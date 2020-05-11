@@ -50,11 +50,12 @@ namespace clib {
         permanents._minus_one = _new_number(-1.0, js_value::at_const);
         permanents._empty = _new_string("");
         // length
+        auto _int_0 = _new_number(0, js_value::at_const | js_value::at_refs);
         auto _int_1 = _new_number(1, js_value::at_const | js_value::at_refs);
         auto _empty_string = _new_string("", js_value::at_const | js_value::at_refs);
         // proto
-        permanents._proto_root->obj["__type__"] = _new_string("root", js_value::at_const | js_value::at_refs);
-        permanents._proto_object->obj["__type__"] = _new_string("object", js_value::at_const | js_value::at_refs);
+        permanents._proto_root->obj["__type__"] = _new_string("Root", js_value::at_const | js_value::at_refs);
+        permanents._proto_object->obj["__type__"] = _new_string("Object", js_value::at_const | js_value::at_refs);
         permanents._proto_object_hasOwnProperty = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
         permanents._proto_object_hasOwnProperty->obj.insert({"length", _int_1});
         permanents._proto_object_hasOwnProperty->name = "hasOwnProperty";
@@ -73,8 +74,17 @@ namespace clib {
             return 0;
         };
         permanents._proto_object->obj.insert({permanents._proto_object_hasOwnProperty->name, permanents._proto_object_hasOwnProperty});
-        permanents._proto_boolean->obj["__type__"] = _new_string("boolean", js_value::at_const | js_value::at_refs);
-        permanents._proto_function->obj["__type__"] = _new_string("function", js_value::at_const | js_value::at_refs);
+        permanents._proto_object->obj["__type__"] = _new_string("Object", js_value::at_const | js_value::at_refs);
+        permanents._proto_object_toString = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
+        permanents._proto_object_toString->obj.insert({"length", _int_0});
+        permanents._proto_object_toString->name = "toString";
+        permanents._proto_object_toString->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
+            func->stack.push_back(js.new_string(_this.lock()->to_string(&js, 0)));
+            return 0;
+        };
+        permanents._proto_object->obj.insert({permanents._proto_object_toString->name, permanents._proto_object_toString});
+        permanents._proto_boolean->obj["__type__"] = _new_string("Boolean", js_value::at_const | js_value::at_refs);
+        permanents._proto_function->obj["__type__"] = _new_string("Function", js_value::at_const | js_value::at_refs);
         permanents._proto_function_call = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
         permanents._proto_function_call->obj.insert({"length", _int_1});
         permanents._proto_function_call->name = "call";
@@ -185,8 +195,8 @@ namespace clib {
             return 1;
         };
         permanents._proto_function->obj.insert({permanents._proto_function_apply->name, permanents._proto_function_apply});
-        permanents._proto_number->obj["__type__"] = _new_string("number", js_value::at_const | js_value::at_refs);
-        permanents._proto_string->obj["__type__"] = _new_string("string", js_value::at_const | js_value::at_refs);
+        permanents._proto_number->obj["__type__"] = _new_string("Number", js_value::at_const | js_value::at_refs);
+        permanents._proto_string->obj["__type__"] = _new_string("String", js_value::at_const | js_value::at_refs);
 #if DUMP_PRINT_FILE_ENABLE
         permanents._debug_print = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
         permanents._debug_print->obj.insert({"length", _int_1});
@@ -390,7 +400,7 @@ namespace clib {
         permanents.global_env->obj.insert({permanents.f_function->name, permanents.f_function});
         // array
         permanents._proto_array = _new_object(js_value::at_const | js_value::at_readonly);
-        permanents._proto_array->obj["__type__"] = _new_string("array", js_value::at_const | js_value::at_refs);
+        permanents._proto_array->obj["__type__"] = _new_string("Array", js_value::at_const | js_value::at_refs);
         permanents.f_array = _new_function(permanents._proto_array, js_value::at_const | js_value::at_readonly);
         permanents.f_array->obj.insert({"length", _int_1});
         permanents.f_array->name = "Array";
@@ -427,8 +437,8 @@ namespace clib {
         permanents.global_env->obj.insert({permanents.global_setTimeout->name, permanents.global_setTimeout});
         // error
         permanents._proto_error = _new_object(js_value::at_const | js_value::at_readonly);
-        permanents._proto_error->obj["__type__"] = _new_string("error", js_value::at_const | js_value::at_refs);
-        permanents._proto_error->obj["name"] = _new_string("Error", js_value::at_const | js_value::at_refs);
+        permanents._proto_error->obj["name"] =
+        permanents._proto_error->obj["__type__"] = _new_string("Error", js_value::at_const | js_value::at_refs);
         permanents._proto_error->obj["message"] = _empty_string;
         permanents.f_error = _new_function(permanents._proto_array, js_value::at_const | js_value::at_readonly);
         permanents.f_error->obj.insert({"length", _int_1});

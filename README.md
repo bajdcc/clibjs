@@ -11,7 +11,7 @@ Reference: quickjs
 - [x] Build VM.
 - [x] Closure.
 - [x] GC, cache unused object
-- [x] Binop\(tested in `test_4.js`\), BinComp, Unary
+- [x] Binop\(tested in `test_all.js`, **TEST PASSED**\), BinComp, Unary
 - [x] Y-combinator recursion.\(tested in `test_6.js`\)
 - [x] Prototype, Attribute, Method
 - [x] New, Delete
@@ -276,7 +276,8 @@ b
 
 Input: (**test/test_9.js**) -- setTimeout
 
-```javascript(function () {
+```javascript
+(function () {
     var i = 0;
     console.log(i);
     setTimeout(function a() {
@@ -297,6 +298,10 @@ undefined
 3
 4
 ```
+
+Input: (**test/test_all.js**) -- **All type binop**
+
+Output: (**test/test_all_output.txt**)
 
 ## Grammar
 
