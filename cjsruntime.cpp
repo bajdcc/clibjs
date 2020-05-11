@@ -54,7 +54,6 @@ namespace clib {
     }
 
     void cjsruntime::eval(cjs_code_result::ref code, bool top) {
-        auto code2 = code->code;
         if (code->code->codes.empty()) {
             std::cout << "Compile failed." << std::endl;
             if (!top)
@@ -133,7 +132,7 @@ namespace clib {
         }
         assert(ret.lock());
         std::cout << ret.lock()->to_string(this, 1) << std::endl;
-        eval_timeout(code2);
+        eval_timeout();
         delete_stack(current_stack);
         stack.pop_back();
     }
@@ -143,7 +142,8 @@ namespace clib {
         switch ((js_value_new::api) type) {
             case API_none:
                 break;
-            case API_setTimeout: {
+            case API_setTimeout:
+            case API_setInterval: {
                 if (args.empty()) {
                     push(new_undefined());
                     return 0;
@@ -153,12 +153,14 @@ namespace clib {
                     push(new_undefined());
                     return 0;
                 }
-                std::vector<js_value::weak_ref> _args(args.begin() + 1, args.end());
+                auto arg_n = 1;
                 auto time = 0;
                 if (args.size() > 1) {
                     time = args[1].lock()->to_number(this);
+                    arg_n++;
                 }
-                push(new_number(api_setTimeout(time, JS_FUN(arg), _args, attr)));
+                std::vector<js_value::weak_ref> _args(args.begin() + arg_n, args.end());
+                push(new_number(api_setTimeout(time, JS_FUN(arg), _args, attr, type == API_setTimeout)));
             }
                 break;
             default:
@@ -274,25 +276,25 @@ namespace clib {
         return pop().lock();
     }
 
-    double cjsruntime::api_setTimeout(int time, const jsv_function::ref &func, std::vector<js_value::weak_ref> args, uint32_t attr) {
+    double cjsruntime::api_setTimeout(int time, const jsv_function::ref &func, std::vector<js_value::weak_ref> args, uint32_t attr, bool once) {
         auto t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()) - timeout.startup_time;
         if (timeout.queues.find(t) == timeout.queues.end()) {
             timeout.queues[t] = std::list<std::shared_ptr<timeout_t>>();
         }
         auto s = std::make_shared<timeout_t>();
-        s->once = true;
+        s->once = once;
+        s->time = time;
         s->id = timeout.global_id++;
         s->func = func;
         s->args = std::move(args);
         s->attr = attr;
         timeout.queues[t].push_back(s);
         timeout.ids.insert({s->id, s});
-        return 0;
+        return (double) s->id;
     }
 
-    void cjsruntime::eval_timeout(const sym_code_t::ref &code) {
+    void cjsruntime::eval_timeout() {
         while (!timeout.ids.empty()) {
-            auto code2 = code;
             auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()) - timeout.startup_time;
             if ((*timeout.queues.begin()).first < now) {
                 auto &v = (*timeout.queues.begin()).second;
@@ -304,6 +306,9 @@ namespace clib {
                     timeout.queues.erase(timeout.queues.begin());
                 }
                 timeout.ids.erase(callback->id);
+                if (!callback->once) {
+                    api_setTimeout(callback->time, callback->func, callback->args, callback->attr, callback->once);
+                }
             }
             cjs_sleep(10);
         }

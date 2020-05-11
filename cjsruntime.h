@@ -65,6 +65,7 @@ namespace clib {
         enum api {
             API_none,
             API_setTimeout,
+            API_setInterval,
         };
         virtual int call_api(int, std::weak_ptr<js_value> &,
                              std::vector<std::weak_ptr<js_value>> &, uint32_t) = 0;
@@ -356,7 +357,9 @@ namespace clib {
 
         js_value::ref binop(int code, js_value::ref op1, js_value::ref op2);
 
-        void eval_timeout(const sym_code_t::ref &code);
+        void eval_timeout();
+
+        double api_setTimeout(int time, const jsv_function::ref &func, std::vector<js_value::weak_ref> args, uint32_t attr, bool once);
 
     private:
         void *pjs{nullptr};
@@ -387,6 +390,7 @@ namespace clib {
             jsv_function::ref _debug_dump;
             // global function
             jsv_function::ref global_setTimeout;
+            jsv_function::ref global_setInterval;
             // proto
             jsv_object::ref _proto_boolean;
             jsv_object::ref _proto_function;
@@ -422,6 +426,7 @@ namespace clib {
         cjs_runtime_reuse reuse;
         struct timeout_t {
             bool once{true};
+            int time{0};
             uint32_t id{0};
             jsv_function::ref func;
             std::vector<js_value::weak_ref> args;
@@ -433,7 +438,6 @@ namespace clib {
             std::map<std::time_t, std::list<std::shared_ptr<timeout_t>>> queues;
             std::unordered_map<uint32_t, std::shared_ptr<timeout_t>> ids;
         } timeout;
-        double api_setTimeout(int time, const jsv_function::ref &func, std::vector<js_value::weak_ref> args, uint32_t attr);
     };
 }
 

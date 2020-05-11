@@ -1,9 +1,13 @@
 (function () {
     var i = 0;
-    console.log(i);
-    setTimeout(function a() {
+    var t1, t2;
+    t1 = setTimeout(function a(n) {
         if (++i > 4) return;
-        console.log(i);
-        setTimeout(a, 1000);
-    });
+        console.log(n, t1, i);
+        setTimeout(a, 1000, n);
+    }, 1000, "setTimeout:  ");
+    t2 = setInterval(function a(n) {
+        if (++i > 4) return clearInterval(t2);
+        console.log(n, t2, i);
+    }, 1000, "setInterval: ");
 })();

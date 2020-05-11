@@ -435,6 +435,13 @@ namespace clib {
             return js.call_api(API_setTimeout, _this, args, 0);
         };
         permanents.global_env->obj.insert({permanents.global_setTimeout->name, permanents.global_setTimeout});
+        permanents.global_setInterval = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
+        permanents.global_setInterval->obj.insert({"length", _int_1});
+        permanents.global_setInterval->name = "setInterval";
+        permanents.global_setInterval->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
+            return js.call_api(API_setInterval, _this, args, 0);
+        };
+        permanents.global_env->obj.insert({permanents.global_setInterval->name, permanents.global_setInterval});
         // error
         permanents._proto_error = _new_object(js_value::at_const | js_value::at_readonly);
         permanents._proto_error->obj["name"] =
