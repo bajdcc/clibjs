@@ -442,6 +442,20 @@ namespace clib {
             return js.call_api(API_setInterval, _this, args, 0);
         };
         permanents.global_env->obj.insert({permanents.global_setInterval->name, permanents.global_setInterval});
+        permanents.global_clearTimeout = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
+        permanents.global_clearTimeout->obj.insert({"length", _int_1});
+        permanents.global_clearTimeout->name = "clearTimeout";
+        permanents.global_clearTimeout->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
+            return js.call_api(API_clearTimeout, _this, args, 0);
+        };
+        permanents.global_env->obj.insert({permanents.global_clearTimeout->name, permanents.global_clearTimeout});
+        permanents.global_clearInterval = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
+        permanents.global_clearInterval->obj.insert({"length", _int_1});
+        permanents.global_clearInterval->name = "clearInterval";
+        permanents.global_clearInterval->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
+            return js.call_api(API_clearInterval, _this, args, 0);
+        };
+        permanents.global_env->obj.insert({permanents.global_clearInterval->name, permanents.global_clearInterval});
         // error
         permanents._proto_error = _new_object(js_value::at_const | js_value::at_readonly);
         permanents._proto_error->obj["name"] =

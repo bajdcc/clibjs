@@ -66,6 +66,8 @@ namespace clib {
             API_none,
             API_setTimeout,
             API_setInterval,
+            API_clearTimeout,
+            API_clearInterval,
         };
         virtual int call_api(int, std::weak_ptr<js_value> &,
                              std::vector<std::weak_ptr<js_value>> &, uint32_t) = 0;
@@ -360,6 +362,7 @@ namespace clib {
         void eval_timeout();
 
         double api_setTimeout(int time, const jsv_function::ref &func, std::vector<js_value::weak_ref> args, uint32_t attr, bool once);
+        void api_clearTimeout(double id);
 
     private:
         void *pjs{nullptr};
@@ -391,6 +394,8 @@ namespace clib {
             // global function
             jsv_function::ref global_setTimeout;
             jsv_function::ref global_setInterval;
+            jsv_function::ref global_clearTimeout;
+            jsv_function::ref global_clearInterval;
             // proto
             jsv_object::ref _proto_boolean;
             jsv_object::ref _proto_function;
@@ -421,7 +426,6 @@ namespace clib {
             // error
             jsv_object::ref _proto_error;
             jsv_function::ref f_error;
-            jsv_function::ref f_error_toString;
         } permanents;
         cjs_runtime_reuse reuse;
         struct timeout_t {

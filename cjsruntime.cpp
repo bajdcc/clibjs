@@ -146,12 +146,12 @@ namespace clib {
             case API_setInterval: {
                 if (args.empty()) {
                     push(new_undefined());
-                    return 0;
+                    break;
                 }
                 auto arg = args.front().lock();
                 if (arg->get_type() != r_function) {
                     push(new_undefined());
-                    return 0;
+                    break;
                 }
                 auto arg_n = 1;
                 auto time = 0;
@@ -161,6 +161,16 @@ namespace clib {
                 }
                 std::vector<js_value::weak_ref> _args(args.begin() + arg_n, args.end());
                 push(new_number(api_setTimeout(time, JS_FUN(arg), _args, attr, type == API_setTimeout)));
+            }
+                break;
+            case API_clearTimeout:
+            case API_clearInterval: {
+                if (args.empty()) {
+                    push(new_undefined());
+                    break;
+                }
+                api_clearTimeout(args.front().lock()->to_number(this));
+                push(new_undefined());
             }
                 break;
             default:
@@ -291,6 +301,28 @@ namespace clib {
         timeout.queues[t].push_back(s);
         timeout.ids.insert({s->id, s});
         return (double) s->id;
+    }
+
+    void cjsruntime::api_clearTimeout(double id) {
+        if (std::isinf(id) || std::isnan(id))
+            return;
+        auto i = (uint32_t) id;
+        auto f = timeout.ids.find(i);
+        if (f != timeout.ids.end()) {
+            auto time = f->second->time;
+            auto ff = timeout.queues.find(time);
+            if (ff != timeout.queues.end()) {
+                auto f2 = std::find_if(ff->second.begin(), ff->second.end(),
+                                    [i](const auto &x) { return x->id == i; });
+                if (f2 != ff->second.end()) {
+                    ff->second.erase(f2);
+                }
+            }
+            if (ff->second.empty()) {
+                timeout.queues.erase(ff);
+            }
+            timeout.ids.erase(i);
+        }
     }
 
     void cjsruntime::eval_timeout() {

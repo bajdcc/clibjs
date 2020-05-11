@@ -53,7 +53,7 @@ Reference: quickjs
 
 ## Global Function
 
-- [x] setTimeout, setInterval
+- [x] setTimeout, setInterval, clearTimeout, clearInterval
 
 ## Control Flow
 
