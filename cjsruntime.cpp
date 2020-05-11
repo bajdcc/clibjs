@@ -1329,7 +1329,7 @@ namespace clib {
             if ((*i)->closure.lock()) {
                 auto L = (*i)->closure.lock()->obj.find(name);
                 if (L != (*i)->closure.lock()->obj.end()) {
-                    return (*i)->closure.lock();
+                    return L->second.lock();
                 }
             }
             auto L2 = (*i)->envs.lock()->obj.find(name);
@@ -1423,7 +1423,7 @@ namespace clib {
                 for (const auto &e : cl) {
                     fprintf(stdout, " Clo | [%p] \"%.100s\" '%.100s' ",
                             e.second.lock().get(), e.first.c_str(),
-                            e.second.lock()->to_string().c_str());
+                            e.second.lock()->to_string(nullptr, 1).c_str());
                     print(e.second.lock(), 0, std::cout);
                 }
             }
@@ -2037,10 +2037,6 @@ namespace clib {
                     s1 = op1->to_number(this);
                     s2 = op2->to_number(this);
                     return new_number(s1 - s2);
-                case BINARY_FLOOR_DIVIDE:
-                    s1 = op1->to_number(this);
-                    s2 = op2->to_number(this);
-                    return new_number(s1 / s2);
                 case BINARY_TRUE_DIVIDE:
                     s1 = op1->to_number(this);
                     s2 = op2->to_number(this);

@@ -1530,8 +1530,10 @@ namespace clib {
                 break;
             case c_parenthesizedExpression: {
                 auto exp = tmps.front();
-                exp->start = asts.front()->start;
-                exp->end = asts.back()->end;
+                if (exp->get_type() != s_code) {
+                    exp->start = asts.front()->start;
+                    exp->end = asts.back()->end;
+                }
                 asts.clear();
             }
                 break;
