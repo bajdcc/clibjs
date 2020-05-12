@@ -65,7 +65,7 @@ namespace clib {
         virtual std::shared_ptr<jsv_object> new_error(int) = 0;
         virtual void exec(const std::string &, const std::string &) = 0;
         virtual std::string get_stacktrace() const = 0;
-        virtual bool get_file(const std::string &filename, std::string &content) const = 0;
+        virtual bool get_file(std::string &filename, std::string &content) const = 0;
         enum api {
             API_none,
             API_setTimeout,
@@ -314,7 +314,7 @@ namespace clib {
         jsv_object::ref new_error(int) override;
         void exec(const std::string &, const std::string &) override;
         std::string get_stacktrace() const override;
-        bool get_file(const std::string &filename, std::string &content) const override;
+        bool get_file(std::string &filename, std::string &content) const override;
         int call_api(int type, js_value::weak_ref &_this,
                      std::vector<js_value::weak_ref> &args, uint32_t attr) override;
         int call_api(const jsv_function::ref &, js_value::weak_ref &_this, std::vector<js_value::weak_ref> &, uint32_t attr) override;

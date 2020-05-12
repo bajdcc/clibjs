@@ -1655,12 +1655,20 @@ namespace clib {
         return false;
     }
 
-    bool cjsruntime::get_file(const std::string &filename, std::string &content) const {
+    bool cjsruntime::get_file(std::string &filename, std::string &content) const {
         if (filename.empty())
             return false;
-        if (check_file(paths.back() + filename, content))
+        if (check_file(paths.back() + filename, content)) {
+            if (paths.back() != ROOT_DIR)
+                filename = paths.back() + filename;
             return true;
-        return check_file(ROOT_DIR + filename, content);
+        }
+        if (check_file(ROOT_DIR + filename, content)) {
+            if (filename.substr(0, 2) != ROOT_DIR)
+                filename = ROOT_DIR + filename;
+            return true;
+        }
+        return false;
     }
 
     bool cjsruntime::to_number(const js_value::ref &obj, double &d) {
