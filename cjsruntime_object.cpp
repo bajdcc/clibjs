@@ -165,46 +165,6 @@ namespace clib {
         return n_digits;
     }
 
-    static int js_fcvt1(char *buf, int buf_size, double d, int n_digits,
-                        int rounding_mode) {
-        int n;
-        if (rounding_mode != FE_TONEAREST)
-            fesetround(rounding_mode);
-        n = snprintf(buf, buf_size, "%.*f", n_digits, d);
-        if (rounding_mode != FE_TONEAREST)
-            fesetround(FE_TONEAREST);
-        assert(n < buf_size);
-        return n;
-    }
-
-    static void js_fcvt(char *buf, int buf_size, double d, int n_digits) {
-        int rounding_mode;
-        rounding_mode = FE_TONEAREST;
-        int n1, n2;
-        char buf1[JS_DTOA_BUF_SIZE];
-        char buf2[JS_DTOA_BUF_SIZE];
-
-        /* The JS rounding is specified as round to nearest ties away from
-           zero (RNDNA), but in printf the "ties" case is not specified
-           (for example it is RNDN for glibc, RNDNA for Windows), so we
-           must round manually. */
-        n1 = js_fcvt1(buf1, sizeof(buf1), d, n_digits + 1, FE_TONEAREST);
-        rounding_mode = FE_TONEAREST;
-        /* XXX: could use 2 digits to reduce the average running time */
-        if (buf1[n1 - 1] == '5') {
-            n1 = js_fcvt1(buf1, sizeof(buf1), d, n_digits + 1, FE_DOWNWARD);
-            n2 = js_fcvt1(buf2, sizeof(buf2), d, n_digits + 1, FE_UPWARD);
-            if (n1 == n2 && memcmp(buf1, buf2, n1) == 0) {
-                /* exact result: round away from zero */
-                if (buf1[0] == '-')
-                    rounding_mode = FE_DOWNWARD;
-                else
-                    rounding_mode = FE_UPWARD;
-            }
-        }
-        js_fcvt1(buf, buf_size, d, n_digits, rounding_mode);
-    }
-
     std::string jsv_number::to_string(js_value_new *n, int hint) const {
         if (hint == 1 && number == 0.0)
             return "0";
@@ -262,7 +222,6 @@ namespace clib {
                 q += k;
                 *q = '\0';
             } else {
-                force_exp:
                 /* exponential notation */
                 *q++ = buf1[0];
                 if (k > 1) {
@@ -581,6 +540,7 @@ namespace clib {
             default:
                 break;
         }
+        return NAN;
     }
 
     jsv_object::ref jsv_object::clear() {

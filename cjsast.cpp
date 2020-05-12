@@ -26,7 +26,10 @@ namespace clib {
 
     ast_node *cjsast::new_node(ast_t type) {
         auto node = (ast_node *) nodes.alloc(sizeof(ast_node));
-        memset(node, 0, sizeof(ast_node));
+        node->start = node->end = node->line = node->column = 0;
+        node->attr = 0;
+        node->next = node->prev = node->parent = node->child = nullptr;
+        node->data._ins._1 = node->data._ins._2 = 0;
         node->flag = type;
         return node;
     }

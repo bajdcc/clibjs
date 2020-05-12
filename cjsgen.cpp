@@ -1044,7 +1044,7 @@ namespace clib {
                             auto k = gen_get_children(s->child);
                             if (!head)
                                 k.pop_back();
-                            for (const auto &t : k) {
+                            for (size_t j = 0; j < k.size(); j++) {
                                 array->exps.push_back(nullptr);
                             }
                         } else {

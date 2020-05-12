@@ -6,6 +6,7 @@
 #ifndef CLIBJS_CJSRUNTIME_H
 #define CLIBJS_CJSRUNTIME_H
 
+#include <functional>
 #include <chrono>
 #include <list>
 #include <map>

@@ -6,6 +6,7 @@ Reference: quickjs
 
 ## Features
 
+- [x] **64-bit support**
 - [x] Parsing `jquery.js` and `Vue.js` in 1s.
 - [x] Translate javascript file into **Python Bytecode** temporarily.
 - [x] Build VM.

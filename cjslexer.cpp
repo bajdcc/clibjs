@@ -130,9 +130,11 @@ namespace clib {
         auto i = 0;
         auto line = 1;
         auto column = 1;
+#if 0
         auto ii = 0;
         auto iL = 0;
         auto iC = 0;
+#endif
         for (i = 0; i < len;) {
             auto c = text[i];
 #if 0
@@ -232,7 +234,6 @@ namespace clib {
                             }
                             if (c1 >= '0' && c1 <= '7') { // 八进制
                                 auto cc = 0;
-                                auto l = j;
                                 // 八进制
                                 for (; (cc = oct2dec(text[j])) != -1; j++) {
                                     d *= 8.0;

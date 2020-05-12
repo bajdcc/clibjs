@@ -790,7 +790,8 @@ namespace clib {
             }
             gen.emit(this, BUILD_LIST, exps.size());
         } else {
-            size_t i = 0, j = 0;
+            size_t i = 0;
+            auto j = 0;
             gen.emit(this, REST_ARGUMENT);
             for (const auto &s : exps) {
                 if (s)
@@ -860,7 +861,8 @@ namespace clib {
             }
             gen.emit(this, CALL_FUNCTION_EX, args.size());
         } else {
-            size_t i = 0, j = 0;
+            size_t i = 0;
+            auto j = 0;
             gen.emit(this, REST_ARGUMENT);
             for (const auto &s : args) {
                 s->gen_rvalue(gen);
@@ -944,7 +946,8 @@ namespace clib {
             }
             gen.emit(this, CALL_METHOD, args.size());
         } else {
-            size_t i = 0, j = 0;
+            size_t i = 0;
+            auto j = 0;
             gen.emit(this, REST_ARGUMENT);
             for (const auto &s : args) {
                 s->gen_rvalue(gen);
@@ -985,7 +988,8 @@ namespace clib {
             }
             gen.emit(this, CALL_FUNCTION, args.size());
         } else {
-            size_t i = 0, j = 0;
+            size_t i = 0;
+            auto j = 0;
             gen.emit(this, REST_ARGUMENT);
             for (const auto &s : args) {
                 s->gen_rvalue(gen);

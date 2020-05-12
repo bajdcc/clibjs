@@ -194,7 +194,7 @@ namespace clib {
             auto arg = new_object();
             env->obj["arguments"] = arg;
             size_t i = 0;
-            auto args_num = func->code->args_num;
+            size_t args_num = func->code->args_num;
             auto n = args.size();
             for (; i < n; i++) {
                 std::stringstream ss;
@@ -313,7 +313,7 @@ namespace clib {
             auto ff = timeout.queues.find(time);
             if (ff != timeout.queues.end()) {
                 auto f2 = std::find_if(ff->second.begin(), ff->second.end(),
-                                    [i](const auto &x) { return x->id == i; });
+                                       [i](const auto &x) { return x->id == i; });
                 if (f2 != ff->second.end()) {
                     ff->second.erase(f2);
                 }
@@ -593,7 +593,7 @@ namespace clib {
                     pop();
                     auto arr = new_array();
                     if (obj->__proto__.lock() != permanents._proto_array) {
-                        std::vector<std::string> ar(o.size());
+                        std::vector <std::string> ar(o.size());
                         std::transform(o.begin(), o.end(), ar.begin(), [](auto &x) { return x.first; });
                         for (size_t i = 0; i < ar.size(); i++) {
                             std::stringstream ss;
@@ -817,7 +817,7 @@ namespace clib {
                     n = (int) current_stack->stack.size() - current_stack->rests.back();
                     current_stack->rests.pop_back();
                 }
-                assert(current_stack->stack.size() >= n);
+                assert(current_stack->stack.size() >= (size_t) n);
                 auto obj = new_array();
                 std::stringstream ss;
                 for (auto i = n - 1; i >= 0; i--) {
@@ -841,7 +841,7 @@ namespace clib {
                     n = ((int) current_stack->stack.size() - current_stack->rests.back()) / 2;
                     current_stack->rests.pop_back();
                 }
-                assert(current_stack->stack.size() >= n * 2);
+                assert(current_stack->stack.size() >= ((size_t) n) * 2);
                 auto obj = new_object();
                 for (auto i = 0; i < n; i++) {
                     auto v = pop();
@@ -952,7 +952,7 @@ namespace clib {
                     current_stack->rests.pop_back();
                 }
                 assert((int) current_stack->stack.size() > n);
-                std::vector<js_value::weak_ref> args;
+                std::vector <js_value::weak_ref> args;
                 args.resize(n);
                 auto m = n;
                 while (m-- > 0) {
@@ -977,8 +977,8 @@ namespace clib {
                 auto arg = new_object();
                 env->obj["arguments"] = arg;
                 size_t i = 0;
-                auto args_num = func->code->args_num;
-                for (; i < n; i++) {
+                size_t args_num = func->code->args_num;
+                for (; i < (size_t) n; i++) {
                     std::stringstream ss;
                     ss << i;
                     arg->obj[ss.str()] = args.at(i);
@@ -992,7 +992,7 @@ namespace clib {
                     auto rest = new_array();
                     env->obj[func->code->args.at(args_num)] = rest;
                     auto j = 0;
-                    for (i = args_num; i < n; i++) {
+                    for (i = args_num; i < (size_t) n; i++) {
                         std::stringstream ss;
                         ss << j++;
                         rest->obj[ss.str()] = args.at(i);
@@ -1082,7 +1082,7 @@ namespace clib {
                     current_stack->rests.pop_back();
                 }
                 assert((int) current_stack->stack.size() > n);
-                std::vector<js_value::weak_ref> args(n);
+                std::vector <js_value::weak_ref> args(n);
                 auto m = n;
                 while (m-- > 0) {
                     args[m] = pop();
@@ -1149,7 +1149,7 @@ namespace clib {
                 auto arg = new_object();
                 env->obj["arguments"] = arg;
                 size_t i = 0;
-                for (; i < n; i++) {
+                for (; i < (size_t) n; i++) {
                     std::stringstream ss;
                     ss << i;
                     arg->obj[ss.str()] = args.at(i);
@@ -1236,7 +1236,7 @@ namespace clib {
                     current_stack->rests.pop_back();
                 }
                 assert((int) current_stack->stack.size() > n);
-                std::vector<js_value::weak_ref> args(n);
+                std::vector <js_value::weak_ref> args(n);
                 auto m = n;
                 while (m-- > 0) {
                     args[m] = pop();
@@ -1265,8 +1265,8 @@ namespace clib {
                 auto arg = new_object();
                 env->obj["arguments"] = arg;
                 size_t i = 0;
-                auto args_num = func->code->args_num;
-                for (; i < n; i++) {
+                size_t args_num = func->code->args_num;
+                for (; i < (size_t) n; i++) {
                     std::stringstream ss;
                     ss << i;
                     arg->obj[ss.str()] = args.at(i);
@@ -1280,7 +1280,7 @@ namespace clib {
                     auto rest = new_array();
                     env->obj[func->code->args.at(args_num)] = rest;
                     auto j = 0;
-                    for (i = args_num; i < n; i++) {
+                    for (i = args_num; i < (size_t) n; i++) {
                         std::stringstream ss;
                         ss << j++;
                         rest->obj[ss.str()] = args.at(i);
@@ -1973,14 +1973,10 @@ namespace clib {
                 case COMPARE_EQUAL: {
                     if (op1->get_type() != op2->get_type()) {
                         if (op1->get_type() == r_null) {
-                            if (op2->get_type() == r_undefined)
-                                return new_boolean(true);
-                            return new_boolean(false);
+                            return new_boolean(op2->get_type() == r_undefined);
                         }
                         if (op2->get_type() == r_null) {
-                            if (op1->get_type() == r_undefined)
-                                return new_boolean(true);
-                            return new_boolean(false);
+                            return new_boolean(op1->get_type() == r_undefined);
                         }
                         return new_boolean(op1->to_number(this) == op2->to_number(this));
                     }
@@ -1996,14 +1992,10 @@ namespace clib {
                 case COMPARE_NOT_EQUAL: {
                     if (op1->get_type() != op2->get_type()) {
                         if (op1->get_type() == r_null) {
-                            if (op2->get_type() == r_undefined)
-                                return new_boolean(false);
-                            return new_boolean(true);
+                            return new_boolean(!(op2->get_type() == r_undefined));
                         }
                         if (op2->get_type() == r_null) {
-                            if (op1->get_type() == r_undefined)
-                                return new_boolean(false);
-                            return new_boolean(true);
+                            return new_boolean(!(op1->get_type() == r_undefined));
                         }
                         return new_boolean(op1->to_number(this) != op2->to_number(this));
                     }
@@ -2047,8 +2039,6 @@ namespace clib {
                     s2 = op2->to_number(this);
                     if (s2 == 0)
                         return new_number(1.0);
-                    if (s2 == 0)
-                        return new_number(s1);
                     if ((s1 == 1.0 || s1 == -1.0) && std::isinf(s2))
                         return new_number(NAN);
                     return new_number(pow(s1, s2));
@@ -2134,6 +2124,8 @@ namespace clib {
                     break;
             }
         }
+        assert(!"invalid binop type");
+        return new_number(NAN);
     }
 
     void cjsruntime::print(const js_value::ref &value, int level, std::ostream &os) {
