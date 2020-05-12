@@ -53,12 +53,29 @@ namespace clib {
         return ceil(d);
     }
 
-    void cjsruntime::eval(cjs_code_result::ref code, bool top) {
+    void cjsruntime::eval(cjs_code_result::ref code, const std::string &_path, bool top) {
         if (code->code->codes.empty()) {
             std::cout << "Compile failed." << std::endl;
             if (!top)
                 push(new_undefined());
             return;
+        }
+        if (_path.empty() || _path[0] == '<') {
+            paths.emplace_back(ROOT_DIR);
+        } else {
+            if (_path.back() == '/') {
+                paths.push_back(_path);
+            } else {
+                auto f = _path.find_last_of('/');
+                if (f != std::string::npos) {
+                    paths.push_back(_path.substr(0, f + 1));
+                } else {
+                    if (paths.empty())
+                        paths.emplace_back(ROOT_DIR);
+                    else
+                        paths.push_back(paths.back());
+                }
+            }
         }
         if (top) {
             stack.clear();
@@ -135,6 +152,7 @@ namespace clib {
         eval_timeout();
         delete_stack(current_stack);
         stack.pop_back();
+        paths.pop_back();
     }
 
     int cjsruntime::call_api(int type, js_value::weak_ref &_this,
@@ -593,7 +611,7 @@ namespace clib {
                     pop();
                     auto arr = new_array();
                     if (obj->__proto__.lock() != permanents._proto_array) {
-                        std::vector <std::string> ar(o.size());
+                        std::vector<std::string> ar(o.size());
                         std::transform(o.begin(), o.end(), ar.begin(), [](auto &x) { return x.first; });
                         for (size_t i = 0; i < ar.size(); i++) {
                             std::stringstream ss;
@@ -952,7 +970,7 @@ namespace clib {
                     current_stack->rests.pop_back();
                 }
                 assert((int) current_stack->stack.size() > n);
-                std::vector <js_value::weak_ref> args;
+                std::vector<js_value::weak_ref> args;
                 args.resize(n);
                 auto m = n;
                 while (m-- > 0) {
@@ -1082,7 +1100,7 @@ namespace clib {
                     current_stack->rests.pop_back();
                 }
                 assert((int) current_stack->stack.size() > n);
-                std::vector <js_value::weak_ref> args(n);
+                std::vector<js_value::weak_ref> args(n);
                 auto m = n;
                 while (m-- > 0) {
                     args[m] = pop();
@@ -1236,7 +1254,7 @@ namespace clib {
                     current_stack->rests.pop_back();
                 }
                 assert((int) current_stack->stack.size() > n);
-                std::vector <js_value::weak_ref> args(n);
+                std::vector<js_value::weak_ref> args(n);
                 auto m = n;
                 while (m-- > 0) {
                     args[m] = pop();
@@ -1624,6 +1642,25 @@ namespace clib {
         if (!s.empty())
             s.pop_back();
         return s;
+    }
+
+    static bool check_file(const std::string &filename, std::string &content) {
+        std::ifstream file(filename);
+        if (file) {
+            std::stringstream buffer;
+            buffer << file.rdbuf();
+            content = buffer.str();
+            return true;
+        }
+        return false;
+    }
+
+    bool cjsruntime::get_file(const std::string &filename, std::string &content) const {
+        if (filename.empty())
+            return false;
+        if (check_file(paths.back() + filename, content))
+            return true;
+        return check_file(ROOT_DIR + filename, content);
     }
 
     bool cjsruntime::to_number(const js_value::ref &obj, double &d) {

@@ -4,6 +4,10 @@ project(clibjs)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_STANDARD 14)
 
+if (CMAKE_BUILD_TYPE STREQUAL Debug)
+    add_definitions(-D_DEBUG)
+endif ()
+
 add_executable(clibjs
         main.cpp
         cjs.cpp

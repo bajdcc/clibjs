@@ -13,7 +13,7 @@
 #define LOG_AST 0
 #define LOG_FILE 0
 #define LOG_FILENAME "output.txt"
-#define LIBRARY_FILE R"(..\\lib\\clib.js)"
+#define LIBRARY_FILE ROOT_DIR R"(lib/clib.js)"
 
 namespace clib {
 
@@ -52,7 +52,7 @@ namespace clib {
         else
             code->code->debugName = "(" + filename + ") <entry>";
         g = nullptr;
-        rt.eval(std::move(code), top);
+        rt.eval(std::move(code), filename, top);
     }
 
     void cjs::init_lib() {

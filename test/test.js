@@ -1,6 +1,6 @@
 function test(n) {
     console.log("============ TEST #" + n + " ============");
-    sys.exec_file("..\\test\\test_" + n + ".js");
+    sys.exec_file("test_" + n + ".js");
 }
 
 test(6);

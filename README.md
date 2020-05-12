@@ -18,6 +18,7 @@ Reference: quickjs
 - [x] New, Delete
 - [x] Rest parameters\(`...`\), Rest array elements\(`[...[]]`\), Rest object elements\(`{...{}}`\)
 - [ ] Base functions\(Such as `Number`, etc\)
+- [x] `sys.exec(...)` supports relative path
 
 ## Environment
 

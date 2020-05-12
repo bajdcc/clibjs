@@ -287,17 +287,13 @@ namespace clib {
                 return 0;
             }
             auto filename = args.front().lock()->to_string(&js, 0);
-            std::ifstream file(filename);
-            if (file) {
-                std::stringstream buffer;
-                buffer << file.rdbuf();
-                auto str = buffer.str();
+            std::string content;
+            if (js.get_file(filename, content)) {
                 func->pc++;
-                js.exec(filename, str);
+                js.exec(filename, content);
                 return 3;
-            } else {
-                func->stack.push_back(js.new_undefined());
             }
+            func->stack.push_back(js.new_undefined());
             return 0;
         };
         permanents.sys->obj.insert({permanents.sys_exec_file->name, permanents.sys_exec_file});

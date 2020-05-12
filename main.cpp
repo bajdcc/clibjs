@@ -4,11 +4,7 @@
 #include "cjs.h"
 
 int main() {
-    //std::ifstream file("..\\test\\jquery2.js");
-    //std::ifstream file("..\\test\\jquery.min.js");
-    //std::ifstream file("..\\test\\vue.js");
-    //std::ifstream file("..\\test\\vue.min.js");
-    const auto filename = R"(..\\test\\test.js)";
+    const auto filename = ROOT_DIR R"(test/test.js)";
     char buf[256];
     snprintf(buf, sizeof(buf), "sys.exec_file(\"%s\");", filename);
     clib::cjs js;
