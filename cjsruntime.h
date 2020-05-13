@@ -315,6 +315,7 @@ namespace clib {
         void exec(const std::string &, const std::string &) override;
         std::string get_stacktrace() const override;
         bool get_file(std::string &filename, std::string &content) const override;
+        int call_internal(bool top, size_t stack_size);
         int call_api(int type, js_value::weak_ref &_this,
                      std::vector<js_value::weak_ref> &args, uint32_t attr) override;
         int call_api(const jsv_function::ref &, js_value::weak_ref &_this, std::vector<js_value::weak_ref> &, uint32_t attr) override;
@@ -445,6 +446,15 @@ namespace clib {
             std::map<std::time_t, std::list<std::shared_ptr<timeout_t>>> queues;
             std::unordered_map<uint32_t, std::shared_ptr<timeout_t>> ids;
         } timeout;
+        struct try_t {
+            size_t stack_size{0};
+            size_t obj_size{0};
+            int jump{0};
+            js_value::ref obj;
+        };
+        struct try_struct {
+            std::vector<try_t> trys;
+        } try_catch;
     };
 }
 

@@ -42,12 +42,14 @@ namespace clib {
         s_statement_var,
         s_statement_exp,
         s_statement_return,
+        s_statement_throw,
         s_statement_control,
         s_statement_if,
         s_statement_while,
         s_statement_for,
         s_statement_for_in,
         s_statement_switch,
+        s_statement_try,
         s_block,
         s_code,
     };
@@ -357,6 +359,16 @@ namespace clib {
         sym_exp_seq_t::ref seq;
     };
 
+    class sym_stmt_throw_t : public sym_stmt_t {
+    public:
+        using ref = std::shared_ptr<sym_stmt_throw_t>;
+        symbol_t get_type() const override;
+        std::string to_string() const override;
+        int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
+        sym_exp_seq_t::ref seq;
+    };
+
     class sym_stmt_control_t : public sym_stmt_t {
     public:
         using ref = std::shared_ptr<sym_stmt_control_t>;
@@ -441,6 +453,19 @@ namespace clib {
         std::vector<sym_case_t::ref> cases;
     };
 
+    class sym_stmt_try_t : public sym_stmt_t {
+    public:
+        using ref = std::shared_ptr<sym_stmt_try_t>;
+        symbol_t get_type() const override;
+        std::string to_string() const override;
+        int gen_rvalue(ijsgen &gen) override;
+        int set_parent(sym_t::ref node) override;
+        sym_stmt_t::ref try_body;
+        sym_var_t::ref var;
+        sym_stmt_t::ref catch_body;
+        sym_stmt_t::ref finally_body;
+    };
+
     class sym_block_t : public sym_stmt_t {
     public:
         using ref = std::shared_ptr<sym_block_t>;
@@ -449,6 +474,7 @@ namespace clib {
         int gen_rvalue(ijsgen &gen) override;
         int set_parent(sym_t::ref node) override;
         std::vector<sym_stmt_t::ref> stmts;
+        sym_id_t::ref var;
     };
 
     class sym_code_t;
@@ -504,6 +530,8 @@ namespace clib {
         sp_while,
         sp_do_while,
         sp_switch,
+        sp_try,
+        sp_catch,
     };
 
     enum cjs_scope_query_t {

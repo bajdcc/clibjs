@@ -457,7 +457,7 @@ namespace clib {
         permanents._proto_error->obj["name"] =
         permanents._proto_error->obj["__type__"] = _new_string("Error", js_value::at_const | js_value::at_refs);
         permanents._proto_error->obj["message"] = _empty_string;
-        permanents.f_error = _new_function(permanents._proto_array, js_value::at_const | js_value::at_readonly);
+        permanents.f_error = _new_function(permanents._proto_error, js_value::at_const | js_value::at_readonly);
         permanents.f_error->obj.insert({"length", _int_1});
         permanents.f_error->name = "Error";
         permanents.f_error->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
@@ -465,6 +465,7 @@ namespace clib {
             if (!args.empty()) {
                 err->obj.insert({"message", js.new_string(args.front().lock()->to_string(&js, 0))});
             }
+            err->obj.insert({"stack", js.new_string(js.get_stacktrace())});
             func->stack.push_back(err);
             return 0;
         };

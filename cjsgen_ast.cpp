@@ -1103,6 +1103,31 @@ namespace clib {
 
     // ----
 
+    symbol_t sym_stmt_throw_t::get_type() const {
+        return s_statement_throw;
+    }
+
+    std::string sym_stmt_throw_t::to_string() const {
+        return sym_stmt_t::to_string();
+    }
+
+    int sym_stmt_throw_t::gen_rvalue(ijsgen &gen) {
+        if (seq)
+            seq->gen_rvalue(gen);
+        else
+            gen.emit(nullptr, LOAD_UNDEFINED);
+        gen.emit(this, THROW);
+        return sym_stmt_t::gen_rvalue(gen);
+    }
+
+    int sym_stmt_throw_t::set_parent(sym_t::ref node) {
+        if (seq)
+            seq->set_parent(shared_from_this());
+        return sym_stmt_t::set_parent(node);
+    }
+
+    // ----
+
     symbol_t sym_stmt_control_t::get_type() const {
         return s_statement_control;
     }
@@ -1374,6 +1399,72 @@ namespace clib {
         for (const auto &s : cases) {
             s->set_parent(shared_from_this());
         }
+        return sym_stmt_t::set_parent(node);
+    }
+
+    // ----
+
+    symbol_t sym_stmt_try_t::get_type() const {
+        return s_statement_try;
+    }
+
+    std::string sym_stmt_try_t::to_string() const {
+        return sym_stmt_t::to_string();
+    }
+
+    int sym_stmt_try_t::gen_rvalue(ijsgen &gen) {
+        auto L1 = gen.code_length();
+        gen.emit(finally_body.get(), SETUP_FINALLY, 0); // finally
+        if (catch_body)
+            gen.emit(catch_body.get(), SETUP_FINALLY, 0); // catch
+        // TRY
+        gen.enter(sp_try);
+        try_body->gen_rvalue(gen);
+        gen.leave();
+        gen.emit(nullptr, POP_FINALLY);
+        auto L2 = gen.code_length();
+        if (catch_body) {
+            gen.emit(nullptr, JUMP_FORWARD, 0);
+            gen.edit(L1 + 1, 1, gen.code_length() - L1 - 1);
+            gen.enter(sp_catch);
+            if (var) {
+                gen.add_var(var->node->data._identifier, var);
+                var->gen_lvalue(gen);
+            }
+            gen.emit(nullptr, POP_TOP);
+            // CATCH
+            catch_body->gen_rvalue(gen);
+            gen.leave();
+            gen.emit(nullptr, POP_FINALLY);
+            gen.emit(nullptr, JUMP_FORWARD, 2);
+            gen.emit(nullptr, RETHROW);
+            gen.edit(L2, 1, gen.code_length() - L2);
+            gen.emit(nullptr, POP_FINALLY);
+        }
+        // FINALLY
+        if (finally_body)
+            finally_body->gen_rvalue(gen);
+        L2 = gen.code_length();
+        gen.emit(nullptr, JUMP_FORWARD, 0);
+        // FINALLY
+        gen.edit(L1, 1, gen.code_length() - L1);
+        if (!catch_body)
+            gen.emit(nullptr, POP_TOP);
+        if (finally_body)
+            finally_body->gen_rvalue(gen);
+        gen.emit(nullptr, RETHROW);
+        gen.edit(L2, 1, gen.code_length() - L2);
+        return sym_stmt_t::gen_rvalue(gen);
+    }
+
+    int sym_stmt_try_t::set_parent(sym_t::ref node) {
+        try_body->set_parent(shared_from_this());
+        if (var)
+            var->set_parent(shared_from_this());
+        if (catch_body)
+            catch_body->set_parent(shared_from_this());
+        if (finally_body)
+            finally_body->set_parent(shared_from_this());
         return sym_stmt_t::set_parent(node);
     }
 

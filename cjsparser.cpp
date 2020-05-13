@@ -309,9 +309,9 @@ namespace clib {
         defaultClause = _K_DEFAULT + _T_COLON + *statementList;
         labelledStatement = _ID + _T_COLON + statement;
         throwStatement = _K_THROW + _RULE_NO_LINE + expressionSequence + eos;
-        tryStatement = _K_TRY + block + (catchProduction + (*finallyProduction | finallyProduction));
-        catchProduction = _K_CATCH + *(~_T_LPARAN + *assignable + ~_T_RPARAN) + block;
-        finallyProduction = _K_FINALLY + block;
+        tryStatement = _K_TRY + block + ((catchProduction + *finallyProduction) | finallyProduction);
+        catchProduction = ~_K_CATCH + *(~_T_LPARAN + *_ID + ~_T_RPARAN) + block;
+        finallyProduction = ~_K_FINALLY + block;
         debuggerStatement = _K_DEBUGGER + eos;
         classDeclaration = _K_CLASS + _ID + classTail;
         classTail = ~_T_LBRACE + classElements + ~_T_RBRACE;

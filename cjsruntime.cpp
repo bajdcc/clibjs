@@ -84,6 +84,7 @@ namespace clib {
             current_stack = stack.back();
             current_stack->envs = permanents.global_env;
             current_stack->_this = permanents.global_env;
+            try_catch.trys.push_back({0, 0, 0, nullptr});
         } else {
             auto exec_stack = std::make_shared<cjs_function>(code->code, *this);
             exec_stack->envs = new_object();
@@ -92,10 +93,23 @@ namespace clib {
             current_stack = stack.back();
             return;
         }
+        auto result = call_internal(true, 0);
+        if (result == 0) {
+            if (current_stack->ret_value.lock())
+                std::cout << current_stack->ret_value.lock()->to_string(this, 1) << std::endl;
+            eval_timeout();
+            delete_stack(current_stack);
+            stack.pop_back();
+            paths.pop_back();
+            try_catch.trys.pop_back();
+        }
+    }
+
+    int cjsruntime::call_internal(bool top, size_t stack_size) {
         auto r = 0;
         auto gc_period = 0;
-        decltype(stack.back()->ret_value) ret;
-        while (!stack.empty()) {
+        auto has_throw = false;
+        while (stack.size() > stack_size) {
             const auto &codes = current_stack->info->codes;
             const auto &pc = current_stack->pc;
             while (true) {
@@ -137,22 +151,65 @@ namespace clib {
             if (r == 4) {
                 current_stack->ret_value = new_undefined();
             }
-            ret = stack.back()->ret_value;
+            if (r == 9) { // throw
+                if (try_catch.trys.size() > 1) {
+                    auto t = try_catch.trys.back();
+                    if (t.stack_size >= stack.size()) { // inner try catch
+                        if (t.stack_size > stack.size()) {
+                            for (auto s = t.stack_size; s > stack.size(); s--) {
+                                delete_stack(stack.back());
+                                stack.pop_back();
+                            }
+                            current_stack = stack.back();
+                        }
+                        if (t.obj_size > current_stack->stack.size()) {
+                            for (auto s = t.obj_size; s > current_stack->stack.size(); s--) {
+                                pop();
+                            }
+                        }
+                        if (t.obj)
+                            push(t.obj);
+                        else
+                            push(new_undefined());
+                        current_stack->pc = t.jump;
+                        continue;
+                    }
+                }
+                has_throw = true;
+                break;
+            }
             if (stack.size() > 1) {
+                auto ret = stack.back()->ret_value;
                 delete_stack(current_stack);
                 stack.pop_back();
                 current_stack = stack.back();
                 push(ret);
             } else {
-                break;
+                if (top)
+                    break;
+                delete_stack(current_stack);
+                stack.pop_back();
             }
         }
-        assert(ret.lock());
-        std::cout << ret.lock()->to_string(this, 1) << std::endl;
-        eval_timeout();
-        delete_stack(current_stack);
-        stack.pop_back();
-        paths.pop_back();
+        if (has_throw) {
+            if (top) {
+                auto obj = try_catch.trys.back().obj;
+                try_catch.trys.back().obj = nullptr;
+                auto n = stack.size();
+                for (size_t i = 1; i < n; i++) {
+                    delete_stack(stack.back());
+                    stack.pop_back();
+                }
+                current_stack = stack.back();
+                current_stack->stack.clear();
+                if (obj) {
+                    std::cerr << obj->to_string(this, 1) << std::endl;
+                }
+            } else {
+                return 9;
+            }
+        }
+        return 0;
     }
 
     int cjsruntime::call_api(int type, js_value::weak_ref &_this,
@@ -239,63 +296,7 @@ namespace clib {
             if (func->closure.lock())
                 current_stack->closure = func->closure;
         }
-        auto r = 0;
-        auto gc_period = 0;
-        while (stack.size() > stack_size) {
-            const auto &codes = current_stack->info->codes;
-            const auto &pc = current_stack->pc;
-            auto code = current_stack->info;
-            while (true) {
-                if (pc >= (int) codes.size()) {
-                    r = 4;
-                    break;
-                }
-                const auto &c = codes.at(pc);
-                if (pc + 1 == (int) codes.size() && c.code == POP_TOP) {
-                    r = 2;
-                    break;
-                }
-#if DUMP_STEP
-                dump_step(c);
-#endif
-                r = run(c);
-#if DUMP_STEP && SHOW_EXTRA
-                dump_step2(c);
-#endif
-                if (gc_period++ >= GC_PERIOD) {
-                    gc_period = 0;
-                    gc();
-                }
-                if (r != 0)
-                    break;
-            }
-            if (r == 1) {
-                current_stack = stack.back();
-                continue;
-            }
-            if (r == 2) {
-                if (!current_stack->ret_value.lock())
-                    current_stack->ret_value =
-                            current_stack->stack.empty() ? new_undefined() : pop();
-            }
-            if (r == 3) {
-                continue;
-            }
-            if (r == 4) {
-                current_stack->ret_value = new_undefined();
-            }
-            if (stack.size() > 1) {
-                auto ret = stack.back()->ret_value;
-                delete_stack(current_stack);
-                stack.pop_back();
-                current_stack = stack.back();
-                push(ret);
-            } else {
-                delete_stack(current_stack);
-                stack.pop_back();
-            }
-        }
-        return 0;
+        return call_internal(false, stack_size);
     }
 
     js_value::ref cjsruntime::fast_api(const jsv_function::ref &func, js_value::weak_ref &_this,
@@ -406,16 +407,8 @@ namespace clib {
             case POP_TOP:
                 pop();
                 break;
-            case ROT_TWO:
-                break;
-            case ROT_THREE:
-                break;
             case DUP_TOP:
                 push(top());
-                break;
-            case DUP_TOP_TWO:
-                break;
-            case ROT_FOUR:
                 break;
             case NOP:
                 break;
@@ -561,30 +554,6 @@ namespace clib {
                 push(result);
             }
                 break;
-            case INPLACE_FLOOR_DIVIDE:
-                break;
-            case INPLACE_TRUE_DIVIDE:
-                break;
-            case RERAISE:
-                break;
-            case WITH_EXCEPT_START:
-                break;
-            case GET_AITER:
-                break;
-            case GET_ANEXT:
-                break;
-            case BEFORE_ASYNC_WITH:
-                break;
-            case END_ASYNC_FOR:
-                break;
-            case INPLACE_ADD:
-                break;
-            case INPLACE_SUBTRACT:
-                break;
-            case INPLACE_MULTIPLY:
-                break;
-            case INPLACE_MODULO:
-                break;
             case STORE_SUBSCR: {
                 auto key = pop().lock()->to_string(this, 0);
                 auto obj = pop().lock();
@@ -599,10 +568,6 @@ namespace clib {
                     break;
                 }
             }
-                break;
-            case DELETE_SUBSCR:
-                break;
-            case INPLACE_POWER:
                 break;
             case GET_ITER: {
                 auto obj = top().lock();
@@ -653,44 +618,8 @@ namespace clib {
                 }
             }
                 break;
-            case GET_YIELD_FROM_ITER:
-                break;
-            case PRINT_EXPR:
-                break;
-            case LOAD_BUILD_CLASS:
-                break;
-            case YIELD_FROM:
-                break;
-            case GET_AWAITABLE:
-                break;
-            case LOAD_ASSERTION_ERROR:
-                break;
-            case INPLACE_LSHIFT:
-                break;
-            case INPLACE_RSHIFT:
-                break;
-            case INPLACE_AND:
-                break;
-            case INPLACE_XOR:
-                break;
-            case INPLACE_OR:
-                break;
-            case LIST_TO_TUPLE:
-                break;
             case RETURN_VALUE:
                 return 2;
-            case IMPORT_STAR:
-                break;
-            case SETUP_ANNOTATIONS:
-                break;
-            case YIELD_VALUE:
-                break;
-            case POP_BLOCK:
-                break;
-            case POP_EXCEPT:
-                break;
-            case HAVE_ARGUMENT:
-                break;
             case STORE_NAME: {
                 auto obj = top();
                 auto id = code.op1;
@@ -803,16 +732,12 @@ namespace clib {
                 }
             }
                 break;
-            case DELETE_ATTR:
-                break;
             case STORE_GLOBAL: {
                 auto obj = top();
                 auto id = code.op1;
                 auto name = current_stack->info->globals.at(id);
                 stack.front()->store_name(name, obj);
             }
-                break;
-            case DELETE_GLOBAL:
                 break;
             case LOAD_CONST: {
                 auto op = code.op1;
@@ -825,8 +750,6 @@ namespace clib {
                 auto var = load_name(op);
                 push(var);
             }
-                break;
-            case BUILD_TUPLE:
                 break;
             case BUILD_LIST: {
                 auto n = code.op1;
@@ -849,8 +772,6 @@ namespace clib {
                 obj->obj["length"] = new_number(n);
                 push(obj);
             }
-                break;
-            case BUILD_SET:
                 break;
             case BUILD_MAP: {
                 auto n = code.op1;
@@ -876,10 +797,6 @@ namespace clib {
                 }
                 push(obj);
             }
-                break;
-            case IMPORT_NAME:
-                break;
-            case IMPORT_FROM:
                 break;
             case JUMP_FORWARD: {
                 auto jmp = code.op1;
@@ -937,13 +854,20 @@ namespace clib {
                 push(var);
             }
                 break;
-            case IS_OP:
+            case SETUP_FINALLY: {
+                auto op = code.op1;
+                try_catch.trys.push_back({stack.size(), current_stack->stack.size(), current_stack->pc + op});
+            }
                 break;
-            case CONTAINS_OP:
-                break;
-            case JUMP_IF_NOT_EXC_MATCH:
-                break;
-            case SETUP_FINALLY:
+            case THROW:
+                try_catch.trys.back().obj = pop().lock();
+                return 9;
+            case RETHROW:
+                (try_catch.trys.rbegin() + 1)->obj = try_catch.trys.back().obj;
+                try_catch.trys.pop_back();
+                return 9;
+            case POP_FINALLY:
+                try_catch.trys.pop_back();
                 break;
             case LOAD_FAST: {
                 auto op = code.op1;
@@ -957,10 +881,6 @@ namespace clib {
                 auto name = current_stack->info->names.at(id);
                 current_stack->store_fast(name, obj);
             }
-                break;
-            case DELETE_FAST:
-                break;
-            case RAISE_VARARGS:
                 break;
             case CALL_FUNCTION: {
                 auto n = code.op1;
@@ -1065,8 +985,6 @@ namespace clib {
                 }
             }
                 break;
-            case BUILD_SLICE:
-                break;
             case LOAD_CLOSURE: {
                 auto op = code.op1;
                 auto var = current_stack->info->names.at(op);
@@ -1086,8 +1004,6 @@ namespace clib {
                 auto name = current_stack->info->derefs.at(id);
                 current_stack->store_deref(name, obj);
             }
-                break;
-            case DELETE_DEREF:
                 break;
             case REST_ARGUMENT:
                 current_stack->rests.push_back(current_stack->stack.size());
@@ -1183,26 +1099,6 @@ namespace clib {
                 current_stack->pc++;
                 return 1;
             }
-                break;
-            case SETUP_WITH:
-                break;
-            case EXTENDED_ARG:
-                break;
-            case LIST_APPEND:
-                break;
-            case SET_ADD:
-                break;
-            case MAP_ADD:
-                break;
-            case LOAD_CLASSDEREF:
-                break;
-            case SETUP_ASYNC_WITH:
-                break;
-            case FORMAT_VALUE:
-                break;
-            case BUILD_CONST_KEY_MAP:
-                break;
-            case BUILD_STRING:
                 break;
             case LOAD_METHOD: {
                 auto n = code.op1;
@@ -1311,14 +1207,6 @@ namespace clib {
                 current_stack->pc++;
                 return 1;
             }
-                break;
-            case LIST_EXTEND:
-                break;
-            case SET_UPDATE:
-                break;
-            case DICT_MERGE:
-                break;
-            case DICT_UPDATE:
                 break;
             default:
                 assert(!"invalid opcode");
@@ -1825,6 +1713,10 @@ namespace clib {
             for (const auto &s2 : s.second->args) {
                 s2.lock()->mark(6);
             }
+        }
+        for (const auto &s : try_catch.trys) {
+            if (s.obj)
+                s.obj->mark(7);
         }
 #if DUMP_STEP && DUMP_GC
         dump_step3();

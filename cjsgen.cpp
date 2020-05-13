@@ -405,162 +405,6 @@ namespace clib {
 
     bool cjsgen::gen_before(const std::vector<ast_node *> &nodes, int level, ast_node *node) {
         switch (node->data._coll) {
-            case c_program:
-                break;
-            case c_sourceElement:
-                break;
-            case c_statement:
-                break;
-            case c_block:
-                break;
-            case c_statementList:
-                break;
-            case c_variableStatement:
-                break;
-            case c_variableDeclarationList:
-                break;
-            case c_variableDeclaration:
-                break;
-            case c_emptyStatement:
-                break;
-            case c_expressionStatement:
-                break;
-            case c_ifStatement:
-                break;
-            case c_iterationStatement:
-                break;
-            case c_doStatement:
-                break;
-            case c_whileStatement:
-                break;
-            case c_forStatement:
-                break;
-            case c_forInStatement:
-                break;
-            case c_continueStatement:
-                break;
-            case c_breakStatement:
-                break;
-            case c_returnStatement:
-                break;
-            case c_withStatement:
-                break;
-            case c_switchStatement:
-                break;
-            case c_caseBlock:
-                break;
-            case c_caseClauses:
-                break;
-            case c_caseClause:
-                break;
-            case c_defaultClause:
-                break;
-            case c_labelledStatement:
-                break;
-            case c_throwStatement:
-                break;
-            case c_tryStatement:
-                break;
-            case c_catchProduction:
-                break;
-            case c_finallyProduction:
-                break;
-            case c_debuggerStatement:
-                break;
-            case c_functionStatement:
-                break;
-            case c_functionDeclaration:
-                break;
-            case c_classDeclaration:
-                break;
-            case c_classTail:
-                break;
-            case c_classElement:
-                break;
-            case c_classElements:
-                break;
-            case c_methodDefinition:
-                break;
-            case c_formalParameterList:
-                break;
-            case c_formalParameterArg:
-                break;
-            case c_lastFormalParameterArg:
-                break;
-            case c_functionBody:
-                break;
-            case c_sourceElements:
-                break;
-            case c_arrayLiteral:
-                break;
-            case c_elementList:
-                break;
-            case c_arrayElement:
-                break;
-            case c_commaList:
-                break;
-            case c_objectLiteral:
-                break;
-            case c_propertyAssignment:
-                break;
-            case c_propertyAssignments:
-                break;
-            case c_propertyName:
-                break;
-            case c_arguments:
-                break;
-            case c_argument:
-                break;
-            case c_expressionSequence:
-                break;
-            case c_singleExpression:
-                break;
-            case c_assignable:
-                break;
-            case c_anonymousFunction:
-                break;
-            case c_arrowFunctionParameters:
-                break;
-            case c_arrowFunctionBody:
-                break;
-            case c_literal:
-                break;
-            case c_numericLiteral:
-                break;
-            case c_identifierName:
-                break;
-            case c_reservedWord:
-                break;
-            case c_keyword:
-                break;
-            case c_eos:
-                break;
-            case c_propertyExpressionAssignment:
-                break;
-            case c_computedPropertyExpressionAssignment:
-                break;
-            case c_propertyShorthand:
-                break;
-            case c_functionDecl:
-                break;
-            case c_anonymousFunctionDecl:
-                break;
-            case c_arrowFunction:
-                break;
-            case c_functionExpression:
-                break;
-            case c_classExpression:
-                break;
-            case c_memberIndexExpression:
-                break;
-            case c_memberDotExpression:
-                break;
-            case c_argumentsExpression:
-                break;
-            case c_newExpression:
-                break;
-            case c_primaryExpression:
-                break;
             case c_prefixExpression: {
                 if (AST_IS_COLL_K(nodes.front(), c_prefixExpressionList)) {
                     gen_rec(nodes[1], level); // gen exp first
@@ -572,80 +416,10 @@ namespace clib {
                 }
             }
                 break;
-            case c_prefixExpressionList:
-                break;
-            case c_postIncrementExpression:
-                break;
-            case c_postDecreaseExpression:
-                break;
-            case c_postfixExpression:
-                break;
-            case c_deleteExpression:
-                break;
-            case c_voidExpression:
-                break;
-            case c_typeofExpression:
-                break;
-            case c_preIncrementExpression:
-                break;
-            case c_preDecreaseExpression:
-                break;
-            case c_unaryPlusExpression:
-                break;
-            case c_unaryMinusExpression:
-                break;
-            case c_bitNotExpression:
-                break;
-            case c_notExpression:
-                break;
-            case c_powerExpression:
-                break;
-            case c_multiplicativeExpression:
-                break;
-            case c_additiveExpression:
-                break;
-            case c_coalesceExpression:
-                break;
-            case c_bitShiftExpression:
-                break;
-            case c_relationalExpression:
-                break;
-            case c_instanceofExpression:
-                break;
-            case c_inExpression:
-                break;
-            case c_equalityExpression:
-                break;
-            case c_bitAndExpression:
-                break;
-            case c_bitXOrExpression:
-                break;
-            case c_bitOrExpression:
-                break;
-            case c_logicalAndExpression:
-                break;
-            case c_logicalOrExpression:
-                break;
-            case c_ternaryExpression:
-                break;
-            case c_assignmentExpression:
-                break;
-            case c_assignmentOperatorExpression:
-                break;
-            case c_thisExpression:
-                break;
-            case c_identifierExpression:
-                break;
-            case c_superExpression:
-                break;
-            case c_literalExpression:
-                break;
-            case c_arrayLiteralExpression:
-                break;
-            case c_objectLiteralExpression:
-                break;
-            case c_parenthesizedExpression:
-                break;
+            case c_tryStatement: {
+                auto stmt = std::make_shared<sym_stmt_try_t>();
+                tmp.back().push_back(stmt);
+            }
             default:
                 break;
         }
@@ -656,12 +430,6 @@ namespace clib {
         auto &asts = ast.back();
         auto &tmps = tmp.back();
         switch (node->data._coll) {
-            case c_program:
-                break;
-            case c_sourceElement:
-                break;
-            case c_statement:
-                break;
             case c_block: {
                 auto block = std::make_shared<sym_block_t>();
                 copy_info(block, asts.front());
@@ -673,10 +441,6 @@ namespace clib {
                 tmps.clear();
                 tmps.push_back(block);
             }
-                break;
-            case c_statementList:
-                break;
-            case c_variableStatement:
                 break;
             case c_variableDeclarationList: {
                 auto stmt = std::make_shared<sym_stmt_var_t>();
@@ -758,8 +522,6 @@ namespace clib {
                 tmps.clear();
                 tmps.push_back(_if);
             }
-                break;
-            case c_iterationStatement:
                 break;
             case c_doStatement: {
                 auto _while = std::make_shared<sym_stmt_while_t>();
@@ -881,8 +643,6 @@ namespace clib {
                 tmps.push_back(stmt);
             }
                 break;
-            case c_withStatement:
-                break;
             case c_switchStatement: {
                 auto stmt = std::make_shared<sym_stmt_switch_t>();
                 copy_info(stmt, asts.front());
@@ -907,10 +667,6 @@ namespace clib {
                 tmps.clear();
                 tmps.push_back(stmt);
             }
-                break;
-            case c_caseBlock:
-                break;
-            case c_caseClauses:
                 break;
             case c_caseClause: {
                 auto exp = std::make_shared<sym_case_t>();
@@ -943,17 +699,56 @@ namespace clib {
                 tmps.push_back(exp);
             }
                 break;
-            case c_labelledStatement:
+            case c_throwStatement: {
+                auto stmt = std::make_shared<sym_stmt_throw_t>();
+                copy_info(stmt, asts.front());
+                if (!tmps.empty()) {
+                    sym_exp_seq_t::ref seq;
+                    if (tmps.back()->get_type() == s_expression_seq) {
+                        seq = std::dynamic_pointer_cast<sym_exp_seq_t>(tmps.back());
+                    } else {
+                        seq = std::make_shared<sym_exp_seq_t>();
+                        copy_info(seq, tmps.front());
+                        seq->exps.push_back(to_exp(tmps.front()));
+                    }
+                    stmt->seq = seq;
+                    stmt->end = seq->end;
+                }
+                asts.clear();
+                tmps.clear();
+                tmps.push_back(stmt);
+            }
                 break;
-            case c_throwStatement:
+            case c_tryStatement: {
+                assert(tmps.front()->get_type() == s_statement_try);
+                auto stmt = std::dynamic_pointer_cast<sym_stmt_try_t>(tmps.front());
+                copy_info(stmt, asts.front());
+                stmt->try_body = to_stmt(tmps.back());
+                if (stmt->finally_body)
+                    stmt->end = stmt->finally_body->end;
+                else
+                    stmt->end = stmt->catch_body->end;
+                asts.clear();
+                tmps.pop_back();
+            }
                 break;
-            case c_tryStatement:
+            case c_catchProduction: {
+                assert((*(tmp.rbegin() + 1)).front()->get_type() == s_statement_try);
+                auto stmt = std::dynamic_pointer_cast<sym_stmt_try_t>((*(tmp.rbegin() + 1)).front());
+                if (!asts.empty()) {
+                    stmt->var = primary_node(asts.front());
+                    asts.clear();
+                }
+                stmt->catch_body = to_stmt(tmps.front());
+                tmps.clear();
+            }
                 break;
-            case c_catchProduction:
-                break;
-            case c_finallyProduction:
-                break;
-            case c_debuggerStatement:
+            case c_finallyProduction: {
+                assert((*(tmp.rbegin() + 1)).front()->get_type() == s_statement_try);
+                auto stmt = std::dynamic_pointer_cast<sym_stmt_try_t>((*(tmp.rbegin() + 1)).front());
+                stmt->finally_body = to_stmt(tmps.front());
+                tmps.clear();
+            }
                 break;
             case c_functionStatement: {
                 auto stmt = std::make_shared<sym_stmt_exp_t>();
@@ -999,24 +794,6 @@ namespace clib {
                 tmps.push_back(code);
             }
                 break;
-            case c_classDeclaration:
-                break;
-            case c_classTail:
-                break;
-            case c_classElement:
-                break;
-            case c_classElements:
-                break;
-            case c_methodDefinition:
-                break;
-            case c_formalParameterList:
-                break;
-            case c_formalParameterArg:
-                break;
-            case c_lastFormalParameterArg:
-                break;
-            case c_functionBody:
-                break;
             case c_sourceElements: {
                 auto block = std::make_shared<sym_block_t>();
                 if (!tmps.empty()) {
@@ -1061,12 +838,6 @@ namespace clib {
                 tmps.push_back(array);
             }
                 break;
-            case c_elementList:
-                break;
-            case c_arrayElement:
-                break;
-            case c_commaList:
-                break;
             case c_objectLiteral: {
                 auto obj = std::make_shared<sym_object_t>();
                 copy_info(obj, asts.front());
@@ -1083,16 +854,6 @@ namespace clib {
                 tmps.push_back(obj);
             }
                 break;
-            case c_propertyAssignment:
-                break;
-            case c_propertyAssignments:
-                break;
-            case c_propertyName:
-                break;
-            case c_arguments:
-                break;
-            case c_argument:
-                break;
             case c_expressionSequence: {
                 if (tmps.size() > 1) {
                     auto seq = std::make_shared<sym_exp_seq_t>();
@@ -1108,26 +869,6 @@ namespace clib {
                     tmps.push_back(seq);
                 }
             }
-                break;
-            case c_singleExpression:
-                break;
-            case c_assignable:
-                break;
-            case c_anonymousFunction:
-                break;
-            case c_arrowFunctionParameters:
-                break;
-            case c_arrowFunctionBody:
-                break;
-            case c_numericLiteral:
-                break;
-            case c_identifierName:
-                break;
-            case c_reservedWord:
-                break;
-            case c_keyword:
-                break;
-            case c_eos:
                 break;
             case c_propertyExpressionAssignment: {
                 auto p = std::make_shared<sym_object_pair_t>();
@@ -1158,16 +899,12 @@ namespace clib {
                 tmps.push_back(p);
             }
                 break;
-            case c_computedPropertyExpressionAssignment:
-                break;
             case c_propertyShorthand: {
                 if (!tmps.empty() && !asts.empty()) {
                     tmps[0]->start = asts[0]->start;
                 }
                 asts.clear();
             }
-                break;
-            case c_functionDecl:
                 break;
             case c_anonymousFunctionDecl: {
                 auto code = std::make_shared<sym_code_t>();
@@ -1243,10 +980,6 @@ namespace clib {
                 tmps.clear();
                 tmps.push_back(code);
             }
-                break;
-            case c_functionExpression:
-                break;
-            case c_classExpression:
                 break;
             case c_memberIndexExpression: {
                 auto exp = to_exp((tmp.rbegin() + 2)->front());
@@ -1360,12 +1093,6 @@ namespace clib {
                 tmps.clear();
             }
                 break;
-            case c_primaryExpression:
-                break;
-            case c_prefixExpression:
-                break;
-            case c_postfixExpression:
-                break;
             case c_postIncrementExpression:
             case c_postDecreaseExpression: {
                 auto exp = to_exp((tmp.rbegin() + 2)->front());
@@ -1433,12 +1160,6 @@ namespace clib {
                 (tmp.rbegin() + 2)->front() = unop;
                 asts.clear();
             }
-                break;
-            case c_prefixExpressionList:
-                break;
-            case c_coalesceExpression:
-                break;
-            case c_inExpression:
                 break;
             case c_instanceofExpression:
             case c_powerExpression:
@@ -1521,12 +1242,6 @@ namespace clib {
                     asts.clear();
                 }
             }
-                break;
-            case c_superExpression:
-                break;
-            case c_arrayLiteralExpression:
-                break;
-            case c_objectLiteralExpression:
                 break;
             case c_parenthesizedExpression: {
                 auto exp = tmps.front();
@@ -1962,6 +1677,18 @@ namespace clib {
                         print(n->seq, level + 1, os);
                 }
                 break;
+            case s_statement_throw:
+                os << "statement_throw"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_stmt_throw_t>(node);
+                    if (n->seq)
+                        print(n->seq, level + 1, os);
+                }
+                break;
             case s_statement_control: {
                 auto n = std::dynamic_pointer_cast<sym_stmt_control_t>(node);
                 os << "statement_" << lexer_string(lexer_t(n->keyword))
@@ -2060,6 +1787,32 @@ namespace clib {
                     print(n->exp, level + 1, os);
                     for (const auto &s : n->cases) {
                         print(s, level + 1, os);
+                    }
+                }
+                break;
+            case s_statement_try:
+                os << "try"
+                   << " " << "[" << node->line << ":"
+                   << node->column << ":"
+                   << node->start << ":"
+                   << node->end << "]" << std::endl;
+                {
+                    auto n = std::dynamic_pointer_cast<sym_stmt_try_t>(node);
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    os << "try" << std::endl;
+                    print(n->try_body, level + 2, os);
+                    os << std::setfill(' ') << std::setw(level + 1) << "";
+                    if (n->var) {
+                        os << "var" << std::endl;
+                        print(n->var, level + 2, os);
+                    }
+                    if (n->catch_body) {
+                        os << "catch" << std::endl;
+                        print(n->catch_body, level + 2, os);
+                    }
+                    if (n->finally_body) {
+                        os << "finally" << std::endl;
+                        print(n->finally_body, level + 2, os);
                     }
                 }
                 break;
@@ -2384,6 +2137,7 @@ namespace clib {
                         break;
                     case FOR_ITER:
                     case JUMP_FORWARD:
+                    case SETUP_FINALLY:
                         jumps_set.insert(idx + c.op1);
                         break;
                     default:
