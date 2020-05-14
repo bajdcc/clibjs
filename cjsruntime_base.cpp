@@ -14,9 +14,6 @@
 #include "cjsast.h"
 #include "cjsparser.h"
 
-#define DUMP_STEP 1
-#define DUMP_GC 1
-#define GC_PERIOD 128
 #define DUMP_PRINT_FILE_ENABLE 0
 #define DUMP_PRINT_FILE_AUTO_CLEAR 1
 #define DUMP_PRINT_FILE "debug_print.txt"

@@ -31,7 +31,7 @@ namespace clib {
     void cjs::error_handler(int, const std::vector<pda_trans> &, int &) {
     }
 
-    void cjs::exec(const std::string &filename, const std::string &input, bool top) {
+    int cjs::exec(const std::string &filename, const std::string &input, bool top) {
         auto p = std::make_unique<cjsparser>();
         p->parse(input, this);
 #if LOG_AST
@@ -52,7 +52,7 @@ namespace clib {
         else
             code->code->debugName = "(" + filename + ") <entry>";
         g = nullptr;
-        rt.eval(std::move(code), filename, top);
+        return rt.eval(std::move(code), filename, top);
     }
 
     void cjs::init_lib() {

@@ -63,7 +63,7 @@ namespace clib {
         virtual std::shared_ptr<cjs_function> new_func(const std::shared_ptr<cjs_function_info> &code) = 0;
         virtual std::shared_ptr<jsv_object> new_array() = 0;
         virtual std::shared_ptr<jsv_object> new_error(int) = 0;
-        virtual void exec(const std::string &, const std::string &) = 0;
+        virtual int exec(const std::string &, const std::string &) = 0;
         virtual std::string get_stacktrace() const = 0;
         virtual bool get_file(std::string &filename, std::string &content) const = 0;
         enum api {
@@ -308,7 +308,7 @@ namespace clib {
 
         void init(void *);
 
-        void eval(cjs_code_result::ref code, const std::string &_path, bool top);
+        int eval(cjs_code_result::ref code, const std::string &_path, bool top);
         void set_readonly(bool);
 
         jsv_number::ref new_number(double n) override;
@@ -322,7 +322,7 @@ namespace clib {
         cjs_function::ref new_func(const cjs_function_info::ref &code) override;
         jsv_object::ref new_array() override;
         jsv_object::ref new_error(int) override;
-        void exec(const std::string &, const std::string &) override;
+        int exec(const std::string &, const std::string &) override;
         std::string get_stacktrace() const override;
         bool get_file(std::string &filename, std::string &content) const override;
         int call_internal(bool top, size_t stack_size);

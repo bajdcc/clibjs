@@ -23,7 +23,7 @@ namespace clib {
         backtrace_direction check(pda_edge_t, ast_node*) override;
         void error_handler(int, const std::vector<pda_trans>&, int&) override;
 
-        void exec(const std::string &filename, const std::string& input, bool top = true);
+        int exec(const std::string &filename, const std::string& input, bool top = true);
 
     private:
         void init_lib();

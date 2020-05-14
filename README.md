@@ -66,6 +66,11 @@ Reference: quickjs
 - [x] switch
 - [x] try, catch, finally
 
+## Error
+
+- [x] Error
+- [x] ReferenceError
+
 ## TEST
 
 Scanned js files successfully, ~~but spent more time~~ **BECAUSE IT IS BACKTRACE LALR1 PARSER**, now HARDCORE FIXED.

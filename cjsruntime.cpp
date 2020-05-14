@@ -53,12 +53,12 @@ namespace clib {
         return ceil(d);
     }
 
-    void cjsruntime::eval(cjs_code_result::ref code, const std::string &_path, bool top) {
+    int cjsruntime::eval(cjs_code_result::ref code, const std::string &_path, bool top) {
         if (code->code->codes.empty()) {
             std::cout << "Compile failed." << std::endl;
             if (!top)
                 push(new_undefined());
-            return;
+            return 0;
         }
         if (_path.empty() || _path[0] == '<') {
             paths.emplace_back(ROOT_DIR);
@@ -91,7 +91,7 @@ namespace clib {
             exec_stack->_this = stack.front()->envs;
             stack.push_back(exec_stack);
             current_stack = stack.back();
-            return;
+            return 0;
         }
         auto result = call_internal(true, 0);
         if (result == 0) {
@@ -102,6 +102,7 @@ namespace clib {
             stack.pop_back();
             paths.pop_back();
         }
+        return result;
     }
 
     int cjsruntime::call_internal(bool top, size_t stack_size) {
@@ -153,7 +154,7 @@ namespace clib {
             }
             if (r == 9) { // throw
                 _try = get_try();
-                if (_try && _try->stack_size >= stack_size && _try->obj_size >= current_stack->stack.size()) {
+                if (_try && _try->stack_size >= stack.size() && _try->obj_size >= current_stack->stack.size()) {
                     if (_try->stack_size > stack.size()) {
                         for (auto s = _try->stack_size; s > stack.size(); s--) {
                             delete_stack(stack.back());
@@ -210,7 +211,7 @@ namespace clib {
                 current_stack = stack.back();
                 current_stack->stack.clear();
                 if (obj) {
-                    std::cerr << obj->to_string(this, 1) << std::endl;
+                    std::cerr << "Uncaught " << obj->to_string(this, 1) << std::endl;
                 }
             } else {
                 return 9;
@@ -497,7 +498,7 @@ namespace clib {
                 } else if (n == -2) {
                     auto op = code.op2;
                     auto var = load_global(op);
-                    if (var->get_type() != r_undefined) {
+                    if (var) {
                         if (var->attr & js_value::at_readonly) {
                             push(new_boolean(false));
                             break;
@@ -868,7 +869,15 @@ namespace clib {
             case LOAD_GLOBAL: {
                 auto op = code.op1;
                 auto var = load_global(op);
-                push(var);
+                if (var) {
+                    push(var);
+                } else {
+                    auto name = current_stack->info->globals.at(op);
+                    std::stringstream ss;
+                    ss << "throw new ReferenceError('" << name << " is not defined')";
+                    exec("<error>", ss.str());
+                    return 1;
+                }
             }
                 break;
             case SETUP_FINALLY: {
@@ -877,9 +886,11 @@ namespace clib {
                 current_stack->_try.push_back(std::make_shared<sym_try_t>(sym_try_t{stack.size(), current_stack->stack.size(), op1, op2, js_value::weak_ref()}));
             }
                 break;
-            case THROW:
-                assert(!current_stack->_try.empty());
-                current_stack->_try.back()->obj = pop().lock();
+            case THROW: {
+                auto _try = get_try();
+                assert(_try);
+                _try->obj = pop().lock();
+            }
                 return 9;
             case POP_FINALLY:
                 return 9;
@@ -1271,7 +1282,7 @@ namespace clib {
         if (G != obj.end()) {
             return G->second.lock();
         }
-        return permanents._undefined;
+        return nullptr;
     }
 
     bool cjsruntime::remove_global(int op) {
@@ -1531,8 +1542,8 @@ namespace clib {
         return err;
     }
 
-    void cjsruntime::exec(const std::string &n, const std::string &s) {
-        ((cjs *) pjs)->exec(n, s, false);
+    int cjsruntime::exec(const std::string &n, const std::string &s) {
+        return ((cjs *) pjs)->exec(n, s, false);
     }
 
     std::string cjsruntime::get_stacktrace() const {
