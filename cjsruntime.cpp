@@ -84,7 +84,7 @@ namespace clib {
             current_stack = stack.back();
             current_stack->envs = permanents.global_env;
             current_stack->_this = permanents.global_env;
-            try_catch.trys.push_back({0, 0, 0, nullptr});
+            current_stack->_try.push_back(std::make_shared<sym_try_t>(sym_try_t{}));
         } else {
             auto exec_stack = std::make_shared<cjs_function>(code->code, *this);
             exec_stack->envs = new_object();
@@ -101,7 +101,6 @@ namespace clib {
             delete_stack(current_stack);
             stack.pop_back();
             paths.pop_back();
-            try_catch.trys.pop_back();
         }
     }
 
@@ -109,6 +108,7 @@ namespace clib {
         auto r = 0;
         auto gc_period = 0;
         auto has_throw = false;
+        sym_try_t::ref _try;
         while (stack.size() > stack_size) {
             const auto &codes = current_stack->info->codes;
             const auto &pc = current_stack->pc;
@@ -152,28 +152,36 @@ namespace clib {
                 current_stack->ret_value = new_undefined();
             }
             if (r == 9) { // throw
-                if (try_catch.trys.size() > 1) {
-                    auto t = try_catch.trys.back();
-                    if (t.stack_size >= stack.size()) { // inner try catch
-                        if (t.stack_size > stack.size()) {
-                            for (auto s = t.stack_size; s > stack.size(); s--) {
-                                delete_stack(stack.back());
-                                stack.pop_back();
-                            }
-                            current_stack = stack.back();
+                _try = get_try();
+                if (_try && _try->stack_size >= stack_size && _try->obj_size >= current_stack->stack.size()) {
+                    if (_try->stack_size > stack.size()) {
+                        for (auto s = _try->stack_size; s > stack.size(); s--) {
+                            delete_stack(stack.back());
+                            stack.pop_back();
                         }
-                        if (t.obj_size > current_stack->stack.size()) {
-                            for (auto s = t.obj_size; s > current_stack->stack.size(); s--) {
-                                pop();
-                            }
+                        current_stack = stack.back();
+                    }
+                    if (_try->obj_size > current_stack->stack.size()) {
+                        for (auto s = _try->obj_size; s > current_stack->stack.size(); s--) {
+                            pop();
                         }
-                        if (t.obj)
-                            push(t.obj);
+                    }
+                    if (_try->jump_catch != 0) {
+                        if (_try->obj.lock())
+                            push(_try->obj);
                         else
                             push(new_undefined());
-                        current_stack->pc = t.jump;
-                        continue;
+                        current_stack->pc = _try->jump_catch;
+                        _try->jump_catch = 0;
+                    } else if (_try->jump_finally != 0) {
+                        current_stack->pc = _try->jump_finally;
                     }
+                    if (_try->jump_finally == 0) {
+                        assert(!current_stack->_try.empty());
+                        current_stack->_try.pop_back();
+                        _try = nullptr;
+                    }
+                    continue;
                 }
                 has_throw = true;
                 break;
@@ -193,8 +201,7 @@ namespace clib {
         }
         if (has_throw) {
             if (top) {
-                auto obj = try_catch.trys.back().obj;
-                try_catch.trys.back().obj = nullptr;
+                auto obj = _try ? _try->obj.lock() : nullptr;
                 auto n = stack.size();
                 for (size_t i = 1; i < n; i++) {
                     delete_stack(stack.back());
@@ -363,6 +370,16 @@ namespace clib {
             }
             cjs_sleep(10);
         }
+    }
+
+    sym_try_t::ref cjsruntime::get_try() const {
+        for (auto i = stack.rbegin(); i != stack.rend(); i++) {
+            for (auto j = (*i)->_try.rbegin(); j != (*i)->_try.rend(); j++) {
+                return *j;
+            }
+        }
+        assert(!"has no try");
+        return nullptr;
     }
 
     void cjsruntime::set_readonly(bool flag) {
@@ -855,19 +872,20 @@ namespace clib {
             }
                 break;
             case SETUP_FINALLY: {
-                auto op = code.op1;
-                try_catch.trys.push_back({stack.size(), current_stack->stack.size(), current_stack->pc + op});
+                auto op1 = code.op1 == 0 ? 0 : (current_stack->pc + code.op1);
+                auto op2 = code.op2 == 0 ? 0 : (current_stack->pc + code.op2);
+                current_stack->_try.push_back(std::make_shared<sym_try_t>(sym_try_t{stack.size(), current_stack->stack.size(), op1, op2, js_value::weak_ref()}));
             }
                 break;
             case THROW:
-                try_catch.trys.back().obj = pop().lock();
-                return 9;
-            case RETHROW:
-                (try_catch.trys.rbegin() + 1)->obj = try_catch.trys.back().obj;
-                try_catch.trys.pop_back();
+                assert(!current_stack->_try.empty());
+                current_stack->_try.back()->obj = pop().lock();
                 return 9;
             case POP_FINALLY:
-                try_catch.trys.pop_back();
+                return 9;
+            case EXIT_FINALLY:
+                assert(!current_stack->_try.empty());
+                current_stack->_try.pop_back();
                 break;
             case LOAD_FAST: {
                 auto op = code.op1;
@@ -1696,6 +1714,7 @@ namespace clib {
             const auto &th = s->_this.lock();
             const auto &env = s->envs.lock();
             const auto &closure = s->closure.lock();
+            const auto &tr = s->_try;
             for (const auto &s2 : st) {
                 if (s2.lock())
                     s2.lock()->mark(1);
@@ -1707,16 +1726,16 @@ namespace clib {
                 th->mark(3);
             if (ret)
                 th->mark(4);
+            for (const auto &s2 : tr) {
+                if (s2->obj.lock())
+                    s2->obj.lock()->mark(7);
+            }
         }
         for (const auto &s : timeout.ids) {
             s.second->func->mark(5);
             for (const auto &s2 : s.second->args) {
                 s2.lock()->mark(6);
             }
-        }
-        for (const auto &s : try_catch.trys) {
-            if (s.obj)
-                s.obj->mark(7);
         }
 #if DUMP_STEP && DUMP_GC
         dump_step3();

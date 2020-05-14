@@ -330,7 +330,7 @@ namespace clib {
                     "SETUP_FINALLY",
                     "POP_FINALLY",
                     "THROW",
-                    "RETHROW",
+                    "EXIT_FINALLY",
                     "LOAD_FAST",
                     "STORE_FAST",
                     "CALL_FUNCTION",

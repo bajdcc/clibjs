@@ -257,6 +257,15 @@ namespace clib {
         std::vector<std::string> closure;
     };
 
+    struct sym_try_t {
+        using ref = std::shared_ptr<sym_try_t>;
+        size_t stack_size{0};
+        size_t obj_size{0};
+        int jump_catch{0};
+        int jump_finally{0};
+        js_value::weak_ref obj;
+    };
+
     class cjs_function : public std::enable_shared_from_this<cjs_function> {
     public:
         using ref = std::shared_ptr<cjs_function>;
@@ -278,6 +287,7 @@ namespace clib {
         jsv_object::weak_ref envs;
         jsv_object::weak_ref closure;
         std::vector<int> rests;
+        std::vector<sym_try_t::ref> _try;
     };
 
     struct cjs_runtime_reuse {
@@ -367,6 +377,8 @@ namespace clib {
         double api_setTimeout(int time, const jsv_function::ref &func, std::vector<js_value::weak_ref> args, uint32_t attr, bool once);
         void api_clearTimeout(double id);
 
+        sym_try_t::ref get_try() const;
+
     private:
         void *pjs{nullptr};
         bool readonly{true};
@@ -414,6 +426,7 @@ namespace clib {
             // console
             jsv_object::ref console;
             jsv_function::ref console_log;
+            jsv_function::ref console_error;
             jsv_function::ref console_trace;
             // sys
             jsv_object::ref sys;
@@ -446,15 +459,6 @@ namespace clib {
             std::map<std::time_t, std::list<std::shared_ptr<timeout_t>>> queues;
             std::unordered_map<uint32_t, std::shared_ptr<timeout_t>> ids;
         } timeout;
-        struct try_t {
-            size_t stack_size{0};
-            size_t obj_size{0};
-            int jump{0};
-            js_value::ref obj;
-        };
-        struct try_struct {
-            std::vector<try_t> trys;
-        } try_catch;
     };
 }
 

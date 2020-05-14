@@ -72,7 +72,7 @@ namespace clib {
         virtual int load_string(const std::string &, int) = 0;
         virtual int push_function(std::shared_ptr<sym_code_t>) = 0;
         virtual void pop_function() = 0;
-        virtual void enter(int) = 0;
+        virtual void enter(int, std::shared_ptr<sym_t> = nullptr) = 0;
         virtual void leave() = 0;
         virtual void push_rewrites(int index, int type) = 0;
         virtual const std::unordered_map<int, int> &get_rewrites() = 0;
@@ -85,6 +85,7 @@ namespace clib {
         virtual bool is_arrow_func() const = 0;
         virtual std::string get_code_text(ast_node_index *) const = 0;
         virtual std::string get_filename() const = 0;
+        virtual void gen_try(int) = 0;
         virtual void error(ast_node_index *, const std::string &) const = 0;
     };
 
@@ -532,6 +533,7 @@ namespace clib {
         sp_switch,
         sp_try,
         sp_catch,
+        sp_finally,
     };
 
     enum cjs_scope_query_t {
@@ -542,6 +544,7 @@ namespace clib {
 
     struct cjs_scope {
         cjs_scope_t type;
+        sym_t::ref sym;
         std::unordered_map<std::string, sym_t::weak_ref> vars;
         std::unordered_map<int, int> rewrites;
     };
@@ -606,7 +609,7 @@ namespace clib {
         int load_string(const std::string &, int) override;
         int push_function(std::shared_ptr<sym_code_t>) override;
         void pop_function() override;
-        void enter(int) override;
+        void enter(int, sym_t::ref = nullptr) override;
         void leave() override;
         void push_rewrites(int index, int type) override;
         const std::unordered_map<int, int> &get_rewrites() override;
@@ -619,6 +622,7 @@ namespace clib {
         bool is_arrow_func() const override;
         std::string get_code_text(ast_node_index *) const override;
         std::string get_filename() const override;
+        void gen_try(int) override;
         void error(ast_node_index *, const std::string &) const override;
 
     private:

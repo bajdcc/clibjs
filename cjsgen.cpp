@@ -737,6 +737,7 @@ namespace clib {
                 auto stmt = std::dynamic_pointer_cast<sym_stmt_try_t>((*(tmp.rbegin() + 1)).front());
                 if (!asts.empty()) {
                     stmt->var = primary_node(asts.front());
+                    copy_info(stmt->var, asts.front());
                     asts.clear();
                 }
                 stmt->catch_body = to_stmt(tmps.front());
@@ -1931,9 +1932,11 @@ namespace clib {
         codes.pop_back();
     }
 
-    void cjsgen::enter(int type) {
+    void cjsgen::enter(int type, sym_t::ref s) {
         codes.back()->scopes.emplace_back();
         codes.back()->scopes.back().type = (cjs_scope_t) type;
+        if (s)
+            codes.back()->scopes.back().sym = std::move(s);
     }
 
     void cjsgen::leave() {
@@ -2092,6 +2095,67 @@ namespace clib {
 
     std::string cjsgen::get_filename() const {
         return filename;
+    }
+
+    void cjsgen::gen_try(int t) {
+        auto &scope = codes.back()->scopes;
+        std::vector<sym_t::ref> f;
+        if (t == K_RETURN) {
+            for (auto s = scope.rbegin(); s != scope.rend(); s++) {
+                if ((s->type == sp_try ||
+                    s->type == sp_catch) && s->sym) {
+                    auto sym = s->sym;
+                    if (sym) {
+                        f.push_back(sym);
+                    }
+                }
+                if (s->type == sp_finally)
+                    break;
+            }
+        } else if (t == K_BREAK) {
+            for (auto s = scope.rbegin(); s != scope.rend(); s++) {
+                if (s->type == sp_for ||
+                    s->type == sp_for_each ||
+                    s->type == sp_while ||
+                    s->type == sp_do_while ||
+                    s->type == sp_switch ||
+                    s->type == sp_finally)
+                    break;
+                if ((s->type == sp_try ||
+                     s->type == sp_catch) && s->sym) {
+                    auto sym = s->sym;
+                    if (sym) {
+                        f.push_back(sym);
+                    }
+                }
+            }
+        } else if (t == K_CONTINUE) {
+            for (auto s = scope.rbegin(); s != scope.rend(); s++) {
+                if (s->type == sp_for ||
+                    s->type == sp_for_each ||
+                    s->type == sp_while ||
+                    s->type == sp_do_while ||
+                    s->type == sp_finally)
+                    break;
+                if ((s->type == sp_try ||
+                     s->type == sp_catch) && s->sym) {
+                    auto sym = s->sym;
+                    if (sym) {
+                        f.push_back(sym);
+                    }
+                }
+            }
+        }
+        if (!f.empty()) {
+            for (size_t i = 0; i < f.size(); i++) {
+                emit(nullptr, EXIT_FINALLY);
+            }
+            enter(sp_finally);
+            for (auto s = f.rbegin(); s != f.rend(); s++) {
+                (*s)->gen_rvalue(*this);
+            }
+            leave();
+        }
     }
 
     void cjsgen::error(ast_node_index *idx, const std::string &str) const {

@@ -1087,6 +1087,7 @@ namespace clib {
     }
 
     int sym_stmt_return_t::gen_rvalue(ijsgen &gen) {
+        gen.gen_try(K_RETURN);
         if (seq)
             seq->gen_rvalue(gen);
         else
@@ -1137,6 +1138,7 @@ namespace clib {
     }
 
     int sym_stmt_control_t::gen_rvalue(ijsgen &gen) {
+        gen.gen_try(keyword);
         gen.push_rewrites(gen.code_length(), keyword);
         gen.emit(this, JUMP_ABSOLUTE, 0);
         return sym_stmt_t::gen_rvalue(gen);
@@ -1242,6 +1244,7 @@ namespace clib {
             gen.emit(cond.get(), POP_JUMP_IF_FALSE, 0); // exit
         }
         body->gen_rvalue(gen);
+        auto L3 = gen.code_length(); // iter
         if (iter) {
             iter->gen_rvalue(gen);
             gen.emit(iter.get(), POP_TOP);
@@ -1250,7 +1253,7 @@ namespace clib {
         if (cond)
             gen.edit(L1, 1, gen.code_length());
         auto j_break = gen.code_length();
-        auto j_continue = L2;
+        auto j_continue = L3;
         const auto &re = gen.get_rewrites();
         for (const auto &s : re) {
             if (s.second == K_BREAK)
@@ -1414,19 +1417,15 @@ namespace clib {
 
     int sym_stmt_try_t::gen_rvalue(ijsgen &gen) {
         auto L1 = gen.code_length();
-        gen.emit(finally_body.get(), SETUP_FINALLY, 0); // finally
-        if (catch_body)
-            gen.emit(catch_body.get(), SETUP_FINALLY, 0); // catch
+        gen.emit(finally_body.get(), SETUP_FINALLY, 0, 0); // finally
         // TRY
-        gen.enter(sp_try);
+        gen.enter(sp_try, finally_body);
         try_body->gen_rvalue(gen);
         gen.leave();
         gen.emit(nullptr, POP_FINALLY);
-        auto L2 = gen.code_length();
         if (catch_body) {
-            gen.emit(nullptr, JUMP_FORWARD, 0);
-            gen.edit(L1 + 1, 1, gen.code_length() - L1 - 1);
-            gen.enter(sp_catch);
+            gen.edit(L1, 1, gen.code_length() - L1);
+            gen.enter(sp_catch, finally_body);
             if (var) {
                 gen.add_var(var->node->data._identifier, var);
                 var->gen_lvalue(gen);
@@ -1436,24 +1435,12 @@ namespace clib {
             catch_body->gen_rvalue(gen);
             gen.leave();
             gen.emit(nullptr, POP_FINALLY);
-            gen.emit(nullptr, JUMP_FORWARD, 2);
-            gen.emit(nullptr, RETHROW);
-            gen.edit(L2, 1, gen.code_length() - L2);
-            gen.emit(nullptr, POP_FINALLY);
         }
         // FINALLY
-        if (finally_body)
+        if (finally_body) {
+            gen.edit(L1, 2, gen.code_length() - L1);
             finally_body->gen_rvalue(gen);
-        L2 = gen.code_length();
-        gen.emit(nullptr, JUMP_FORWARD, 0);
-        // FINALLY
-        gen.edit(L1, 1, gen.code_length() - L1);
-        if (!catch_body)
-            gen.emit(nullptr, POP_TOP);
-        if (finally_body)
-            finally_body->gen_rvalue(gen);
-        gen.emit(nullptr, RETHROW);
-        gen.edit(L2, 1, gen.code_length() - L2);
+        }
         return sym_stmt_t::gen_rvalue(gen);
     }
 

@@ -19,7 +19,7 @@ Reference: quickjs
 - [x] Rest parameters\(`...`\), Rest array elements\(`[...[]]`\), Rest object elements\(`{...{}}`\)
 - [ ] Base functions\(Such as `Number`, etc\)
 - [x] `sys.exec(...)` supports relative path
-- [ ] Try, catch, finally
+- [x] Try, catch, finally\(Nesting\)
 
 ## Environment
 
@@ -64,7 +64,7 @@ Reference: quickjs
 - [x] while, do-while
 - [x] for, for-in
 - [x] switch
-- [ ] try, catch, finally
+- [x] try, catch, finally
 
 ## TEST
 
@@ -302,6 +302,8 @@ undefined
 3
 4
 ```
+
+Input: (**test/test_10.js**) -- **Try/catch**
 
 Input: (**test/test_all.js**) -- **All type binop**
 

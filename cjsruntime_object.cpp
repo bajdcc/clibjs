@@ -653,6 +653,7 @@ namespace clib {
         envs.reset();
         closure.reset();
         rests.clear();
+        _try.clear();
     }
 
     void cjs_function::reset(const sym_code_t::ref &code, js_value_new &n) {

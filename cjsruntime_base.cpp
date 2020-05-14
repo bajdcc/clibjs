@@ -17,7 +17,7 @@
 #define DUMP_STEP 1
 #define DUMP_GC 1
 #define GC_PERIOD 128
-#define DUMP_PRINT_FILE_ENABLE 1
+#define DUMP_PRINT_FILE_ENABLE 0
 #define DUMP_PRINT_FILE_AUTO_CLEAR 1
 #define DUMP_PRINT_FILE "debug_print.txt"
 
@@ -267,6 +267,23 @@ namespace clib {
             return 0;
         };
         permanents.console->obj.insert({permanents.console_log->name, permanents.console_log});
+        permanents.console_error = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
+        permanents.console_error->obj.insert({"length", _int_1});
+        permanents.console_error->name = "error";
+        permanents.console_error->builtin = [](auto &func, auto &_this, auto &args, auto &js, auto attr) {
+            std::stringstream ss;
+            for (size_t i = 0; i < args.size(); i++) {
+                ss << args[i].lock()->to_string(&js, 1);
+                if (i + 1 < args.size())
+                    ss << " ";
+            }
+            ss << std::endl;
+            auto s = ss.str();
+            std::cerr << ss.str();
+            func->stack.push_back(js.new_undefined());
+            return 0;
+        };
+        permanents.console->obj.insert({permanents.console_error->name, permanents.console_error});
         permanents.console_trace = _new_function(nullptr, js_value::at_const | js_value::at_readonly);
         permanents.console_trace->obj.insert({"length", _new_number(0, js_value::at_const | js_value::at_refs)});
         permanents.console_trace->name = "trace";
