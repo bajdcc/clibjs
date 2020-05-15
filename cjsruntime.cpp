@@ -11,6 +11,7 @@
 #include <iterator>
 #include <fstream>
 #include <utility>
+#include <regex>
 #include "cjsruntime.h"
 #include "cjsast.h"
 #include "cjs.h"
@@ -1441,10 +1442,19 @@ namespace clib {
     }
 
     std::string cjsruntime::get_stacktrace() const {
-        std::stringstream ss;
+        std::stringstream ss, sx;
         auto j = stack.size();
+        std::regex r(R"(\(([^:]+):\d+:\d+\)(.*))");
         for (auto i = stack.rbegin(); i != stack.rend(); i++) {
-            ss << j-- << ": " << (*i)->name;
+            ss << j-- << ": ";
+            if ((*i)->pc < (*i)->info->codes.size()) {
+                sx.str("");
+                const auto &c = (*i)->info->codes[(*i)->pc];
+                sx << "($1:" << c.line << ":" << c.column << ")$2";
+                ss << std::regex_replace((*i)->name, r, sx.str());
+            } else {
+                ss << (*i)->name;
+            }
             if (!(*i)->info)
                 ss << " (builtin)";
             ss << std::endl;

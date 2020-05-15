@@ -19,7 +19,7 @@ Reference: quickjs
 - [x] Rest parameters\(`...`\), Rest array elements\(`[...[]]`\), Rest object elements\(`{...{}}`\)
 - [ ] Base functions\(Such as `Number`, etc\)
 - [x] `sys.exec(...)` supports relative path
-- [x] Try, catch, finally\(Nesting\)
+- [x] Try, catch, finally\(Nesting\), **Stacktrace**
 
 ## Environment
 
