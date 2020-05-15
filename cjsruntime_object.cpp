@@ -429,7 +429,7 @@ namespace clib {
             return p ? p : nullptr;
         }
         auto proto = __proto__.lock();
-        if (!proto) {
+        if (!proto || proto->get_type() == r_undefined) {
             return nullptr; // type error
         }
         auto p = proto;
@@ -500,6 +500,8 @@ namespace clib {
 
     std::string jsv_object::to_string(js_value_new *n, int hint) const {
         if (!n) {
+            if (attr & at_readonly)
+                return "builtin";
             return _str;
         }
         if (!special.empty()) {
@@ -596,10 +598,8 @@ namespace clib {
     }
 
     std::string jsv_function::to_string(js_value_new *n, int hint) const {
-        if (builtin)
+        if (builtin || attr & at_readonly)
             return name;
-        if (attr & at_readonly)
-            return "builtin";
         return code ? code->text : "builtin";
     }
 

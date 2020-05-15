@@ -154,16 +154,16 @@ namespace clib {
             }
             if (r == 9) { // throw
                 _try = get_try();
-                if (_try && _try->stack_size >= stack.size() && _try->obj_size >= current_stack->stack.size()) {
-                    if (_try->stack_size > stack.size()) {
-                        for (auto s = _try->stack_size; s > stack.size(); s--) {
+                if (_try && _try->stack_size > 0 && _try->stack_size <= stack.size() && _try->obj_size <= current_stack->stack.size()) {
+                    if (_try->stack_size <= stack.size()) {
+                        for (auto s = stack.size(); s > _try->stack_size; s--) {
                             delete_stack(stack.back());
                             stack.pop_back();
                         }
                         current_stack = stack.back();
                     }
-                    if (_try->obj_size > current_stack->stack.size()) {
-                        for (auto s = _try->obj_size; s > current_stack->stack.size(); s--) {
+                    if (_try->obj_size <= current_stack->stack.size()) {
+                        for (auto s = current_stack->stack.size(); s > _try->obj_size; s--) {
                             pop();
                         }
                     }
@@ -269,49 +269,50 @@ namespace clib {
         if (fast) {
             attr &= ~(uint32_t) jsv_function::at_fast;
         }
-        if (func->builtin) {
+        if (func->builtin)
             return func->builtin(current_stack, _this, args, *this, attr);
-        } else {
-            current_stack->pc++;
-            stack.push_back(current_stack = new_stack(func->code));
-            auto env = current_stack->envs.lock();
-            if (_this.lock())
-                current_stack->_this = _this;
-            current_stack->name = func->name;
-            if (!func->code->arrow && func->code->simpleName.front() != '<')
-                env->obj[func->code->simpleName] = func;
-            auto arg = new_object();
-            env->obj["arguments"] = arg;
-            size_t i = 0;
-            size_t args_num = func->code->args_num;
-            auto n = args.size();
-            for (; i < n; i++) {
-                std::stringstream ss;
-                ss << i;
-                arg->obj[ss.str()] = args.at(i);
-                if (i < args_num)
-                    env->obj[func->code->args.at(i)] = args.at(i);
-            }
-            for (; i < args_num; i++) {
-                env->obj[func->code->args.at(i)] = new_undefined();
-            }
-            if (func->code->rest) {
-                auto rest = new_array();
-                env->obj[func->code->args.at(args_num)] = rest;
-                auto j = 0;
-                for (i = args_num; i < n; i++) {
-                    std::stringstream ss;
-                    ss << j++;
-                    rest->obj[ss.str()] = args.at(i);
-                }
-                rest->obj["length"] = new_number(j);
-            }
-            arg->obj["length"] = new_number(n);
-            if (func->closure.lock())
-                current_stack->closure = func->closure;
-            if (fast)
-                return 1;
+        auto _new_stack = new_stack(func->code);
+        stack.push_back(_new_stack);
+        auto env = _new_stack->envs.lock();
+        if (_this.lock())
+            _new_stack->_this = _this;
+        _new_stack->name = func->name;
+        if (!func->code->arrow && func->code->simpleName.front() != '<')
+            env->obj[func->code->simpleName] = func;
+        auto arg = new_object();
+        env->obj["arguments"] = arg;
+        size_t i = 0;
+        size_t args_num = func->code->args_num;
+        auto n = args.size();
+        for (; i < n; i++) {
+            std::stringstream ss;
+            ss << i;
+            arg->obj[ss.str()] = args.at(i);
+            if (i < args_num)
+                env->obj[func->code->args.at(i)] = args.at(i);
         }
+        for (; i < args_num; i++) {
+            env->obj[func->code->args.at(i)] = new_undefined();
+        }
+        if (func->code->rest) {
+            auto rest = new_array();
+            env->obj[func->code->args.at(args_num)] = rest;
+            auto j = 0;
+            for (i = args_num; i < n; i++) {
+                std::stringstream ss;
+                ss << j++;
+                rest->obj[ss.str()] = args.at(i);
+            }
+            rest->obj["length"] = new_number(j);
+        }
+        arg->obj["length"] = new_number(n);
+        if (func->closure.lock())
+            _new_stack->closure = func->closure;
+        if (fast) {
+            current_stack->pc++;
+            return 1;
+        }
+        current_stack = _new_stack;
         return call_internal(false, stack_size);
     }
 
@@ -894,8 +895,11 @@ namespace clib {
                     auto name = current_stack->info->globals.at(op);
                     std::stringstream ss;
                     ss << "throw new ReferenceError('" << name << " is not defined')";
-                    exec("<error>", ss.str());
-                    return 1;
+                    auto _stack_size = stack.size();
+                    auto r = exec("<error>", ss.str());
+                    if (r != 0)
+                        return r;
+                    return call_internal(false, _stack_size);
                 }
             }
                 break;
@@ -1041,13 +1045,18 @@ namespace clib {
                 }
                 auto func = JS_FUN(f.lock());
                 auto _this = new_object();
-                auto prototype = func->obj["prototype"].lock();
-                if (!prototype)
+                auto prototype = func->get("prototype");
+                if (!prototype || prototype->is_primitive())
                     _this->__proto__ = permanents._proto_object;
                 else
                     _this->__proto__ = prototype;
                 js_value::weak_ref t = _this;
-                auto r = call_api(func, t, args, jsv_function::at_fast | jsv_function::at_new_function);
+                auto r = 0;
+                auto ret = fast_api(func, t, args, jsv_function::at_new_function, &r);
+                if (ret->is_primitive())
+                    push(t);
+                else
+                    push(ret);
                 if (r != 0)
                     return r;
             }
@@ -1253,6 +1262,8 @@ namespace clib {
                 fprintf(stdout, "%4d | [%p] ", sti--, s2->lock().get());
                 if (s2->lock() == permanents.global_env)
                     fprintf(stdout, "<global env>\n");
+                else if (s2->lock()->attr & js_value::at_readonly)
+                    fprintf(stdout, "<builtin>\n");
                 else
                     print(s2->lock(), 0, std::cout);
             }
@@ -1266,6 +1277,8 @@ namespace clib {
                             e.second.lock()->to_string(nullptr, 0).c_str());
                     if (e.second.lock() == permanents.global_env)
                         fprintf(stdout, "<global env>\n");
+                    else if (e.second.lock()->attr & js_value::at_readonly)
+                        fprintf(stdout, "<builtin>\n");
                     else
                         print(e.second.lock(), 0, std::cout);
                 }

@@ -78,3 +78,10 @@ console.log((function () {
         return 5;
     }
 })());
+setTimeout(function () {
+    try {
+        undefined_error;
+    } catch (e) {
+        console.error(e);
+    }
+});
