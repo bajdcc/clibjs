@@ -33,45 +33,48 @@ namespace clib {
     }
 
     int cjs::exec(const std::string &filename, const std::string &input, bool top) {
+        if (input.empty())
+            return 0;
         auto p = std::make_unique<cjsparser>();
         std::string error_string;
         std::string code_name;
-        if (!filename.empty() && filename[0] != '<')
-            code_name = "(" + filename + ":1:1) <entry>";
+        if (!filename.empty() && (filename[0] == '<' || filename[0] == '('))
+            code_name = filename;
         else
-            code_name = "(" + filename + ") <entry>";
-        if (p->parse(input, error_string, this) == nullptr) {
-            std::stringstream ss;
-            ss << "throw new SyntaxError('" << jsv_string::convert(error_string) << "')";
-            return exec("<error> " + code_name, ss.str());
-        }
+            code_name = "(" + filename + ":1:1) <entry>";
+        cjs_code_result::ref code;
+        try {
+            if (p->parse(input, error_string, this) == nullptr) {
+                std::stringstream ss;
+                ss << "throw new SyntaxError('" << jsv_string::convert(error_string) << "')";
+                return exec(code_name, ss.str());
+            }
 #if LOG_AST
-        cjsast::print(p->root(), 0, input, std::cout);
+            cjsast::print(p->root(), 0, input, std::cout);
 #endif
-        auto g = std::make_unique<cjsgen>();
-        g->gen_code(p->root(), &input, filename);
-        p = nullptr;
+            auto g = std::make_unique<cjsgen>();
+            g->gen_code(p->root(), &input, filename);
+            p = nullptr;
 #if LOG_FILE
-        std::ofstream ofs(LOG_FILENAME);
+            std::ofstream ofs(LOG_FILENAME);
         if (ofs)
             cjsast::print(p.root(), 0, input, ofs);
 #endif
-        auto code = std::move(g->get_code());
-        assert(code);
-        code->code->debugName = code_name;
-        g = nullptr;
+            code = std::move(g->get_code());
+            assert(code);
+            code->code->debugName = code_name;
+            g = nullptr;
+        } catch (const clib::cexception &e) {
+            std::stringstream ss;
+            ss << "throw new SyntaxError('" << jsv_string::convert(e.message()) << "')";
+            return exec(code_name, ss.str());
+        }
         return rt.eval(std::move(code), filename, top);
     }
 
     void cjs::init_lib() {
         char buf[256];
         snprintf(buf, sizeof(buf), "sys.exec_file(\"%s\");\n", LIBRARY_FILE);
-        try {
-            exec("<library>", buf);
-        } catch (const clib::cexception &e) {
-            std::cout << e.message() << std::endl;
-        } catch (const std::exception &e) {
-            std::cout << e.what() << std::endl;
-        }
+        exec("<library>", buf);
     }
 }

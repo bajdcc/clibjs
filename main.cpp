@@ -8,25 +8,13 @@ int main() {
     char buf[256];
     snprintf(buf, sizeof(buf), "sys.exec_file(\"%s\");", filename);
     clib::cjs js;
-    try {
-        js.exec("<starter>", buf);
-    } catch (const clib::cexception &e) {
-        std::cout << e.message() << std::endl;
-    } catch (const std::exception &e) {
-        std::cout << e.what() << std::endl;
-    }
+    js.exec("<starter>", buf);
     while (true) {
         std::string input;
         std::getline(std::cin, input);
         if (input.empty() || input == "exit")
             break;
-        try {
-            js.exec("<stdin>", input);
-        } catch (const clib::cexception &e) {
-            std::cout << e.message() << std::endl;
-        } catch (const std::exception &e) {
-            std::cout << e.what() << std::endl;
-        }
+        js.exec("<stdin>", input);
     }
     return 0;
 }

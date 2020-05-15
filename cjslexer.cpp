@@ -193,7 +193,7 @@ namespace clib {
                                 d += cc;
                             }
                             if (j == i + 2) {
-                                snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid number '%.2s'\n", line, column,
+                                snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid number '%.2s'", line, column,
                                          &text[i]);
                                 break;
                             }
@@ -214,7 +214,7 @@ namespace clib {
                                 d += cc;
                             }
                             if (j == i + 2) {
-                                snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid number '%.2s'\n", line, column,
+                                snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid number '%.2s'", line, column,
                                          &text[i]);
                                 break;
                             }
@@ -288,7 +288,7 @@ namespace clib {
                             } else if (text[j] == '+') {
                                 j++;
                             } else if (!isdigit(text[j])) { // 1e+1
-                                snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid number '%s'\n", line, column,
+                                snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid number '%s'", line, column,
                                          text.substr((size_t) i, (size_t) (j - i)).c_str());
                                 break;
                             }
@@ -299,7 +299,7 @@ namespace clib {
                             e += text[j] - '0';
                         }
                         if (l == j) {
-                            snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid number '%s'\n", line, column,
+                            snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid number '%s'", line, column,
                                      text.substr((size_t) i, (size_t) (j - i)).c_str());
                             break;
                         }
@@ -353,7 +353,7 @@ namespace clib {
                     i = j;
                     continue;
                 } else {
-                    snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid space\n", line, column);
+                    snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid space", line, column);
                     break;
                 }
             } else if (c == '\'' || c == '\"') { // 字符串
@@ -375,7 +375,7 @@ namespace clib {
                 }
                 auto k = j;
                 if (k == len) { // " EOF
-                    snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid string, missing %c\n", line, column, c);
+                    snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid string, missing %c", line, column, c);
                     break;
                 }
                 std::stringstream ss;
@@ -491,7 +491,7 @@ namespace clib {
                         }
                             break;
                         default: // 失败
-                            snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid string '%s'\n", line, column,
+                            snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid string '%s'", line, column,
                                      text.substr((size_t) i, (size_t) (j - i)).c_str());
                             err = true;
                             break;
@@ -513,7 +513,7 @@ namespace clib {
                     i = j;
                     continue;
                 } else {
-                    snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid string\n", line, column);
+                    snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid string", line, column);
                     break;
                 }
             } else if (c == '/') { // 注释
@@ -848,7 +848,7 @@ namespace clib {
                     i = j;
                     continue;
                 } else {
-                    snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid operator '%c'\n", line, column, c);
+                    snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid operator '%c'", line, column, c);
                     break;
                 }
             }
