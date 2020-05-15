@@ -31,10 +31,10 @@ namespace clib {
         cjslexer();
         ~cjslexer() = default;
 
-        cjslexer(const cjslexer&) = delete;
-        cjslexer& operator=(const cjslexer&) = delete;
+        cjslexer(const cjslexer &) = delete;
+        cjslexer &operator=(const cjslexer &) = delete;
 
-        void input(const std::string &text);
+        void input(const std::string &text, std::string &);
         void dump() const;
 
         const lexer_unit &get_unit(int idx) const;

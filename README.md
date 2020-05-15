@@ -70,6 +70,7 @@ Reference: quickjs
 
 - [x] Error
 - [x] ReferenceError
+- [x] SyntaxError
 
 ## TEST
 

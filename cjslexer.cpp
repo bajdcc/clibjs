@@ -17,38 +17,38 @@ namespace clib {
 
     cjslexer::cjslexer() {
         std::array<std::tuple<lexer_t, std::string>, KEYWORD_END - KEYWORD_START + 1> keyword_string_list = {
-            std::make_tuple(K_NEW, "new"),
-            std::make_tuple(K_VAR, "var"),
-            std::make_tuple(K_LET, "let"),
-            std::make_tuple(K_FUNCTION, "function"),
-            std::make_tuple(K_IF, "if"),
-            std::make_tuple(K_ELSE, "else"),
-            std::make_tuple(K_FOR, "for"),
-            std::make_tuple(K_WHILE, "while"),
-            std::make_tuple(K_IN, "in"),
-            std::make_tuple(K_DO, "do"),
-            std::make_tuple(K_BREAK, "break"),
-            std::make_tuple(K_CONTINUE, "continue"),
-            std::make_tuple(K_RETURN, "return"),
-            std::make_tuple(K_SWITCH, "switch"),
-            std::make_tuple(K_DEFAULT, "default"),
-            std::make_tuple(K_CASE, "case"),
-            std::make_tuple(K_NULL, "null"),
-            std::make_tuple(K_TRUE, "true"),
-            std::make_tuple(K_FALSE, "false"),
-            std::make_tuple(K_INSTANCEOF, "instanceof"),
-            std::make_tuple(K_TYPEOF, "typeof"),
-            std::make_tuple(K_VOID, "void"),
-            std::make_tuple(K_DELETE, "delete"),
-            std::make_tuple(K_CLASS, "class"),
-            std::make_tuple(K_THIS, "this"),
-            std::make_tuple(K_SUPER, "super"),
-            std::make_tuple(K_WITH, "with"),
-            std::make_tuple(K_TRY, "try"),
-            std::make_tuple(K_THROW, "throw"),
-            std::make_tuple(K_CATCH, "catch"),
-            std::make_tuple(K_FINALLY, "finally"),
-            std::make_tuple(K_DEBUGGER, "debugger"),
+                std::make_tuple(K_NEW, "new"),
+                std::make_tuple(K_VAR, "var"),
+                std::make_tuple(K_LET, "let"),
+                std::make_tuple(K_FUNCTION, "function"),
+                std::make_tuple(K_IF, "if"),
+                std::make_tuple(K_ELSE, "else"),
+                std::make_tuple(K_FOR, "for"),
+                std::make_tuple(K_WHILE, "while"),
+                std::make_tuple(K_IN, "in"),
+                std::make_tuple(K_DO, "do"),
+                std::make_tuple(K_BREAK, "break"),
+                std::make_tuple(K_CONTINUE, "continue"),
+                std::make_tuple(K_RETURN, "return"),
+                std::make_tuple(K_SWITCH, "switch"),
+                std::make_tuple(K_DEFAULT, "default"),
+                std::make_tuple(K_CASE, "case"),
+                std::make_tuple(K_NULL, "null"),
+                std::make_tuple(K_TRUE, "true"),
+                std::make_tuple(K_FALSE, "false"),
+                std::make_tuple(K_INSTANCEOF, "instanceof"),
+                std::make_tuple(K_TYPEOF, "typeof"),
+                std::make_tuple(K_VOID, "void"),
+                std::make_tuple(K_DELETE, "delete"),
+                std::make_tuple(K_CLASS, "class"),
+                std::make_tuple(K_THIS, "this"),
+                std::make_tuple(K_SUPER, "super"),
+                std::make_tuple(K_WITH, "with"),
+                std::make_tuple(K_TRY, "try"),
+                std::make_tuple(K_THROW, "throw"),
+                std::make_tuple(K_CATCH, "catch"),
+                std::make_tuple(K_FINALLY, "finally"),
+                std::make_tuple(K_DEBUGGER, "debugger"),
         };
         auto key_N = KEYWORD_END - KEYWORD_START - 1;
         for (auto i = 0; i < key_N; i++) {
@@ -120,7 +120,7 @@ namespace clib {
         }
     }
 
-    void cjslexer::input(const std::string &s) {
+    void cjslexer::input(const std::string &s, std::string &error_string) {
         decltype(units) us;
         text = s;
         auto len = (int) text.length();
@@ -135,6 +135,7 @@ namespace clib {
         auto iL = 0;
         auto iC = 0;
 #endif
+        std::vector<char> buf(256);
         for (i = 0; i < len;) {
             auto c = text[i];
 #if 0
@@ -192,8 +193,8 @@ namespace clib {
                                 d += cc;
                             }
                             if (j == i + 2) {
-                                fprintf(stderr, "Line: %d, Column: %d, Error: invalid number '%.2s'\n", line, column,
-                                        &text[i]);
+                                snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid number '%.2s'\n", line, column,
+                                         &text[i]);
                                 break;
                             }
                             auto u = alloc_unit(line, column, i, j);
@@ -213,8 +214,8 @@ namespace clib {
                                 d += cc;
                             }
                             if (j == i + 2) {
-                                fprintf(stderr, "Line: %d, Column: %d, Error: invalid number '%.2s'\n", line, column,
-                                        &text[i]);
+                                snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid number '%.2s'\n", line, column,
+                                         &text[i]);
                                 break;
                             }
                             auto u = alloc_unit(line, column, i, j);
@@ -241,9 +242,9 @@ namespace clib {
                                 }
                                 if (!(oct2dec(text[j]) && isdigit(text[j]))) {
                                     if (j == i + 2) {
-                                        fprintf(stderr, "Line: %d, Column: %d, Error: invalid number '%.2s'\n", line,
-                                                column,
-                                                &text[i]);
+                                        snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid number '%.2s'\n", line,
+                                                 column,
+                                                 &text[i]);
                                         break;
                                     }
                                     auto u = alloc_unit(line, column, i, j);
@@ -287,8 +288,8 @@ namespace clib {
                             } else if (text[j] == '+') {
                                 j++;
                             } else if (!isdigit(text[j])) { // 1e+1
-                                fprintf(stderr, "Line: %d, Column: %d, Error: invalid number '%s'\n", line, column,
-                                        text.substr((size_t) i, (size_t) (j - i)).c_str());
+                                snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid number '%s'\n", line, column,
+                                         text.substr((size_t) i, (size_t) (j - i)).c_str());
                                 break;
                             }
                         }
@@ -298,8 +299,8 @@ namespace clib {
                             e += text[j] - '0';
                         }
                         if (l == j) {
-                            fprintf(stderr, "Line: %d, Column: %d, Error: invalid number '%s'\n", line, column,
-                                    text.substr((size_t) i, (size_t) (j - i)).c_str());
+                            snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid number '%s'\n", line, column,
+                                     text.substr((size_t) i, (size_t) (j - i)).c_str());
                             break;
                         }
                         d *= pow(10.0, ne ? -e : e);
@@ -352,7 +353,7 @@ namespace clib {
                     i = j;
                     continue;
                 } else {
-                    fprintf(stderr, "Line: %d, Column: %d, Error: invalid space\n", line, column);
+                    snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid space\n", line, column);
                     break;
                 }
             } else if (c == '\'' || c == '\"') { // 字符串
@@ -374,7 +375,7 @@ namespace clib {
                 }
                 auto k = j;
                 if (k == len) { // " EOF
-                    fprintf(stderr, "Line: %d, Column: %d, Error: invalid string, missing %c\n", line, column, c);
+                    snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid string, missing %c\n", line, column, c);
                     break;
                 }
                 std::stringstream ss;
@@ -479,10 +480,10 @@ namespace clib {
                                         auto ret = cv.to_bytes(w);
                                         ss << ret;
                                     } catch (const std::exception &e) {
-                                        fprintf(stderr, "Line: %d, Column: %d, Error: '%s' during conversion '%s'\n",
-                                                line,
-                                                column,
-                                                e.what(), text.substr((size_t) i, (size_t) (j - i)).c_str());
+                                        snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: '%s' during conversion '%s'\n",
+                                                 line,
+                                                 column,
+                                                 e.what(), text.substr((size_t) i, (size_t) (j - i)).c_str());
                                         err = true;
                                     }
                                 }
@@ -490,8 +491,8 @@ namespace clib {
                         }
                             break;
                         default: // 失败
-                            fprintf(stderr, "Line: %d, Column: %d, Error: invalid string '%s'\n", line, column,
-                                    text.substr((size_t) i, (size_t) (j - i)).c_str());
+                            snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid string '%s'\n", line, column,
+                                     text.substr((size_t) i, (size_t) (j - i)).c_str());
                             err = true;
                             break;
                     }
@@ -512,7 +513,7 @@ namespace clib {
                     i = j;
                     continue;
                 } else {
-                    fprintf(stderr, "Line: %d, Column: %d, Error: invalid string\n", line, column);
+                    snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid string\n", line, column);
                     break;
                 }
             } else if (c == '/') { // 注释
@@ -569,7 +570,7 @@ namespace clib {
                         }
                         j++;
                         // postfix: /i /g /gi /ig /m
-                        for (auto k = 0; k < 3;k++) {
+                        for (auto k = 0; k < 3; k++) {
                             if (text[j] == 'g' || text[j] == 'i' || text[j] == 'm') {
                                 j++;
                             }
@@ -847,12 +848,17 @@ namespace clib {
                     i = j;
                     continue;
                 } else {
-                    fprintf(stderr, "Line: %d, Column: %d, Error: invalid operator '%c'\n", line, column, c);
+                    snprintf(buf.data(), buf.size(), "Line: %d, Column: %d, Error: invalid operator '%c'\n", line, column, c);
                     break;
                 }
             }
         }
         {
+            std::string _error_string = buf.data();
+            if (!_error_string.empty()) {
+                error_string = _error_string;
+                return;
+            }
             auto id = 0;
             auto no_l = true;
             for (auto &U : us) {
@@ -984,7 +990,7 @@ namespace clib {
         if (idx < 0 || idx >= (int) units.size()) {
             return false;
         }
-        switch (rule){
+        switch (rule) {
             case RULE_NO_LINE:
                 return no_line[idx];
             case RULE_LINE:

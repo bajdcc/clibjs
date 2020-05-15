@@ -140,6 +140,7 @@ namespace clib {
         double to_number(js_value_new *n) const override;
         int to_number(double &d);
         static int to_number(const std::string &s, double &d);
+        static std::string convert(const std::string &_str);
         ref clear();
         std::string str;
         double number{0};

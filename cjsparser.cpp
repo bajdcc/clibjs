@@ -25,10 +25,14 @@
 
 namespace clib {
 
-    ast_node *cjsparser::parse(const std::string &str, csemantic *s) {
+    ast_node *cjsparser::parse(const std::string &str, std::string &error_string, csemantic *s) {
         semantic = s;
         lexer = std::make_unique<cjslexer>();
-        lexer->input(str);
+        lexer->input(str, error_string);
+        if (!error_string.empty()) {
+            lexer.reset(nullptr);
+            return nullptr;
+        }
 #if DUMP_LEXER
         lexer->dump();
 #endif
@@ -391,15 +395,15 @@ namespace clib {
         notExpression = _T_LOG_NOT;
         primaryExpression = functionExpression + *postfixExpression;
         prefixExpressionList = *prefixExpressionList +
-                           (deleteExpression
-                            | voidExpression
-                            | typeofExpression
-                            | preIncrementExpression
-                            | preDecreaseExpression
-                            | unaryPlusExpression
-                            | unaryMinusExpression
-                            | bitNotExpression
-                            | notExpression);
+                               (deleteExpression
+                                | voidExpression
+                                | typeofExpression
+                                | preIncrementExpression
+                                | preDecreaseExpression
+                                | unaryPlusExpression
+                                | unaryMinusExpression
+                                | bitNotExpression
+                                | notExpression);
         prefixExpression = *prefixExpressionList + primaryExpression;
         powerExpression = *(powerExpression + _T_POWER) + prefixExpression;
         multiplicativeExpression = *(multiplicativeExpression + (_T_MUL | _T_DIV | _T_MOD)) + powerExpression;

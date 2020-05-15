@@ -373,6 +373,29 @@ namespace clib {
         return 3;
     }
 
+    std::string jsv_string::convert(const std::string &_str) {
+        std::stringstream ss;
+        for (const auto &c : _str) {
+            if (c < 0) {
+                ss << c;
+            } else if (isprint(c)) {
+                if (c == '"')
+                    ss << "\\\"";
+                else if (c == '\'')
+                    ss << "\\\'";
+                else
+                    ss << c;
+            } else {
+                if (c == '\n')
+                    ss << "\\n";
+                else {
+                    ss << "\\x" << std::hex << (uint32_t) c;
+                }
+            }
+        }
+        return ss.str();
+    }
+
     // ----------------------------------
 
     std::string jsv_object::_str = "[object Object]";

@@ -55,10 +55,7 @@ namespace clib {
 
     int cjsruntime::eval(cjs_code_result::ref code, const std::string &_path, bool top) {
         if (code->code->codes.empty()) {
-            std::cout << "Compile failed." << std::endl;
-            if (!top)
-                push(new_undefined());
-            return 0;
+            return exec(jsv_string::convert(_path), "throw new SyntaxError('Compile error')");
         }
         if (_path.empty() || _path[0] == '<') {
             paths.emplace_back(ROOT_DIR);
@@ -264,6 +261,7 @@ namespace clib {
 
     int cjsruntime::call_api(const jsv_function::ref &func, js_value::weak_ref &_this,
                              std::vector<js_value::weak_ref> &args, uint32_t attr) {
+        assert(_this.lock());
         auto stack_size = stack.size();
         bool fast = attr & jsv_function::at_fast;
         if (fast) {
@@ -274,8 +272,7 @@ namespace clib {
         auto _new_stack = new_stack(func->code);
         stack.push_back(_new_stack);
         auto env = _new_stack->envs.lock();
-        if (_this.lock())
-            _new_stack->_this = _this;
+        _new_stack->_this = _this;
         _new_stack->name = func->name;
         if (!func->code->arrow && func->code->simpleName.front() != '<')
             env->obj[func->code->simpleName] = func;
@@ -894,7 +891,7 @@ namespace clib {
                 } else {
                     auto name = current_stack->info->globals.at(op);
                     std::stringstream ss;
-                    ss << "throw new ReferenceError('" << name << " is not defined')";
+                    ss << "throw new ReferenceError('" << jsv_string::convert(name) << " is not defined')";
                     auto _stack_size = stack.size();
                     auto r = exec("<error>", ss.str());
                     if (r != 0)
@@ -954,7 +951,7 @@ namespace clib {
                     break;
                 }
                 auto func = JS_FUN(f.lock());
-                js_value::weak_ref _this;
+                js_value::weak_ref _this = JS_V(stack.front()->envs.lock());
                 auto r = call_api(func, _this, args, jsv_function::at_fast);
                 if (r != 0)
                     return r;
@@ -1258,6 +1255,7 @@ namespace clib {
                     (*s)->info ? (*s)->info->text.c_str() : "[builtin]");
             const auto &st = (*s)->stack;
             auto sti = (int) st.size();
+            fprintf(stdout, "this | [%p] \n", (*s)->_this.lock().get());
             for (auto s2 = st.rbegin(); s2 != st.rend(); s2++) {
                 fprintf(stdout, "%4d | [%p] ", sti--, s2->lock().get());
                 if (s2->lock() == permanents.global_env)

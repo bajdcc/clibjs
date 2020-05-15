@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <cassert>
+#include <sstream>
 #include "cjs.h"
 #include "cjsparser.h"
 #include "cjsgen.h"
@@ -33,7 +34,17 @@ namespace clib {
 
     int cjs::exec(const std::string &filename, const std::string &input, bool top) {
         auto p = std::make_unique<cjsparser>();
-        p->parse(input, this);
+        std::string error_string;
+        std::string code_name;
+        if (!filename.empty() && filename[0] != '<')
+            code_name = "(" + filename + ":1:1) <entry>";
+        else
+            code_name = "(" + filename + ") <entry>";
+        if (p->parse(input, error_string, this) == nullptr) {
+            std::stringstream ss;
+            ss << "throw new SyntaxError('" << jsv_string::convert(error_string) << "')";
+            return exec("<error> " + code_name, ss.str());
+        }
 #if LOG_AST
         cjsast::print(p->root(), 0, input, std::cout);
 #endif
@@ -47,10 +58,7 @@ namespace clib {
 #endif
         auto code = std::move(g->get_code());
         assert(code);
-        if (!filename.empty() && filename[0] != '<')
-            code->code->debugName = "(" + filename + ":1:1) <entry>";
-        else
-            code->code->debugName = "(" + filename + ") <entry>";
+        code->code->debugName = code_name;
         g = nullptr;
         return rt.eval(std::move(code), filename, top);
     }

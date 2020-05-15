@@ -51,7 +51,7 @@ namespace clib {
         cjsparser(const cjsparser &) = delete;
         cjsparser &operator=(const cjsparser &) = delete;
 
-        ast_node *parse(const std::string &str, csemantic *s = nullptr);
+        ast_node *parse(const std::string &str, std::string &, csemantic *s = nullptr);
         ast_node *root() const;
         void clear_ast();
 
@@ -79,7 +79,7 @@ namespace clib {
         static pda_coll_pred pred_for(const cjslexer *, int idx);
         static pda_coll_pred pred_in(const cjslexer *, int idx);
         static void clear_bk(const cjslexer *, int idx,
-                std::vector<backtrace_t> &bks, backtrace_t *&bk);
+                             std::vector<backtrace_t> &bks, backtrace_t *&bk);
 
     private:
         const lexer_unit *current{nullptr};
