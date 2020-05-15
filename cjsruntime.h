@@ -65,6 +65,7 @@ namespace clib {
         virtual std::shared_ptr<jsv_object> new_error(int) = 0;
         virtual int exec(const std::string &, const std::string &) = 0;
         virtual std::string get_stacktrace() const = 0;
+        virtual bool set_builtin(const std::shared_ptr<jsv_object> &obj) = 0;
         virtual bool get_file(std::string &filename, std::string &content) const = 0;
         enum api {
             API_none,
@@ -78,7 +79,7 @@ namespace clib {
         virtual int call_api(const std::shared_ptr<jsv_function> &, std::weak_ptr<js_value> &,
                              std::vector<std::weak_ptr<js_value>> &, uint32_t) = 0;
         virtual std::shared_ptr<js_value> fast_api(const std::shared_ptr<jsv_function> &, std::weak_ptr<js_value> &,
-                                                   std::vector<std::weak_ptr<js_value>> &, uint32_t) = 0;
+                                                   std::vector<std::weak_ptr<js_value>> &, uint32_t, int * = nullptr) = 0;
     };
 
     class js_value : public std::enable_shared_from_this<js_value> {
@@ -101,7 +102,7 @@ namespace clib {
         virtual bool to_bool() const = 0;
         virtual void mark(int n) = 0;
         virtual bool is_primitive() const;
-        virtual js_value::ref to_primitive(js_value_new &n, primitive_t);
+        virtual js_value::ref to_primitive(js_value_new &n, primitive_t, int *);
         virtual std::string to_string(js_value_new *n, int hint) const = 0;
         virtual double to_number(js_value_new *n) const = 0;
         uint8_t marked{0};
@@ -175,7 +176,7 @@ namespace clib {
         void mark(int n) override;
         js_value::ref get(const std::string &name) const;
         bool is_primitive() const override;
-        js_value::ref to_primitive(js_value_new &n, primitive_t) override;
+        js_value::ref to_primitive(js_value_new &n, primitive_t, int *) override;
         std::string to_string(js_value_new *n, int hint) const override;
         double to_number(js_value_new *n) const override;
         ref clear();
@@ -217,6 +218,7 @@ namespace clib {
     public:
         enum attr_t {
             at_new_function = 1U << 1U,
+            at_fast = 1U << 2U,
         };
         using ref = std::shared_ptr<jsv_function>;
         using weak_ref = std::weak_ptr<jsv_function>;
@@ -324,13 +326,14 @@ namespace clib {
         jsv_object::ref new_error(int) override;
         int exec(const std::string &, const std::string &) override;
         std::string get_stacktrace() const override;
+        bool set_builtin(const std::shared_ptr<jsv_object> &obj) override;
         bool get_file(std::string &filename, std::string &content) const override;
         int call_internal(bool top, size_t stack_size);
         int call_api(int type, js_value::weak_ref &_this,
                      std::vector<js_value::weak_ref> &args, uint32_t attr) override;
         int call_api(const jsv_function::ref &, js_value::weak_ref &_this, std::vector<js_value::weak_ref> &, uint32_t attr) override;
         js_value::ref fast_api(const jsv_function::ref &, js_value::weak_ref &_this,
-                               std::vector<js_value::weak_ref> &args, uint32_t attr) override;
+                               std::vector<js_value::weak_ref> &args, uint32_t attr, int * = nullptr) override;
 
         static bool to_number(const js_value::ref &, double &);
         static std::vector<js_value::weak_ref> to_array(const js_value::ref &);
@@ -370,7 +373,7 @@ namespace clib {
 
         static void print(const js_value::ref &value, int level, std::ostream &os);
 
-        js_value::ref binop(int code, js_value::ref op1, js_value::ref op2);
+        js_value::ref binop(int code, const js_value::ref &op1, const js_value::ref &op2, int *);
 
         void eval_timeout();
 
@@ -431,6 +434,7 @@ namespace clib {
             // sys
             jsv_object::ref sys;
             jsv_function::ref sys_exec_file;
+            jsv_function::ref sys_builtin;
             // function
             jsv_function::ref f_number;
             jsv_function::ref f_boolean;

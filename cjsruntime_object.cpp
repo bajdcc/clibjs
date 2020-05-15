@@ -14,7 +14,7 @@
 
 namespace clib {
 
-    js_value::ref js_value::to_primitive(js_value_new &n, js_value::primitive_t t) {
+    js_value::ref js_value::to_primitive(js_value_new &n, js_value::primitive_t t, int *) {
         return shared_from_this();
     }
 
@@ -449,7 +449,8 @@ namespace clib {
         return false;
     }
 
-    js_value::ref jsv_object::to_primitive(js_value_new &n, js_value::primitive_t t) {
+    js_value::ref jsv_object::to_primitive(js_value_new &n, js_value::primitive_t t, int *r) {
+        assert(r);
         if (t == conv_default)
             t = conv_number;
         switch (t) {
@@ -458,7 +459,7 @@ namespace clib {
                 if (value && value->get_type() == r_function) {
                     std::vector<js_value::weak_ref> args;
                     js_value::weak_ref _this = std::const_pointer_cast<js_value>(shared_from_this());
-                    auto ret = n.fast_api(JS_FUN(value), _this, args, 0);
+                    auto ret = n.fast_api(JS_FUN(value), _this, args, 0, r);
                     if (ret->is_primitive())
                         return ret;
                 }
@@ -466,7 +467,7 @@ namespace clib {
                 if (value && value->get_type() == r_function) {
                     std::vector<js_value::weak_ref> args;
                     js_value::weak_ref _this = std::const_pointer_cast<js_value>(shared_from_this());
-                    auto ret = n.fast_api(JS_FUN(value), _this, args, 0);
+                    auto ret = n.fast_api(JS_FUN(value), _this, args, 0, r);
                     if (ret->is_primitive())
                         return ret;
                 }
@@ -477,7 +478,7 @@ namespace clib {
                 if (value && value->get_type() == r_function) {
                     std::vector<js_value::weak_ref> args;
                     js_value::weak_ref _this = std::const_pointer_cast<js_value>(shared_from_this());
-                    auto ret = n.fast_api(JS_FUN(value), _this, args, 0);
+                    auto ret = n.fast_api(JS_FUN(value), _this, args, 0, r);
                     if (ret->is_primitive())
                         return ret;
                 }
@@ -485,7 +486,7 @@ namespace clib {
                 if (value && value->get_type() == r_function) {
                     std::vector<js_value::weak_ref> args;
                     js_value::weak_ref _this = std::const_pointer_cast<js_value>(shared_from_this());
-                    auto ret = n.fast_api(JS_FUN(value), _this, args, 0);
+                    auto ret = n.fast_api(JS_FUN(value), _this, args, 0, r);
                     if (ret->is_primitive())
                         return ret;
                 }
@@ -597,6 +598,8 @@ namespace clib {
     std::string jsv_function::to_string(js_value_new *n, int hint) const {
         if (builtin)
             return name;
+        if (attr & at_readonly)
+            return "builtin";
         return code ? code->text : "builtin";
     }
 

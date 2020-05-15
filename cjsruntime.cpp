@@ -265,12 +265,18 @@ namespace clib {
     int cjsruntime::call_api(const jsv_function::ref &func, js_value::weak_ref &_this,
                              std::vector<js_value::weak_ref> &args, uint32_t attr) {
         auto stack_size = stack.size();
+        bool fast = attr & jsv_function::at_fast;
+        if (fast) {
+            attr &= ~(uint32_t) jsv_function::at_fast;
+        }
         if (func->builtin) {
-            func->builtin(current_stack, _this, args, *this, 0);
+            return func->builtin(current_stack, _this, args, *this, attr);
         } else {
+            current_stack->pc++;
             stack.push_back(current_stack = new_stack(func->code));
             auto env = current_stack->envs.lock();
-            current_stack->_this = _this;
+            if (_this.lock())
+                current_stack->_this = _this;
             current_stack->name = func->name;
             if (!func->code->arrow && func->code->simpleName.front() != '<')
                 env->obj[func->code->simpleName] = func;
@@ -303,13 +309,19 @@ namespace clib {
             arg->obj["length"] = new_number(n);
             if (func->closure.lock())
                 current_stack->closure = func->closure;
+            if (fast)
+                return 1;
         }
         return call_internal(false, stack_size);
     }
 
     js_value::ref cjsruntime::fast_api(const jsv_function::ref &func, js_value::weak_ref &_this,
-                                       std::vector<js_value::weak_ref> &args, uint32_t attr) {
-        call_api(func, _this, args, attr);
+                                       std::vector<js_value::weak_ref> &args, uint32_t attr, int *r) {
+        auto ret = call_api(func, _this, args, attr);
+        if (r)
+            *r = ret;
+        if (ret != 0)
+            return new_undefined();
         return pop().lock();
     }
 
@@ -542,7 +554,11 @@ namespace clib {
             case BINARY_OR: {
                 auto op2 = pop().lock();
                 auto op1 = pop().lock();
-                push(binop(code.code, op1, op2));
+                auto r = 0;
+                auto ret = binop(code.code, op1, op2, &r);
+                if (r != 0)
+                    return r;
+                push(ret);
             }
                 break;
             case LOAD_ATTR:
@@ -564,12 +580,15 @@ namespace clib {
             case BINARY_INC:
             case BINARY_DEC: {
                 auto op1 = pop().lock();
-                auto result = binop(
+                auto r = 0;
+                auto ret = binop(
                         code.code == BINARY_INC ? BINARY_ADD : BINARY_SUBTRACT,
                         op1,
-                        permanents._one);
-                assert(result);
-                push(result);
+                        permanents._one, &r);
+                if (r != 0)
+                    return r;
+                assert(ret);
+                push(ret);
             }
                 break;
             case STORE_SUBSCR: {
@@ -931,47 +950,12 @@ namespace clib {
                     break;
                 }
                 auto func = JS_FUN(f.lock());
-                if (func->builtin) {
-                    js_value::weak_ref _this = JS_V(stack.front()->envs.lock());
-                    func->builtin(current_stack, _this, args, *this, 0);
-                    break;
-                }
-                stack.push_back(new_stack(func->code));
-                auto new_stack = stack.back();
-                auto env = new_stack->envs.lock();
-                if (!func->code->arrow && func->code->simpleName.front() != '<')
-                    env->obj[func->code->simpleName] = f;
-                auto arg = new_object();
-                env->obj["arguments"] = arg;
-                size_t i = 0;
-                size_t args_num = func->code->args_num;
-                for (; i < (size_t) n; i++) {
-                    std::stringstream ss;
-                    ss << i;
-                    arg->obj[ss.str()] = args.at(i);
-                    if (i < args_num)
-                        env->obj[func->code->args.at(i)] = args.at(i);
-                }
-                for (; i < args_num; i++) {
-                    env->obj[func->code->args.at(i)] = new_undefined();
-                }
-                if (func->code->rest) {
-                    auto rest = new_array();
-                    env->obj[func->code->args.at(args_num)] = rest;
-                    auto j = 0;
-                    for (i = args_num; i < (size_t) n; i++) {
-                        std::stringstream ss;
-                        ss << j++;
-                        rest->obj[ss.str()] = args.at(i);
-                    }
-                    rest->obj["length"] = new_number(j);
-                }
-                arg->obj["length"] = new_number(n);
-                if (func->closure.lock())
-                    new_stack->closure = func->closure;
-                current_stack->pc++;
-                return 1;
+                js_value::weak_ref _this;
+                auto r = call_api(func, _this, args, jsv_function::at_fast);
+                if (r != 0)
+                    return r;
             }
+                break;
             case MAKE_FUNCTION: {
                 auto op = (uint32_t) code.op1;
                 if (op & 8U) {
@@ -1062,71 +1046,10 @@ namespace clib {
                     _this->__proto__ = permanents._proto_object;
                 else
                     _this->__proto__ = prototype;
-                if (func->builtin) {
-                    js_value::weak_ref _t = _this;
-                    auto r = func->builtin(current_stack, _t, args, *this, jsv_function::at_new_function);
-                    if (r != 0)
-                        return r;
-                    break;
-                }
-                auto p = _this->__proto__.lock();
-                js_value::weak_ref constructor;
-                while (p) {
-                    if (p->get_type() != r_object) {
-                        push(new_undefined()); // type error
-                        break;
-                    }
-                    const auto &ob = JS_OBJ(p);
-                    auto cons = ob.find("constructor");
-                    if (cons != ob.end()) {
-                        if (cons->second.lock()->get_type() == r_function) {
-                            constructor = cons->second;
-                        }
-                        break;
-                    }
-                    p = p->__proto__.lock();
-                }
-                if (!constructor.lock()) {
-                    push(new_undefined()); // no constructor error
-                    break;
-                }
-                if (constructor.lock()->get_type() != r_function) {
-                    push(new_undefined()); // type error
-                    break;
-                }
-                auto cons_func = JS_FUN(constructor.lock());
-                if (cons_func->builtin) {
-                    js_value::weak_ref _t = _this;
-                    auto r = cons_func->builtin(current_stack, _t, args, *this, jsv_function::at_new_function);
-                    if (r != 0)
-                        return r;
-                    break;
-                }
-                stack.push_back(new_stack(cons_func->code));
-                auto new_stack = stack.back();
-                new_stack->_this = _this;
-                new_stack->ret_value = _this;
-                auto env = new_stack->envs.lock();
-                if (!cons_func->code->arrow && cons_func->code->simpleName.front() != '<')
-                    env->obj[cons_func->code->simpleName] = f;
-                auto arg = new_object();
-                env->obj["arguments"] = arg;
-                size_t i = 0;
-                for (; i < (size_t) n; i++) {
-                    std::stringstream ss;
-                    ss << i;
-                    arg->obj[ss.str()] = args.at(i);
-                    if (i < cons_func->code->args.size())
-                        env->obj[cons_func->code->args.at(i)] = args.at(i);
-                }
-                for (; i < cons_func->code->args.size(); i++) {
-                    env->obj[cons_func->code->args.at(i)] = new_undefined();
-                }
-                arg->obj["length"] = new_number(n);
-                if (cons_func->closure.lock())
-                    new_stack->closure = cons_func->closure;
-                current_stack->pc++;
-                return 1;
+                js_value::weak_ref t = _this;
+                auto r = call_api(func, t, args, jsv_function::at_fast | jsv_function::at_new_function);
+                if (r != 0)
+                    return r;
             }
                 break;
             case LOAD_METHOD: {
@@ -1191,50 +1114,10 @@ namespace clib {
                     break;
                 }
                 auto func = JS_FUN(f.lock());
-                if (func->builtin) {
-                    js_value::weak_ref t = _this;
-                    auto r = func->builtin(current_stack, t, args, *this, 0);
-                    if (r != 0)
-                        return r;
-                    break;
-                }
-                stack.push_back(new_stack(func->code));
-                auto new_stack = stack.back();
-                new_stack->_this = _this;
-                new_stack->name = func->name;
-                auto env = new_stack->envs.lock();
-                if (!func->code->arrow && func->code->simpleName.front() != '<')
-                    env->obj[func->code->simpleName] = f;
-                auto arg = new_object();
-                env->obj["arguments"] = arg;
-                size_t i = 0;
-                size_t args_num = func->code->args_num;
-                for (; i < (size_t) n; i++) {
-                    std::stringstream ss;
-                    ss << i;
-                    arg->obj[ss.str()] = args.at(i);
-                    if (i < func->code->args.size())
-                        env->obj[func->code->args.at(i)] = args.at(i);
-                }
-                for (; i < func->code->args.size(); i++) {
-                    env->obj[func->code->args.at(i)] = new_undefined();
-                }
-                if (func->code->rest) {
-                    auto rest = new_array();
-                    env->obj[func->code->args.at(args_num)] = rest;
-                    auto j = 0;
-                    for (i = args_num; i < (size_t) n; i++) {
-                        std::stringstream ss;
-                        ss << j++;
-                        rest->obj[ss.str()] = args.at(i);
-                    }
-                    rest->obj["length"] = new_number(j);
-                }
-                arg->obj["length"] = new_number(n);
-                if (func->closure.lock())
-                    new_stack->closure = func->closure;
-                current_stack->pc++;
-                return 1;
+                js_value::weak_ref t = _this;
+                auto r = call_api(func, t, args, jsv_function::at_fast);
+                if (r != 0)
+                    return r;
             }
                 break;
             default:
@@ -1561,6 +1444,13 @@ namespace clib {
         return s;
     }
 
+    bool cjsruntime::set_builtin(const std::shared_ptr<jsv_object> &obj) {
+        if (readonly)
+            return false;
+        obj->attr |= js_value::at_readonly;
+        return true;
+    }
+
     static bool check_file(const std::string &filename, std::string &content) {
         std::ifstream file(filename);
         if (file) {
@@ -1854,7 +1744,8 @@ namespace clib {
         return s;
     }
 
-    js_value::ref cjsruntime::binop(int code, js_value::ref _op1, js_value::ref _op2) {
+    js_value::ref cjsruntime::binop(int code, const js_value::ref &_op1, const js_value::ref &_op2, int *r) {
+        assert(r);
         auto conv = js_value::conv_number;
         switch (code) {
             case COMPARE_EQUAL:
@@ -1880,9 +1771,9 @@ namespace clib {
             default:
                 break;
         }
-        auto op1 = _op1->to_primitive(*this, js_value::conv_default);
+        auto op1 = _op1->to_primitive(*this, js_value::conv_default, r);
         assert(op1);
-        auto op2 = _op2->to_primitive(*this, js_value::conv_default);
+        auto op2 = _op2->to_primitive(*this, js_value::conv_default, r);
         assert(op2);
         if (code == BINARY_ADD) {
             if (op1->get_type() == r_string || op2->get_type() == r_string)
